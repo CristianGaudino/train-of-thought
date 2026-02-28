@@ -7,7 +7,10 @@ import { useState, useEffect, useRef } from "react";
 export default function FreeformPage() {
     const { messages, sendMessage, status } = useChat({
         transport: new DefaultChatTransport({
-            api: "/api/freeform-chat"
+            api: "/api/freeform-chat",
+            body: () => ({
+                depth
+            })
         })
     });
 
@@ -15,6 +18,14 @@ export default function FreeformPage() {
     const [showIntro, setShowIntro] = useState(true);
 
     const chatRef = useRef<HTMLDivElement>(null);
+
+    const [depth, setDepth] = useState(1); 
+    // 1 = light
+    // 2 = structured
+    // 3 = deep
+
+    const [ideaSummary, setIdeaSummary] = useState<any>(null);
+    const [summarising, setSummarising] = useState(false);
 
     // Auto-scroll to bottom
     useEffect(() => {
@@ -35,6 +46,20 @@ export default function FreeformPage() {
         setInput("");
     }
 
+    async function handleSummarise() {
+        setSummarising(true);
+
+        const res = await fetch("/api/summarize-idea", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ messages })
+        });
+
+        const data = await res.json();
+        setIdeaSummary(data);
+        setSummarising(false);
+    }
+
     return (
         <main className="min-h-screen flex flex-col bg-gradient-to-b from-white to-zinc-50 text-zinc-900">
             {/* Header */}
@@ -46,6 +71,26 @@ export default function FreeformPage() {
 
             {/* Main content area */}
             <div className="flex-1 flex flex-col min-h-0 max-w-4xl mx-auto w-full px-6 py-10">
+                <div className="mb-4 flex gap-2">
+                    <button
+                        onClick={() => setDepth(1)}
+                        className={depth === 1 ? "font-bold" : ""}
+                    >
+                        Light
+                    </button>
+                    <button
+                        onClick={() => setDepth(2)}
+                        className={depth === 2 ? "font-bold" : ""}
+                    >
+                        Structured
+                    </button>
+                    <button
+                        onClick={() => setDepth(3)}
+                        className={depth === 3 ? "font-bold" : ""}
+                    >
+                        Deep
+                    </button>
+                </div>
                 {/* Scrollable Chat Window */}
                 <div
                     ref={chatRef}
@@ -68,9 +113,7 @@ export default function FreeformPage() {
                         <div
                             key={m.id}
                             className={`mb-3 p-3 rounded-xl max-w-[80%] ${
-                                m.role === "user"
-                                    ? "ml-auto bg-blue-100 text-right"
-                                    : "mr-auto bg-gray-100 text-left"
+                                m.role === "user" ? "ml-auto bg-blue-100 text-right" : "mr-auto bg-gray-100 text-left"
                             }`}
                         >
                             {m.parts.map((part, index) =>
@@ -83,6 +126,15 @@ export default function FreeformPage() {
                 </div>
 
                 {/* Input bar */}
+                <div className="mb-4">
+                    <button
+                        onClick={handleSummarise}
+                        disabled={summarising}
+                        className="px-4 py-2 rounded-lg bg-zinc-800 text-white text-sm hover:opacity-90 disabled:opacity-50"
+                    >
+                        {summarising ? "Summarising..." : "Summarise Idea"}
+                    </button>
+                </div>
                 <form onSubmit={handleSubmit} className="flex gap-3">
                     <input
                         type="text"
@@ -103,6 +155,14 @@ export default function FreeformPage() {
                         {status !== "ready" ? "Thinking..." : "Start"}
                     </button>
                 </form>
+                {ideaSummary && (
+                    <div className="mt-6 p-4 border border-zinc-200 rounded-xl bg-white shadow-sm">
+                        <h3 className="font-semibold mb-2">Idea Summary</h3>
+                        <pre className="text-sm whitespace-pre-wrap">
+                            {JSON.stringify(ideaSummary, null, 2)}
+                        </pre>
+                    </div>
+                )}
             </div>
         </main>
     );
