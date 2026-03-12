@@ -115,7 +115,7 @@ export function ConceptSidebar({
             <div className="flex items-center justify-between px-3 py-3 border-b border-zinc-100">
                 {sidebarOpen && (
                     <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wide pl-1">
-                        Concepts {cards.length > 0 && `(${cards.length})`}
+                        Core Concepts {cards.length > 0 && `(${cards.length})`}
                     </span>
                 )}
                 <button

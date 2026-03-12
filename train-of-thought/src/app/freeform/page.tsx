@@ -9,8 +9,14 @@ import { DepthSelector } from "./_components/DepthSelector";
 import { ChatMessage } from "./_components/ChatMessage";
 import { ConceptSidebar } from "./_components/ConceptSidebar";
 import { SummaryModal } from "./_components/SummaryModal";
+import { ResumeModal } from "./_components/ResumeModal";
 import { useConceptCards } from "./_hooks/useConceptCards";
 import { useSummary } from "./_hooks/useSummary";
+import {
+    useSaveMessages,
+    loadPersistedMessages,
+    clearPersistedMessages,
+} from "./_hooks/usePersistedMessages";
 import { ErrorAlert } from "@/components/ui/alerts";
 
 export default function FreeformPage() {
@@ -19,6 +25,7 @@ export default function FreeformPage() {
     const [showIntro, setShowIntro] = useState(true);
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [chatError, setChatError] = useState<string | null>(null);
+    const [resumeMessages, setResumeMessages] = useState<any[]>([]);
     const bottomRef = useRef<HTMLDivElement>(null);
     const [chatId] = useState(() => crypto.randomUUID());
 
@@ -30,6 +37,7 @@ export default function FreeformPage() {
         commitDraft,
         editCard,
         removeCard,
+        removeAllCards,
         toggleCardFromMessage,
         isMessageSaved,
     } = useConceptCards();
@@ -61,6 +69,17 @@ export default function FreeformPage() {
         fetchSummary,
     } = useSummary(messages);
 
+    // Persist messages on every change
+    useSaveMessages(messages);
+
+    // On mount, check for persisted conversation
+    useEffect(() => {
+        const persisted = loadPersistedMessages();
+        if (persisted.length > 0) {
+            setResumeMessages(persisted);
+        }
+    }, []);
+
     useEffect(() => {
         const saved = localStorage.getItem("freeformSidebar");
         if (saved) setSidebarOpen(JSON.parse(saved));
@@ -73,6 +92,22 @@ export default function FreeformPage() {
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, status]);
+
+    function handleContinue() {
+        setMessages(resumeMessages);
+        setShowIntro(false);
+        setResumeMessages([]);
+    }
+
+    function handleStartFresh(keepConcepts: boolean) {
+        if (!keepConcepts) {
+            removeAllCards();
+        }
+        clearPersistedMessages();
+        setResumeMessages([]);
+        setShowIntro(true);
+        resetSummary();
+    }
 
     function handleSubmit(e?: React.FormEvent) {
         e?.preventDefault();
@@ -102,6 +137,15 @@ export default function FreeformPage() {
 
     return (
         <main className="h-screen flex bg-white text-zinc-900 overflow-hidden">
+            {/* Resume modal */}
+            {resumeMessages.length > 0 && (
+                <ResumeModal
+                    messages={resumeMessages}
+                    onContinue={handleContinue}
+                    onStartFresh={handleStartFresh}
+                />
+            )}
+
             <div className="flex-1 flex flex-col min-w-0">
                 {/* Header */}
                 <header className="shrink-0 flex items-center justify-between px-6 py-3 border-b border-zinc-100">

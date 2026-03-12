@@ -46,6 +46,10 @@ export function useConceptCards() {
         setCards((prev) => prev.filter((c) => c.id !== id));
     }
 
+    function removeAllCards() {
+        setCards([]);
+    }
+
     function toggleCardFromMessage(message: any) {
         const content =
             message.parts?.map((p: any) => p.text).join(" ") || message.text;
@@ -71,6 +75,7 @@ export function useConceptCards() {
         commitDraft,
         editCard,
         removeCard,
+        removeAllCards,
         toggleCardFromMessage,
         isMessageSaved,
     };

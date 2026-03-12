@@ -1,4 +1,4 @@
-import { Check, CircleAlert, TriangleAlert, X } from 'lucide-react';
+import { Check, Info, TriangleAlert, X } from 'lucide-react';
 import { useState } from 'react';
 
 export function ErrorAlert({
@@ -54,7 +54,7 @@ export function InfoAlert({
     return (        
         <div className="bg-teal-100 border-t-4 border-teal-500 text-teal-800 px-3 py-3 rounded flex items-center space-x-2" role="alert">
             <span className="sr-only">Info</span> 
-            <CircleAlert className='w-5 text-teal-600'/> 
+            <Info className='w-5 text-teal-600'/> 
             <span className='items-left flex-1 font-medium text-sm'>{message}</span>
             {dismissable && (
                 <button onClick={handleDismiss} className="text-teal-600 hover:text-teal-700">

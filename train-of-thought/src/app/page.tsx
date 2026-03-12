@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { FcMindMap } from "react-icons/fc";
+import { BrainCircuit } from "lucide-react";
 
 export default function LandingPage() {
     const [showModes, setShowModes] = useState(false);
@@ -13,7 +13,7 @@ export default function LandingPage() {
 
                 {/* Title */}
                 <div className="flex items-center gap-2 mb-2">
-                    <FcMindMap className="w-10 h-10" />
+                    <BrainCircuit className="w-10 h-10" />
                     <h1 className="text-4xl font-bold">Train of Thought</h1>
                 </div>
 

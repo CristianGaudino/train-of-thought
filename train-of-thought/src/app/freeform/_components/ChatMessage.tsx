@@ -1,7 +1,7 @@
 "use client";
 
-import { Bookmark, BookmarkCheck } from "lucide-react";
-
+import { Markdown } from "@/components/ui/markdown";
+import { Bookmark } from "lucide-react";
 
 export function ChatMessage({
     message,
@@ -29,7 +29,11 @@ export function ChatMessage({
                         : "bg-zinc-100 text-zinc-800 rounded-bl-sm"
                 }`}
             >
-                <span className="whitespace-pre-wrap">{text}</span>
+                {isUser ? (
+                    <span className="whitespace-pre-wrap">{text}</span>
+                ) : (
+                    <Markdown content={text} />
+                )}
 
                 {!isUser && (
                     <button
@@ -37,11 +41,11 @@ export function ChatMessage({
                         className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white border border-zinc-200 shadow-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                         aria-label="Save message"
                     >
-                        {saved ? (
-                            <Bookmark size={10} className="text-zinc-800" />
-                        ) : (
-                            <BookmarkCheck size={10} className="text-zinc-400" />
-                        )}
+                        <Bookmark
+                            size={10}
+                            className={saved ? "text-zinc-800" : "text-zinc-400"}
+                            fill={saved ? "currentColor" : "none"}
+                        />
                     </button>
                 )}
             </div>
