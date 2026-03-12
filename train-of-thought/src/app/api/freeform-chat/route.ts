@@ -1,5 +1,5 @@
 import { convertToModelMessages, streamText } from "ai";
-import { anthropic } from "@ai-sdk/anthropic";
+import { model } from "@/lib/ai";
 
 export const maxDuration = 30;
 export const runtime = "nodejs";
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
             : "";
 
     const result = streamText({
-        model: anthropic("claude-haiku-4-5"),
+        model: model,
         system: `
             You are a creative thinking partner inside an app called "Train of Thought".
             Your job is to help the user find and develop ideas through open, generative conversation.

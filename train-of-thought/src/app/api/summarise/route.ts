@@ -1,6 +1,6 @@
-import { generateObject } from "ai";
-import { anthropic } from "@ai-sdk/anthropic";
+import { generateText, Output } from "ai";
 import { ideaSchema } from "@/lib/schemas";
+import { model } from "@/lib/ai";
 
 export const runtime = "nodejs";
 
@@ -11,9 +11,9 @@ export async function POST(req: Request) {
         .map((m: any) => `${m.role}: ${m.text ?? ""}`)
         .join("\n");
 
-    const result = await generateObject({
-        model: anthropic("claude-haiku-4-5"),
-        schema: ideaSchema,
+    const { output } = await generateText({
+        model,
+        output: Output.object({ schema: ideaSchema }),
         prompt: `
             Extract a structured idea object from this conversation.
             Only include information clearly implied.
@@ -25,5 +25,5 @@ export async function POST(req: Request) {
         `,
     });
 
-    return Response.json(result.object);
+    return Response.json(output);
 }
