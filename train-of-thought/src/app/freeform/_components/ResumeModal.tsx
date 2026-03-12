@@ -57,7 +57,7 @@ export function ResumeModal({
                                 {/* Fade overlay at top */}
                                 <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-zinc-50 to-transparent z-10 pointer-events-none" />
 
-                                <div className="p-4 space-y-2">
+                                <div className="p-4 space-y-2 overflow-y-auto max-h-48 flex flex-col justify-end">
                                     {previewMessages.map((m, i) => {
                                         const text = extractText(m);
                                         const isUser = m.role === "user";
