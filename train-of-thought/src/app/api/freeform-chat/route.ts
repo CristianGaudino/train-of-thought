@@ -13,6 +13,8 @@ export async function POST(req: Request) {
         return new Response("Too many requests", { status: 429 });
     }
     const { messages, depth, cards } = await req.json();
+    console.log("cards received:", cards);
+    console.log("depth received:", depth);
 
     const depthInstruction = `
         DEPTH LEVEL: ${depth}

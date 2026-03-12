@@ -22,21 +22,6 @@ export default function FreeformPage() {
     const bottomRef = useRef<HTMLDivElement>(null);
     const [chatId] = useState(() => crypto.randomUUID());
 
-    const { messages, sendMessage, status, setMessages } = useChat({
-        id: chatId,
-        transport: new DefaultChatTransport({
-            api: "/api/freeform-chat",
-            body: () => ({ depth, cards }),
-        }),
-        onError: (err) => {
-            if (err.message.includes("429")) {
-                setChatError("Too many requests — please wait a moment before continuing.");
-            } else {
-                setChatError("Something went wrong. Please try again.");
-            }
-        },
-    });
-
     const {
         cards,
         drafting,
@@ -48,6 +33,20 @@ export default function FreeformPage() {
         toggleCardFromMessage,
         isMessageSaved,
     } = useConceptCards();
+
+    const { messages, sendMessage, status, setMessages } = useChat({
+        id: chatId,
+        transport: new DefaultChatTransport({
+            api: "/api/freeform-chat",
+        }),
+        onError: (err) => {
+            if (err.message.includes("429")) {
+                setChatError("Too many requests — please wait a moment before continuing.");
+            } else {
+                setChatError("Something went wrong. Please try again.");
+            }
+        },
+    });
 
     const {
         summaryCache,
@@ -80,7 +79,10 @@ export default function FreeformPage() {
         if (!input.trim() || status !== "ready") return;
         setChatError(null);
         if (showIntro) setShowIntro(false);
-        sendMessage({ text: input });
+        sendMessage(
+            { text: input },
+            { body: { depth, cards } }
+        );
         setInput("");
     }
 
