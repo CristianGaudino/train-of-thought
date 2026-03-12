@@ -1,10 +1,17 @@
 import { convertToModelMessages, streamText } from "ai";
 import { model } from "@/lib/ai";
+import { rateLimit } from "@/lib/rateLimit";
+
 
 export const maxDuration = 30;
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
+    const ip = req.headers.get("x-forwarded-for") ?? "dev";
+    const { limited } = rateLimit(ip);
+    if (limited) {
+        return new Response("Too many requests", { status: 429 });
+    }
     const { messages, depth, cards } = await req.json();
 
     const depthInstruction = `

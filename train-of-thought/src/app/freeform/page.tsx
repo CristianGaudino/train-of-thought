@@ -11,12 +11,14 @@ import { ConceptSidebar } from "./_components/ConceptSidebar";
 import { SummaryModal } from "./_components/SummaryModal";
 import { useConceptCards } from "./_hooks/useConceptCards";
 import { useSummary } from "./_hooks/useSummary";
+import { ErrorAlert } from "@/components/ui/alerts";
 
 export default function FreeformPage() {
     const [depth, setDepth] = useState(1);
     const [input, setInput] = useState("");
     const [showIntro, setShowIntro] = useState(true);
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [chatError, setChatError] = useState<string | null>(null);
     const bottomRef = useRef<HTMLDivElement>(null);
     const [chatId] = useState(() => crypto.randomUUID());
 
@@ -24,8 +26,15 @@ export default function FreeformPage() {
         id: chatId,
         transport: new DefaultChatTransport({
             api: "/api/freeform-chat",
-            body: () => ({ depth }),
+            body: () => ({ depth, cards }),
         }),
+        onError: (err) => {
+            if (err.message.includes("429")) {
+                setChatError("Too many requests — please wait a moment before continuing.");
+            } else {
+                setChatError("Something went wrong. Please try again.");
+            }
+        },
     });
 
     const {
@@ -45,6 +54,8 @@ export default function FreeformPage() {
         summaryOpen,
         summarising,
         isStale,
+        error: summaryError,
+        setError: setSummaryError,
         openSummary,
         closeSummary,
         resetSummary,
@@ -67,6 +78,7 @@ export default function FreeformPage() {
     function handleSubmit(e?: React.FormEvent) {
         e?.preventDefault();
         if (!input.trim() || status !== "ready") return;
+        setChatError(null);
         if (showIntro) setShowIntro(false);
         sendMessage({ text: input });
         setInput("");
@@ -75,6 +87,7 @@ export default function FreeformPage() {
     function handleReset() {
         setMessages([]);
         setShowIntro(true);
+        setChatError(null);
         resetSummary();
     }
 
@@ -169,7 +182,21 @@ export default function FreeformPage() {
                 </div>
 
                 {/* Input */}
-                <div className="shrink-0 px-6 py-4 border-t border-zinc-100">
+                <div className="shrink-0 px-6 py-4 border-t border-zinc-100 space-y-2">
+                    {chatError && (
+                        <ErrorAlert
+                            message={chatError}
+                            dismissable={true}
+                            onClose={() => setChatError(null)}
+                        />
+                    )}
+                    {summaryError && (
+                        <ErrorAlert
+                            message={summaryError}
+                            dismissable={true}
+                            onClose={() => setSummaryError(null)}
+                        />
+                    )}
                     <form onSubmit={handleSubmit} className="flex gap-2">
                         <input
                             type="text"

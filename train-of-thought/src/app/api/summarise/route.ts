@@ -1,10 +1,16 @@
 import { generateText, Output } from "ai";
 import { ideaSchema } from "@/lib/schemas";
 import { model } from "@/lib/ai";
+import { rateLimit } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
+    const ip = req.headers.get("x-forwarded-for") ?? "dev";
+    const { limited } = rateLimit(ip);
+    if (limited) {
+        return new Response("Too many requests", { status: 429 });
+    }
     const { messages } = await req.json();
 
     const fullConversation = messages

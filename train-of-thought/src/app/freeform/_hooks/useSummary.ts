@@ -19,12 +19,14 @@ export function useSummary(messages: any[]) {
     const [summaryCache, setSummaryCache] = useState<SummaryCache | null>(null);
     const [summaryOpen, setSummaryOpen] = useState(false);
     const [summarising, setSummarising] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const isStale =
         summaryCache !== null && summaryCache.messageCount < messages.length;
 
     const fetchSummary = useCallback(async () => {
         setSummarising(true);
+        setError(null);
         try {
             const simpleMessages = messages.map((m) => ({
                 role: m.role,
@@ -39,11 +41,15 @@ export function useSummary(messages: any[]) {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ messages: simpleMessages }),
             });
-            if (!res.ok) throw new Error("Failed");
+            if (res.status === 429) {
+                setError("Too many requests — please wait a moment before trying again.");
+                return;
+            }
+            if (!res.ok) throw new Error(`Server error: ${res.status}`);
             const idea = await res.json();
             setSummaryCache({ idea, messageCount: messages.length });
-        } catch {
-            alert("Error summarising. Try again.");
+        } catch (err) {
+            setError("Something went wrong generating the summary. Please try again.");
         } finally {
             setSummarising(false);
         }
@@ -65,6 +71,7 @@ export function useSummary(messages: any[]) {
     function resetSummary() {
         setSummaryCache(null);
         setSummaryOpen(false);
+        setError(null);
     }
 
     return {
@@ -72,6 +79,8 @@ export function useSummary(messages: any[]) {
         summaryOpen,
         summarising,
         isStale,
+        error,
+        setError,
         openSummary,
         closeSummary,
         resetSummary,
