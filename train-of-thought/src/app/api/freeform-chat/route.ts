@@ -1,5 +1,5 @@
 import { convertToModelMessages, streamText } from "ai";
-import { google } from "@ai-sdk/google";
+import { anthropic } from "@ai-sdk/anthropic";
 
 export const maxDuration = 30;
 export const runtime = "nodejs";
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
             : "";
 
     const result = streamText({
-        model: google("gemini-2.0-flash"),
+        model: anthropic("claude-haiku-4-5"),
         system: `
             You are a creative thinking partner inside an app called "Train of Thought".
             Your job is to help the user find and develop ideas through open, generative conversation.
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
             ${cardsContext}
             ${depthInstruction}
         `,
-        messages: convertToModelMessages(messages),
+        messages: await convertToModelMessages(messages),
     });
 
     return result.toUIMessageStreamResponse();

@@ -1,5 +1,5 @@
 import { generateObject } from "ai";
-import { google } from "@ai-sdk/google";
+import { anthropic } from "@ai-sdk/anthropic";
 import { ideaSchema } from "@/lib/schemas";
 
 export const runtime = "nodejs";
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
         .join("\n");
 
     const result = await generateObject({
-        model: google("gemini-2.0-flash"),
+        model: anthropic("claude-haiku-4-5"),
         schema: ideaSchema,
         prompt: `
             Extract a structured idea object from this conversation.
