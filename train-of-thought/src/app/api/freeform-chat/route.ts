@@ -1,70 +1,60 @@
-import { convertToModelMessages, streamText, UIMessage } from 'ai';
-import { google } from '@ai-sdk/google';
-import { generateObject } from "ai";
+import { convertToModelMessages, streamText } from "ai";
+import { google } from "@ai-sdk/google";
 
-// Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
-
-export const runtime = 'nodejs'; 
+export const runtime = "nodejs";
 
 export async function POST(req: Request) {
-    const { messages, depth } = await req.json();
+    const { messages, depth, cards } = await req.json();
 
     const depthInstruction = `
         DEPTH LEVEL: ${depth}
-        1 = light exploration (short, open-ended)
-        2 = structured thinking (moderate analysis)
-        3 = deep analysis (assumptions, risks, refinement)
-        Adjust response complexity accordingly.
+        1 = light, casual exploration — short responses, loose and generative
+        2 = structured thinking — moderate detail, some organisation
+        3 = deep exploration — thorough, examines angles, surfaces tensions
+        Adjust your response length and complexity accordingly.
     `;
 
+    const cardsContext =
+        cards && cards.length > 0
+            ? `
+        LOCKED-IN CONCEPTS:
+        The user has already decided the following. Treat them as established facts.
+        Do not re-question them. Reference them naturally when relevant.
+
+        ${cards.map((c: any) => `- ${c.title ? `${c.title}: ` : ""}${c.content}`).join("\n")}
+        `
+            : "";
+
     const result = streamText({
-        model: google('gemma-3-27b-it'),
+        model: google("gemini-2.0-flash"),
         system: `
-            You are a structured creative thinking partner inside an app called "Train of Thought".
+            You are a creative thinking partner inside an app called "Train of Thought".
+            Your job is to help the user find and develop ideas through open, generative conversation.
 
-            Your role is to help users develop ideas clearly and deeply without overwhelming them.
+            The user is here because they want inspiration — they may not know what they're looking for yet.
+            Your role is to help them discover it, not to hand them a finished answer.
 
-            CORE BEHAVIOR RULES:
+            HOW TO BEHAVE:
+            - Keep responses short and focused. One idea at a time.
+            - Ask one good question rather than listing ten possibilities.
+            - Be curious, not prescriptive. Follow the user's energy.
+            - Offer directions, not solutions. Let the user choose what resonates.
+            - Avoid bullet-point dumps. Prefer natural, conversational prose.
+            - Never use corporate or productivity language.
+            - Do not jump into planning, structure or execution unless explicitly asked.
 
-            1. Do not give long, overwhelming responses.
-            2. Prefer asking 1-3 thoughtful questions over giving massive lists.
-            3. Expand gradually.
-            4. Encourage clarity before expansion.
-            5. Avoid corporate or productivity jargon.
-            6. Do not jump into task breakdowns unless explicitly asked.
-            7. Help the user think — do not think for them completely.
+            FLOW:
+            - Start by understanding what kind of inspiration they're after — a domain, a feeling, a constraint.
+            - Offer a small number of distinct, specific directions (3 at most).
+            - Once the user gravitates toward something, go deeper on that thread only.
+            - Gradually help them sharpen the idea through questions and gentle reflection.
 
-            ENTRY MODES:
-
-            If the user starts with "I have an idea":
-            - Help clarify the core concept.
-            - Ask what problem it solves.
-            - Ask who it is for.
-            - Identify assumptions gently.
-            - Help sharpen and refine.
-
-            If the user starts with "I need inspiration":
-            - Offer 3-5 interesting directions.
-            - Make them distinct and specific.
-            - After presenting them, ask which direction feels interesting.
-            - Then deepen only the selected direction.
-
-            DEPTH CONTROL:
-
-            If the user asks to go deeper:
-            - Analyze assumptions.
-            - Explore risks.
-            - Expand structure.
-            - Refine positioning.
-
-            Always prioritize clarity over volume.
-            Be concise, thoughtful, and forward-moving.
-
+            ${cardsContext}
             ${depthInstruction}
         `,
         messages: convertToModelMessages(messages),
-        });
+    });
 
     return result.toUIMessageStreamResponse();
 }
