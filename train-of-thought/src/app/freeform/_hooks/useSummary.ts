@@ -36,7 +36,7 @@ export function useSummary(messages: any[]) {
                         .map((p: any) => p.text)
                         .join(" ") ?? "",
             }));
-            const res = await fetch("/api/summarize-idea", {
+            const res = await fetch("/api/summarise", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ messages: simpleMessages }),
