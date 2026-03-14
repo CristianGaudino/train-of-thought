@@ -7,6 +7,8 @@ export const maxDuration = 30;
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
+    // return new Response("Internal server error", { status: 500 });
+
     const ip = req.headers.get("x-forwarded-for") ?? "dev";
     const { limited } = rateLimit(ip);
     if (limited) {

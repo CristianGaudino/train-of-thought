@@ -2,22 +2,19 @@
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Sparkles, RotateCcw } from "lucide-react";
 
-import { DepthSelector } from "./_components/DepthSelector";
-import { ChatMessage } from "./_components/ChatMessage";
 import { ConceptSidebar } from "./_components/ConceptSidebar";
 import { SummaryModal } from "./_components/SummaryModal";
 import { ResumeModal } from "./_components/ResumeModal";
 import { useConceptCards } from "./_hooks/useConceptCards";
 import { useSummary } from "./_hooks/useSummary";
-import {
-    useSaveMessages,
-    loadPersistedMessages,
-    clearPersistedMessages,
-} from "./_hooks/usePersistedMessages";
-import { ErrorAlert } from "@/components/ui/alerts";
+import { useSaveMessages, loadPersistedMessages, clearPersistedMessages } from "@/lib/hooks/usePersistedMessages";
+import { ChatHeader } from "@/components/chat/ChatHeader";
+import { Chat } from "@/components/chat/Chat";
+
+const STORAGE_KEY = "freeformMessages";
 
 export default function FreeformPage() {
     const [depth, setDepth] = useState(1);
@@ -26,7 +23,6 @@ export default function FreeformPage() {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [chatError, setChatError] = useState<string | null>(null);
     const [resumeMessages, setResumeMessages] = useState<any[]>([]);
-    const bottomRef = useRef<HTMLDivElement>(null);
     const [chatId] = useState(() => crypto.randomUUID());
 
     const {
@@ -44,9 +40,7 @@ export default function FreeformPage() {
 
     const { messages, sendMessage, status, setMessages } = useChat({
         id: chatId,
-        transport: new DefaultChatTransport({
-            api: "/api/freeform-chat",
-        }),
+        transport: new DefaultChatTransport({ api: "/api/freeform-chat" }),
         onError: (err) => {
             if (err.message.includes("429")) {
                 setChatError("Too many requests — please wait a moment before continuing.");
@@ -69,15 +63,11 @@ export default function FreeformPage() {
         fetchSummary,
     } = useSummary(messages);
 
-    // Persist messages on every change
-    useSaveMessages(messages);
+    useSaveMessages(messages, STORAGE_KEY);
 
-    // On mount, check for persisted conversation
     useEffect(() => {
-        const persisted = loadPersistedMessages();
-        if (persisted.length > 0) {
-            setResumeMessages(persisted);
-        }
+        const persisted = loadPersistedMessages(STORAGE_KEY);
+        if (persisted.length > 0) setResumeMessages(persisted);
     }, []);
 
     useEffect(() => {
@@ -89,10 +79,6 @@ export default function FreeformPage() {
         localStorage.setItem("freeformSidebar", JSON.stringify(sidebarOpen));
     }, [sidebarOpen]);
 
-    useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages, status]);
-
     function handleContinue() {
         setMessages(resumeMessages);
         setShowIntro(false);
@@ -100,10 +86,8 @@ export default function FreeformPage() {
     }
 
     function handleStartFresh(keepConcepts: boolean) {
-        if (!keepConcepts) {
-            removeAllCards();
-        }
-        clearPersistedMessages();
+        if (!keepConcepts) removeAllCards();
+        clearPersistedMessages(STORAGE_KEY);
         setResumeMessages([]);
         setShowIntro(true);
         resetSummary();
@@ -114,10 +98,7 @@ export default function FreeformPage() {
         if (!input.trim() || status !== "ready") return;
         setChatError(null);
         if (showIntro) setShowIntro(false);
-        sendMessage(
-            { text: input },
-            { body: { depth, cards } }
-        );
+        sendMessage({ text: input }, { body: { depth, cards } });
         setInput("");
     }
 
@@ -137,7 +118,6 @@ export default function FreeformPage() {
 
     return (
         <main className="h-screen flex bg-white text-zinc-900 overflow-hidden">
-            {/* Resume modal */}
             {resumeMessages.length > 0 && (
                 <ResumeModal
                     messages={resumeMessages}
@@ -147,39 +127,31 @@ export default function FreeformPage() {
             )}
 
             <div className="flex-1 flex flex-col min-w-0">
-                {/* Header */}
-                <header className="shrink-0 flex items-center justify-between px-6 py-3 border-b border-zinc-100">
-                    <div className="flex items-center gap-4">
-                        <h1 className="font-semibold text-sm text-zinc-800">Freeform</h1>
-                        <DepthSelector depth={depth} setDepth={setDepth} />
-                    </div>
-                    <div className="flex items-center gap-2">
-                        {hasMessages && (
-                            <>
-                                <button
-                                    onClick={openSummary}
-                                    disabled={summarising}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 rounded-lg transition disabled:opacity-40 relative"
-                                >
-                                    <Sparkles size={13} />
-                                    {summarising ? "Summarising…" : "Summarise"}
-                                    {isStale && (
-                                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-amber-400 rounded-full" />
-                                    )}
-                                </button>
-                                <button
-                                    onClick={handleReset}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-700 hover:bg-zinc-50 rounded-lg transition"
-                                >
-                                    <RotateCcw size={13} />
-                                    Reset
-                                </button>
-                            </>
-                        )}
-                    </div>
-                </header>
+                <ChatHeader title="Freeform" depth={depth} setDepth={setDepth}>
+                    {hasMessages && (
+                        <>
+                            <button
+                                onClick={openSummary}
+                                disabled={summarising}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 rounded-lg transition disabled:opacity-40 relative"
+                            >
+                                <Sparkles size={13} />
+                                {summarising ? "Summarising…" : "Summarise"}
+                                {isStale && (
+                                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-amber-400 rounded-full" />
+                                )}
+                            </button>
+                            <button
+                                onClick={handleReset}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-700 hover:bg-zinc-50 rounded-lg transition"
+                            >
+                                <RotateCcw size={13} />
+                                Reset
+                            </button>
+                        </>
+                    )}
+                </ChatHeader>
 
-                {/* Chat */}
                 <div className="flex-1 relative overflow-hidden">
                     {summaryOpen && summaryCache && (
                         <SummaryModal
@@ -192,77 +164,21 @@ export default function FreeformPage() {
                             refreshing={summarising}
                         />
                     )}
-
-                    <div className="h-full overflow-y-auto px-6 py-6">
-                        {showIntro && (
-                            <div className="flex flex-col items-center justify-center h-full text-center pb-16">
-                                <h2 className="text-2xl font-semibold text-zinc-800 mb-2">
-                                    What's on your mind?
-                                </h2>
-                                <p className="text-sm text-zinc-400 max-w-xs">
-                                    Share an idea, a feeling, a vague direction — we'll make sense of it together.
-                                </p>
-                            </div>
-                        )}
-
-                        {messages.map((m) => (
-                            <ChatMessage
-                                key={m.id}
-                                message={m}
-                                saved={isMessageSaved(m)}
-                                onToggleSave={() => toggleCardFromMessage(m)}
-                            />
-                        ))}
-
-                        {status !== "ready" && (
-                            <div className="flex justify-start mb-2">
-                                <div className="flex gap-1 px-4 py-3 bg-zinc-100 rounded-2xl rounded-bl-sm">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:0ms]" />
-                                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:150ms]" />
-                                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:300ms]" />
-                                </div>
-                            </div>
-                        )}
-                        <div ref={bottomRef} />
-                    </div>
-                </div>
-
-                {/* Input */}
-                <div className="shrink-0 px-6 py-4 border-t border-zinc-100 space-y-2">
-                    {chatError && (
-                        <ErrorAlert
-                            message={chatError}
-                            dismissable={true}
-                            onClose={() => setChatError(null)}
-                        />
-                    )}
-                    {summaryError && (
-                        <ErrorAlert
-                            message={summaryError}
-                            dismissable={true}
-                            onClose={() => setSummaryError(null)}
-                        />
-                    )}
-                    <form onSubmit={handleSubmit} className="flex gap-2">
-                        <input
-                            type="text"
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            onKeyDown={(e) =>
-                                e.key === "Enter" && !e.shiftKey && handleSubmit()
-                            }
-                            disabled={status !== "ready"}
-                            placeholder="Tell me what's on your mind…"
-                            className="flex-1 px-4 py-2.5 text-sm rounded-xl border border-zinc-200 bg-zinc-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-200 transition disabled:opacity-50"
-                        />
-                        <button
-                            type="submit"
-                            disabled={status !== "ready" || !input.trim()}
-                            className="px-5 py-2.5 text-sm font-medium rounded-xl bg-zinc-900 text-white hover:opacity-90 transition disabled:opacity-40"
-                        >
-                            Send
-                        </button>
-                    </form>
+                    <Chat
+                        messages={messages}
+                        status={status}
+                        input={input}
+                        onInputChange={setInput}
+                        onSubmit={handleSubmit}
+                        showIntro={showIntro}
+                        introTitle="What's on your mind?"
+                        introSubtitle="Share an idea, a feeling, a vague direction — we'll make sense of it together."
+                        isMessageSaved={isMessageSaved}
+                        onToggleSave={toggleCardFromMessage}
+                        placeholder="Tell me what's on your mind…"
+                        error={chatError ?? summaryError}
+                        onErrorClose={() => { setChatError(null); setSummaryError(null); }}
+                    />
                 </div>
             </div>
 
