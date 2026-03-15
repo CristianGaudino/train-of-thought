@@ -33,6 +33,7 @@ export function Chat({
                 isMessageSaved={isMessageSaved}
                 onToggleSave={onToggleSave}
                 getDisplayContent={getDisplayContent}
+                showSaveButton={showSaveButton}
             />
             <ChatInputBar
                 value={input}
