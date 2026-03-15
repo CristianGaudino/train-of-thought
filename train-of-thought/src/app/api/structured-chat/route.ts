@@ -14,6 +14,14 @@ export async function POST(req: Request) {
 
     const { messages, depth, activeStageId, activeStageQuestion, stages, brief, isShapingRequest } = await req.json();
 
+    // Strip the silent shaping trigger message — it should never reach the model
+    const cleanMessages = isShapingRequest
+        ? messages.filter((m: any) => {
+              const text = m.parts?.map((p: any) => p.text).join("") ?? m.content ?? "";
+              return !(m.role === "user" && text.trim() === "__SHAPE__");
+          })
+        : messages;
+
     const depthInstruction = `
         DEPTH LEVEL: ${depth}
         1 = light, conversational — short focused responses
@@ -113,7 +121,7 @@ export async function POST(req: Request) {
             ${stageInstructions}
             ${depthInstruction}
         `,
-        messages: await convertToModelMessages(messages),
+        messages: await convertToModelMessages(cleanMessages),
     });
 
     return result.toUIMessageStreamResponse();

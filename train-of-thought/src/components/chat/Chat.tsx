@@ -21,6 +21,10 @@ export function Chat({
     hint,
     error,
     onErrorClose,
+    markers,
+    onMarkerClick,
+    shapedAtIndex,
+    isShaping,
 }: ChatProps) {
     return (
         <>
@@ -34,6 +38,10 @@ export function Chat({
                 onToggleSave={onToggleSave}
                 getDisplayContent={getDisplayContent}
                 showSaveButton={showSaveButton}
+                markers={markers}
+                onMarkerClick={onMarkerClick}
+                shapedAtIndex={shapedAtIndex}
+                isShaping={isShaping}
             />
             <ChatInputBar
                 value={input}

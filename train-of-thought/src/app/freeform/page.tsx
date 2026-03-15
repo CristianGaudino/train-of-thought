@@ -51,13 +51,15 @@ export default function FreeformPage() {
     });
 
     const {
-        summaryCache,
         summaryOpen,
         summarising,
-        isStale,
+        canSummarise,
         error: summaryError,
         setError: setSummaryError,
+        markers,
+        activeSummaryIdea,
         openSummary,
+        openMarkerSummary,
         closeSummary,
         resetSummary,
         fetchSummary,
@@ -132,14 +134,11 @@ export default function FreeformPage() {
                         <>
                             <button
                                 onClick={openSummary}
-                                disabled={summarising}
-                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 rounded-lg transition disabled:opacity-40 relative"
+                                disabled={!canSummarise}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 rounded-lg transition disabled:opacity-40"
                             >
                                 <Sparkles size={13} />
                                 {summarising ? "Summarising…" : "Summarise"}
-                                {isStale && (
-                                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-amber-400 rounded-full" />
-                                )}
                             </button>
                             <button
                                 onClick={handleReset}
@@ -153,10 +152,10 @@ export default function FreeformPage() {
                 </ChatHeader>
 
                 <div className="flex-1 relative overflow-hidden flex flex-col min-h-0">
-                    {summaryOpen && summaryCache && (
+                    {summaryOpen && activeSummaryIdea && (
                         <SummaryModal
-                            idea={summaryCache.idea}
-                            isStale={isStale}
+                            idea={activeSummaryIdea}
+                            isStale={false}
                             onClose={closeSummary}
                             onRefresh={fetchSummary}
                             onSaveAsCard={addCard}
@@ -178,6 +177,8 @@ export default function FreeformPage() {
                         placeholder="Tell me what's on your mind…"
                         error={chatError ?? summaryError}
                         onErrorClose={() => { setChatError(null); setSummaryError(null); }}
+                        markers={markers}
+                        onMarkerClick={openMarkerSummary}
                     />
                 </div>
             </div>

@@ -6,6 +6,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { RotateCcw, ChevronLeft, Sparkles } from "lucide-react";
 import { StagePanel } from "./_components/StagePanel";
 import { BriefPanel } from "./_components/BriefPanel";
+import { ResumeModal } from "./_components/ResumeModal";
 import { ChatHeader } from "@/components/chat/ChatHeader";
 import { Chat } from "@/components/chat/Chat";
 import { useSaveMessages, loadPersistedMessages, clearPersistedMessages } from "@/lib/hooks/usePersistedMessages";
@@ -20,6 +21,7 @@ export default function StructuredPage() {
     const [input, setInput] = useState("");
     const [showIntro, setShowIntro] = useState(true);
     const [chatError, setChatError] = useState<string | null>(null);
+    const [resumeMessages, setResumeMessages] = useState<any[]>([]);
 
     const [stages, setStages] = useState<Stage[]>([]);
     const [isShaped, setIsShaped] = useState(false);
@@ -30,9 +32,11 @@ export default function StructuredPage() {
     const [brief, setBrief] = useState<Record<string, string>>({});
     const [railOpen, setRailOpen] = useState(true);
 
+    // Index in the idea thread where shaping happened — used to render the divider
+    const [shapedAtIndex, setShapedAtIndex] = useState<number | null>(null);
+
     const [chatId, setChatId] = useState(() => `${IDEA_STAGE_ID}-${crypto.randomUUID()}`);
     const savingFromStageRef = useRef<string>(IDEA_STAGE_ID);
-
     const { messages, sendMessage, status, setMessages } = useChat({
         id: chatId,
         transport: new DefaultChatTransport({ api: "/api/structured-chat" }),
@@ -42,6 +46,7 @@ export default function StructuredPage() {
             } else {
                 setChatError("Something went wrong. Please try again.");
             }
+            setIsShaping(false);
         },
     });
 
@@ -89,14 +94,25 @@ export default function StructuredPage() {
     // Persist the idea stage thread
     useSaveMessages(stageThreads[IDEA_STAGE_ID] ?? [], STORAGE_KEY);
 
-    // On mount, restore persisted idea thread
+    // On mount, check for persisted idea thread
     useEffect(() => {
         const persisted = loadPersistedMessages(STORAGE_KEY);
         if (persisted.length > 0) {
-            setStageThreads((prev) => ({ ...prev, [IDEA_STAGE_ID]: persisted }));
-            setShowIntro(false);
+            setResumeMessages(persisted);
         }
     }, []);
+
+    function handleContinue() {
+        setStageThreads((prev) => ({ ...prev, [IDEA_STAGE_ID]: resumeMessages }));
+        setShowIntro(false);
+        setResumeMessages([]);
+    }
+
+    function handleStartFresh() {
+        clearPersistedMessages(STORAGE_KEY);
+        setResumeMessages([]);
+        setShowIntro(true);
+    }
 
     const switchStage = useCallback((newStageId: string) => {
         if (newStageId === activeStageId) return;
@@ -111,8 +127,10 @@ export default function StructuredPage() {
     function handleShapeIdea() {
         if (status !== "ready" || isShaping) return;
         setIsShaping(true);
+        // shapedAtIndex marks the position — the hidden user message lands here
+        setShapedAtIndex(messages.length);
         sendMessage(
-            { text: "I'm ready to shape this idea. Please analyse our conversation and generate my journey stages." },
+            { text: "__SHAPE__" },
             { body: { depth, activeStageId: IDEA_STAGE_ID, stages: [], isShapingRequest: true } }
         );
     }
@@ -135,6 +153,7 @@ export default function StructuredPage() {
         setStages([]);
         setIsShaped(false);
         setIsShaping(false);
+        setShapedAtIndex(null);
         setActiveStageId(IDEA_STAGE_ID);
         setStageThreads({ [IDEA_STAGE_ID]: [] });
         setBrief({});
@@ -150,15 +169,27 @@ export default function StructuredPage() {
     const ideaMessages = stageThreads[IDEA_STAGE_ID] ?? [];
     const canShape = !isShaped && !isShaping && ideaMessages.length >= 2;
     const filledSections = Object.values(brief).filter(Boolean).length;
-    const canExport = filledSections >= 2;
 
     const briefSections = [
         { id: IDEA_STAGE_ID, label: "The idea", content: brief[IDEA_STAGE_ID] },
         ...stages.map((s) => ({ id: s.id, label: s.label, content: brief[s.id] })),
     ];
 
+    // Filter out the hidden "Shape this idea" user message from the chat
+    const visibleMessages = messages.filter((m, i) => {
+        if (m.role === "user" && shapedAtIndex !== null && i === shapedAtIndex) return false;
+        return true;
+    });
+
     return (
         <main className="h-screen flex bg-white text-zinc-900 overflow-hidden">
+            {resumeMessages.length > 0 && (
+                <ResumeModal
+                    messages={resumeMessages}
+                    onContinue={handleContinue}
+                    onStartFresh={handleStartFresh}
+                />
+            )}
 
             {isShaped && railOpen && (
                 <StagePanel
@@ -171,7 +202,6 @@ export default function StructuredPage() {
                 />
             )}
 
-            {/* Main chat */}
             <div className="flex-1 flex flex-col min-w-0">
                 <ChatHeader
                     title="Structured"
@@ -205,7 +235,7 @@ export default function StructuredPage() {
                 </ChatHeader>
 
                 <Chat
-                    messages={messages}
+                    messages={visibleMessages}
                     status={status}
                     input={input}
                     onInputChange={setInput}
@@ -221,6 +251,8 @@ export default function StructuredPage() {
                     hint={activeStageQuestion ? `${activeStageQuestion} — or just say whatever comes to mind.` : undefined}
                     error={chatError}
                     onErrorClose={() => setChatError(null)}
+                    shapedAtIndex={shapedAtIndex}
+                    isShaping={isShaping}
                 />
             </div>
 

@@ -25,7 +25,14 @@ export type SummaryCache = {
     messageCount: number;
 };
 
+export type SummaryMarker = {
+    id: string;
+    messageIndex: number;
+    idea: Idea;
+};
+
 export type StageThreads = Record<string, any[]>;
+
 
 // Interfaces
 export interface BriefSection {
@@ -69,6 +76,12 @@ export interface ChatWindowProps {
     onToggleSave: (message: any) => void;
     getDisplayContent?: (message: any) => string;
     showSaveButton?: boolean;
+    // Freeform summary markers
+    markers?: SummaryMarker[];
+    onMarkerClick?: (markerId: string) => void;
+    // Structured shaping
+    shapedAtIndex?: number | null;
+    isShaping?: boolean;
 }
 
 export interface ChatEventProps {
@@ -96,6 +109,12 @@ export interface ChatProps {
     hint?: string | null;
     error?: string | null;
     onErrorClose?: () => void;
+    // Freeform summary markers
+    markers?: SummaryMarker[];
+    onMarkerClick?: (markerId: string) => void;
+    // Structured shaping
+    shapedAtIndex?: number | null;
+    isShaping?: boolean;
 }
 
 export interface BriefPanelProps {
