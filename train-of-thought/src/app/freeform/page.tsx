@@ -152,7 +152,7 @@ export default function FreeformPage() {
                     )}
                 </ChatHeader>
 
-                <div className="flex-1 relative overflow-hidden">
+                <div className="flex-1 relative overflow-hidden flex flex-col min-h-0">
                     {summaryOpen && summaryCache && (
                         <SummaryModal
                             idea={summaryCache.idea}

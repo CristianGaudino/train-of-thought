@@ -16,6 +16,7 @@ export function Chat({
     isMessageSaved,
     onToggleSave,
     getDisplayContent,
+    showSaveButton = true,
     placeholder,
     hint,
     error,

@@ -7,13 +7,14 @@ export function ChatMessage({
     message,
     onToggleSave,
     saved,
+    showSaveButton = true,
 }: {
     message: any;
     onToggleSave: () => void;
     saved: boolean;
+    showSaveButton?: boolean;
 }) {
-    const text =
-        message.parts?.map((p: any) => p.text).join(" ") || message.text;
+    const text = message.parts?.map((p: any) => p.text).join(" ") || message.text;
     const isUser = message.role === "user";
 
     return (
@@ -35,7 +36,7 @@ export function ChatMessage({
                     <Markdown content={text} />
                 )}
 
-                {!isUser && (
+                {!isUser && showSaveButton && (
                     <button
                         onClick={onToggleSave}
                         className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white border border-zinc-200 shadow-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"

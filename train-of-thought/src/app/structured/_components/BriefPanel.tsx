@@ -2,7 +2,7 @@
 
 import { BriefPanelProps } from "@/lib/definitions";
 
-export function BriefPanel({ sections, filledCount, canExport, onExport }: BriefPanelProps) {
+export function BriefPanel({ sections, filledCount, onExport }: BriefPanelProps) {
     return (
         <aside className="w-56 shrink-0 border-l border-zinc-100 flex flex-col bg-zinc-50">
             <div className="px-4 py-3 border-b border-zinc-100 bg-white flex items-center justify-between">
@@ -31,8 +31,7 @@ export function BriefPanel({ sections, filledCount, canExport, onExport }: Brief
             <div className="p-3 border-t border-zinc-100 bg-white">
                 <button
                     onClick={onExport}
-                    disabled={!canExport}
-                    className="w-full py-2 text-xs font-medium rounded-xl bg-zinc-900 text-white hover:opacity-90 transition disabled:opacity-25"
+                    className="w-full py-2 text-xs font-medium rounded-xl bg-zinc-900 text-white hover:opacity-90 transition"
                 >
                     Add to workspace
                 </button>

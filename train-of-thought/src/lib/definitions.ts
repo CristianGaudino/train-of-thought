@@ -71,6 +71,7 @@ export interface ChatWindowProps {
     isMessageSaved: (message: any) => boolean;
     onToggleSave: (message: any) => void;
     getDisplayContent?: (message: any) => string;
+    showSaveButton?: boolean;
 }
 
 export interface ChatProps {
@@ -85,6 +86,7 @@ export interface ChatProps {
     isMessageSaved: (message: any) => boolean;
     onToggleSave: (message: any) => void;
     getDisplayContent?: (message: any) => string;
+    showSaveButton?: boolean;
     placeholder?: string;
     hint?: string | null;
     error?: string | null;
@@ -94,7 +96,6 @@ export interface ChatProps {
 export interface BriefPanelProps {
     sections: BriefSection[];
     filledCount: number;
-    canExport: boolean;
     onExport: () => void;
 }
 

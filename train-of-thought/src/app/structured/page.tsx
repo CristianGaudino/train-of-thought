@@ -28,7 +28,7 @@ export default function StructuredPage() {
     const [activeStageId, setActiveStageId] = useState<string>(IDEA_STAGE_ID);
     const [stageThreads, setStageThreads] = useState<StageThreads>({ [IDEA_STAGE_ID]: [] });
     const [brief, setBrief] = useState<Record<string, string>>({});
-    const [stagePanel, setStagePanel] = useState(true);
+    const [railOpen, setRailOpen] = useState(true);
 
     const [chatId, setChatId] = useState(() => `${IDEA_STAGE_ID}-${crypto.randomUUID()}`);
     const savingFromStageRef = useRef<string>(IDEA_STAGE_ID);
@@ -160,14 +160,14 @@ export default function StructuredPage() {
     return (
         <main className="h-screen flex bg-white text-zinc-900 overflow-hidden">
 
-            {isShaped && stagePanel && (
+            {isShaped && railOpen && (
                 <StagePanel
                     stages={stages}
                     activeStageId={activeStageId}
                     brief={brief}
                     ideaStageId={IDEA_STAGE_ID}
                     onStageClick={switchStage}
-                    onClose={() => setStagePanel(false)}
+                    onClose={() => setRailOpen(false)}
                 />
             )}
 
@@ -177,8 +177,8 @@ export default function StructuredPage() {
                     title="Structured"
                     depth={depth}
                     setDepth={setDepth}
-                    left={isShaped && !stagePanel ? (
-                        <button onClick={() => setStagePanel(true)} className="text-zinc-400 hover:text-zinc-600 transition">
+                    left={isShaped && !railOpen ? (
+                        <button onClick={() => setRailOpen(true)} className="text-zinc-400 hover:text-zinc-600 transition">
                             <ChevronLeft size={14} className="rotate-180" />
                         </button>
                     ) : undefined}
@@ -215,6 +215,7 @@ export default function StructuredPage() {
                     introSubtitle="Describe what you want to make — we'll shape the rest together."
                     isMessageSaved={() => false}
                     onToggleSave={() => {}}
+                    showSaveButton={false}
                     getDisplayContent={getDisplayContent}
                     placeholder={activeStageQuestion ? "Respond freely…" : "Describe your idea…"}
                     hint={activeStageQuestion ? `${activeStageQuestion} — or just say whatever comes to mind.` : undefined}
@@ -227,7 +228,6 @@ export default function StructuredPage() {
                 <BriefPanel
                     sections={briefSections}
                     filledCount={filledSections}
-                    canExport={canExport}
                     onExport={() => {}}
                 />
             )}
