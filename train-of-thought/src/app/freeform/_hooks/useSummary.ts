@@ -41,6 +41,16 @@ export function useSummary(messages: any[]) {
             }
             if (!res.ok) throw new Error(`Server error: ${res.status}`);
             const idea = await res.json();
+
+            const isEmpty = !idea || Object.values(idea).every(
+                (v) => !v || (Array.isArray(v) && v.length === 0)
+            );
+
+            if (isEmpty) {
+                setError("Not enough conversation yet to generate a summary — keep going and try again.");
+                return;
+            }
+
             setSummaryCache({ idea, messageCount: markerIndex });
 
             const marker: SummaryMarker = {
@@ -52,7 +62,7 @@ export function useSummary(messages: any[]) {
 
             return idea;
         } catch (err) {
-            setError("Something went wrong generating the summary. Please try again.");
+            setError("An error occurred while generating the summary. Please try again.");
         } finally {
             setSummarising(false);
         }
