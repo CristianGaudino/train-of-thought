@@ -16,13 +16,12 @@ export function ResumeModal({
 }) {
     const [step, setStep] = useState<Step>("resume");
 
-    // Pick last 1-2 messages for preview, favouring brevity
     const previewMessages = (() => {
         if (messages.length === 0) return [];
         const last = messages[messages.length - 1];
         const secondLast = messages[messages.length - 2];
         const lastText = extractText(last);
-        // If last message is short enough, show two
+        
         if (secondLast && lastText.length < 200) {
             return [secondLast, last];
         }
