@@ -7,7 +7,7 @@ import { Sparkles, RotateCcw } from "lucide-react";
 
 import { ConceptSidebar } from "./_components/ConceptSidebar";
 import { SummaryModal } from "./_components/SummaryModal";
-import { ResumeModal } from "./_components/ResumeModal";
+import { ResumeModal } from "@/components/chat/ResumeModal";
 import { useConceptCards } from "./_hooks/useConceptCards";
 import { useSummary } from "./_hooks/useSummary";
 import { useSaveMessages, loadPersistedMessages, clearPersistedMessages } from "@/lib/hooks/usePersistedMessages";
@@ -125,6 +125,7 @@ export default function FreeformPage() {
                     messages={resumeMessages}
                     onContinue={handleContinue}
                     onStartFresh={handleStartFresh}
+                    showConceptsStep={true}
                 />
             )}
 

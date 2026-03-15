@@ -6,7 +6,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { RotateCcw, ChevronLeft, Sparkles } from "lucide-react";
 import { StagePanel } from "./_components/StagePanel";
 import { BriefPanel } from "./_components/BriefPanel";
-import { ResumeModal } from "./_components/ResumeModal";
+import { ResumeModal } from "@/components/chat/ResumeModal";
 import { ChatHeader } from "@/components/chat/ChatHeader";
 import { Chat } from "@/components/chat/Chat";
 import { useSaveMessages, loadPersistedMessages, clearPersistedMessages } from "@/lib/hooks/usePersistedMessages";
@@ -104,6 +104,7 @@ export default function StructuredPage() {
 
     function handleContinue() {
         setStageThreads((prev) => ({ ...prev, [IDEA_STAGE_ID]: resumeMessages }));
+        setMessages(resumeMessages);
         setShowIntro(false);
         setResumeMessages([]);
     }
@@ -253,6 +254,7 @@ export default function StructuredPage() {
                     onErrorClose={() => setChatError(null)}
                     shapedAtIndex={shapedAtIndex}
                     isShaping={isShaping}
+                    isShaped={isShaped}
                 />
             </div>
 
