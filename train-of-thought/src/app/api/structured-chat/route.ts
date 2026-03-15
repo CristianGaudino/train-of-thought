@@ -17,7 +17,10 @@ export async function POST(req: Request) {
     // Strip the silent shaping trigger message — it should never reach the model
     const cleanMessages = isShapingRequest
         ? messages.filter((m: any) => {
-              const text = m.parts?.map((p: any) => p.text).join("") ?? m.content ?? "";
+              const text = m.parts
+                  ?.filter((p: any) => p.type === "text")
+                  .map((p: any) => p.text)
+                  .join("") ?? m.content ?? "";
               return !(m.role === "user" && text.trim() === "__SHAPE__");
           })
         : messages;

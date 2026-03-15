@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Loader2 } from "lucide-react";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { ChatEvent } from "@/components/chat/ChatEvent";
 import { ChatWindowProps } from "@/lib/definitions";
@@ -19,15 +18,23 @@ export function ChatWindow({
     showSaveButton = true,
     markers = [],
     onMarkerClick,
-    shapedAtIndex = null,
-    isShaping = false,
-    isShaped = false,
+    generating = false,
+    generatedAtIndex = null,
+    generated = false,
 }: ChatWindowProps) {
     const bottomRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages, status, isShaping]);
+    }, [messages, status, generating, generating, markers]);
+
+    // Markers that appear before a given message index
+    function markersAt(index: number) {
+        return markers.filter((mk) => mk.messageIndex === index);
+    }
+
+    // Markers that appear after all messages (messageIndex >= messages.length)
+    const trailingMarkers = markers.filter((mk) => mk.messageIndex >= messages.length);
 
     return (
         <div className="flex-1 relative overflow-hidden">
@@ -46,29 +53,25 @@ export function ChatWindow({
                     if (!displayContent) return null;
                     const clean = { ...m, parts: [{ type: "text" as const, text: displayContent }] };
 
-                    // Summary markers that sit before this message
-                    const markersHere = markers.filter((mk) => mk.messageIndex === i);
-
-                    // Shaped divider — only once shaping is complete, before first assistant message after the index
                     const showShapedDivider =
-                        isShaped &&
-                        shapedAtIndex !== null &&
-                        i === shapedAtIndex &&
+                        generated &&
+                        generatedAtIndex !== null &&
+                        i === generatedAtIndex &&
                         m.role === "assistant";
 
                     return (
                         <div key={m.id}>
-                            {markersHere.map((mk) => (
+                            {markersAt(i).map((mk) => (
                                 <ChatEvent
                                     key={mk.id}
-                                    label="Summary generated"
+                                    label="View summary"
                                     action={onMarkerClick ? {
                                         label: "View summary",
                                         onClick: () => onMarkerClick(mk.id),
                                     } : undefined}
                                 />
                             ))}
-                            {showShapedDivider && <ChatEvent label="Idea shaped" />}
+                            {showShapedDivider && <ChatEvent label="Idea generated" />}
                             <ChatMessage
                                 message={clean}
                                 saved={isMessageSaved(m)}
@@ -79,20 +82,25 @@ export function ChatWindow({
                     );
                 })}
 
-                {/* Shaping spinner */}
-                {isShaping && (
-                    <div className="flex items-center gap-3 my-4">
-                        <div className="flex-1 h-px bg-zinc-100" />
-                        <div className="flex items-center gap-1.5">
-                            <Loader2 size={11} className="text-zinc-300 animate-spin" />
-                            <span className="text-[10px] text-zinc-300 uppercase tracking-widest">Shaping</span>
-                        </div>
-                        <div className="flex-1 h-px bg-zinc-100" />
-                    </div>
+                {/* Trailing markers — sit after the last message */}
+                {trailingMarkers.map((mk) => (
+                    <ChatEvent
+                        key={mk.id}
+                        label="View summary"
+                        action={onMarkerClick ? {
+                            label: "View summary",
+                            onClick: () => onMarkerClick(mk.id),
+                        } : undefined}
+                    />
+                ))}
+
+                {/* Generating spinner */}
+                {generating && (
+                    <ChatEvent label="Generating" loading />
                 )}
 
                 {/* Normal typing indicator */}
-                {status !== "ready" && !isShaping && (
+                {status !== "ready" && !generating && (
                     <div className="flex justify-start mb-2">
                         <div className="flex gap-1 px-4 py-3 bg-zinc-100 rounded-2xl rounded-bl-sm">
                             <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:0ms]" />

@@ -24,8 +24,8 @@ export default function StructuredPage() {
     const [resumeMessages, setResumeMessages] = useState<any[]>([]);
 
     const [stages, setStages] = useState<Stage[]>([]);
-    const [isShaped, setIsShaped] = useState(false);
-    const [isShaping, setIsShaping] = useState(false);
+    const [generated, setGenerated] = useState(false);
+    const [generating, setGenerating] = useState(false);
 
     const [activeStageId, setActiveStageId] = useState<string>(IDEA_STAGE_ID);
     const [stageThreads, setStageThreads] = useState<StageThreads>({ [IDEA_STAGE_ID]: [] });
@@ -33,7 +33,7 @@ export default function StructuredPage() {
     const [railOpen, setRailOpen] = useState(true);
 
     // Index in the idea thread where shaping happened — used to render the divider
-    const [shapedAtIndex, setShapedAtIndex] = useState<number | null>(null);
+    const [generatedAtIndex, setGeneratedAtIndex] = useState<number | null>(null);
 
     const [chatId, setChatId] = useState(() => `${IDEA_STAGE_ID}-${crypto.randomUUID()}`);
     const savingFromStageRef = useRef<string>(IDEA_STAGE_ID);
@@ -46,7 +46,7 @@ export default function StructuredPage() {
             } else {
                 setChatError("Something went wrong. Please try again.");
             }
-            setIsShaping(false);
+            setGenerating(false);
         },
     });
 
@@ -71,12 +71,12 @@ export default function StructuredPage() {
         const lastMsg = assistantMessages[assistantMessages.length - 1];
         const lastText = extractText(lastMsg);
 
-        if (activeStageId === IDEA_STAGE_ID && isShaping && lastText.includes("%%STAGES:")) {
+        if (activeStageId === IDEA_STAGE_ID && generating && lastText.includes("%%STAGES:")) {
             const parsed = parseStages(lastText);
             if (parsed && parsed.length > 0) {
                 setStages(parsed);
-                setIsShaped(true);
-                setIsShaping(false);
+                setGenerated(true);
+                setGenerating(false);
                 setStageThreads((prev) => {
                     const next = { ...prev };
                     parsed.forEach((s) => { if (!next[s.id]) next[s.id] = []; });
@@ -89,7 +89,7 @@ export default function StructuredPage() {
         if (briefUpdates) {
             setBrief((prev) => ({ ...prev, ...briefUpdates }));
         }
-    }, [messages, activeStageId, isShaping]);
+    }, [messages, activeStageId, generating]);
 
     // Persist the idea stage thread
     useSaveMessages(stageThreads[IDEA_STAGE_ID] ?? [], STORAGE_KEY);
@@ -126,13 +126,13 @@ export default function StructuredPage() {
     }, [activeStageId, messages]);
 
     function handleShapeIdea() {
-        if (status !== "ready" || isShaping) return;
-        setIsShaping(true);
-        // shapedAtIndex marks the position — the hidden user message lands here
-        setShapedAtIndex(messages.length);
+        if (status !== "ready" || generating) return;
+        setGenerating(true);
+        // generatedAtIndex marks the position — the hidden user message lands here
+        setGeneratedAtIndex(messages.length);
         sendMessage(
             { text: "__SHAPE__" },
-            { body: { depth, activeStageId: IDEA_STAGE_ID, stages: [], isShapingRequest: true } }
+            { body: { depth, activeStageId: IDEA_STAGE_ID, stages: [], generatingRequest: true } }
         );
     }
 
@@ -152,9 +152,9 @@ export default function StructuredPage() {
     function handleReset() {
         setShowIntro(true);
         setStages([]);
-        setIsShaped(false);
-        setIsShaping(false);
-        setShapedAtIndex(null);
+        setGenerated(false);
+        setGenerating(false);
+        setGeneratedAtIndex(null);
         setActiveStageId(IDEA_STAGE_ID);
         setStageThreads({ [IDEA_STAGE_ID]: [] });
         setBrief({});
@@ -168,7 +168,7 @@ export default function StructuredPage() {
     const activeStageQuestion = activeStage?.question ?? null;
     const hasMessages = messages.length > 0;
     const ideaMessages = stageThreads[IDEA_STAGE_ID] ?? [];
-    const canShape = !isShaped && !isShaping && ideaMessages.length >= 2;
+    const canShape = !generated && !generating && ideaMessages.length >= 2;
     const filledSections = Object.values(brief).filter(Boolean).length;
 
     const briefSections = [
@@ -178,7 +178,7 @@ export default function StructuredPage() {
 
     // Filter out the hidden "Shape this idea" user message from the chat
     const visibleMessages = messages.filter((m, i) => {
-        if (m.role === "user" && shapedAtIndex !== null && i === shapedAtIndex) return false;
+        if (m.role === "user" && generatedAtIndex !== null && i === generatedAtIndex) return false;
         return true;
     });
 
@@ -192,7 +192,7 @@ export default function StructuredPage() {
                 />
             )}
 
-            {isShaped && railOpen && (
+            {generated && railOpen && (
                 <StagePanel
                     stages={stages}
                     activeStageId={activeStageId}
@@ -208,7 +208,7 @@ export default function StructuredPage() {
                     title="Structured"
                     depth={depth}
                     setDepth={setDepth}
-                    left={isShaped && !railOpen ? (
+                    left={generated && !railOpen ? (
                         <button onClick={() => setRailOpen(true)} className="text-zinc-400 hover:text-zinc-600 transition">
                             <ChevronLeft size={14} className="rotate-180" />
                         </button>
@@ -217,11 +217,11 @@ export default function StructuredPage() {
                     {canShape && (
                         <button
                             onClick={handleShapeIdea}
-                            disabled={isShaping}
+                            disabled={generating}
                             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 rounded-lg transition disabled:opacity-40"
                         >
                             <Sparkles size={13} />
-                            {isShaping ? "Shaping…" : "Shape this idea"}
+                            {generating ? "Shaping…" : "Shape this idea"}
                         </button>
                     )}
                     {hasMessages && (
@@ -252,13 +252,13 @@ export default function StructuredPage() {
                     hint={activeStageQuestion ? `${activeStageQuestion} — or just say whatever comes to mind.` : undefined}
                     error={chatError}
                     onErrorClose={() => setChatError(null)}
-                    shapedAtIndex={shapedAtIndex}
-                    isShaping={isShaping}
-                    isShaped={isShaped}
+                    generatedAtIndex={generatedAtIndex}
+                    generating={generating}
+                    generated={generated}
                 />
             </div>
 
-            {isShaped && (
+            {generated && (
                 <BriefPanel
                     sections={briefSections}
                     filledCount={filledSections}

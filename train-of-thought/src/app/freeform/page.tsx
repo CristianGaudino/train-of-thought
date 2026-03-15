@@ -180,6 +180,7 @@ export default function FreeformPage() {
                         onErrorClose={() => { setChatError(null); setSummaryError(null); }}
                         markers={markers}
                         onMarkerClick={openMarkerSummary}
+                        generating={summarising}
                     />
                 </div>
             </div>

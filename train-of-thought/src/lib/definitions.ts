@@ -78,13 +78,14 @@ export interface ChatWindowProps {
     showSaveButton?: boolean;
     markers?: SummaryMarker[];
     onMarkerClick?: (markerId: string) => void;
-    shapedAtIndex?: number | null;
-    isShaping?: boolean;
-    isShaped?: boolean;
+    generating?: boolean;
+    generatedAtIndex?: number | null;
+    generated?: boolean;
 }
 
 export interface ChatEventProps {
     label: string;
+    loading?: boolean;
     action?: {
         label: string;
         onClick: () => void;
@@ -112,9 +113,9 @@ export interface ChatProps {
     markers?: SummaryMarker[];
     onMarkerClick?: (markerId: string) => void;
     // Structured shaping
-    shapedAtIndex?: number | null;
-    isShaping?: boolean;
-    isShaped?: boolean;
+    generatedAtIndex?: number | null;
+    generating?: boolean;
+    generated?: boolean;
 }
 
 export interface ResumeModalProps {

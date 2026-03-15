@@ -23,9 +23,9 @@ export function Chat({
     onErrorClose,
     markers,
     onMarkerClick,
-    shapedAtIndex,
-    isShaping,
-    isShaped,
+    generatedAtIndex,
+    generating,
+    generated,
 }: ChatProps) {
     return (
         <>
@@ -41,9 +41,9 @@ export function Chat({
                 showSaveButton={showSaveButton}
                 markers={markers}
                 onMarkerClick={onMarkerClick}
-                shapedAtIndex={shapedAtIndex}
-                isShaping={isShaping}
-                isShaped={isShaped}
+                generatedAtIndex={generatedAtIndex}
+                generating={generating}
+                generated={generated}
             />
             <ChatInputBar
                 value={input}
