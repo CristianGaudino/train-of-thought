@@ -38,3 +38,11 @@ export function parseBrief(text: string): Record<string, string> | null {
         return null;
     }
 }
+
+export function cleanMessages(messages: any[]): any[] {
+    return messages.filter((m) => {
+        if (m.role !== "user") return true;
+        const text = m.parts?.filter((p: any) => p.type === "text").map((p: any) => p.text).join("") || m.text || "";
+        return text.trim() !== "__SHAPE__";
+    });
+}

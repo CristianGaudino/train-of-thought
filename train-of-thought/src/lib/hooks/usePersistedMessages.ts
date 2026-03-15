@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { cleanMessages } from "../utils";
 
 export function useSaveMessages(messages: any[], storageKey: string) {
     const initialised = useRef(false);
@@ -8,10 +9,11 @@ export function useSaveMessages(messages: any[], storageKey: string) {
             initialised.current = true;
             return;
         }
-        if (messages.length === 0) {
+        const clean = cleanMessages(messages);
+        if (clean.length === 0) {
             localStorage.removeItem(storageKey);
         } else {
-            localStorage.setItem(storageKey, JSON.stringify(messages));
+            localStorage.setItem(storageKey, JSON.stringify(clean));
         }
     }, [messages, storageKey]);
 }
@@ -20,7 +22,8 @@ export function loadPersistedMessages(storageKey: string): any[] {
     if (typeof window === "undefined") return [];
     try {
         const saved = localStorage.getItem(storageKey);
-        return saved ? JSON.parse(saved) : [];
+        const messages = saved ? JSON.parse(saved) : [];
+        return cleanMessages(messages);
     } catch {
         return [];
     }
