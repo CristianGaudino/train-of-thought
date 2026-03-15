@@ -5,7 +5,7 @@ export function defaultGetDisplayContent(message: any): string {
 }
 
 export function extractText(message: any): string {
-    return message.parts?.filter((p: any) => p.type === "text").map((p: any) => p.text).join("") ?? "";
+    return message?.parts?.filter((p: any) => p.type === "text").map((p: any) => p.text).join("") || message?.text || "";
 }
 
 export function stripBlocks(text: string): string {

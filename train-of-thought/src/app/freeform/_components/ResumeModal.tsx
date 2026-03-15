@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { MessageCircle } from "lucide-react";
+import { extractText } from "@/lib/utils";
 
 type Step = "resume" | "concepts";
 
@@ -27,10 +28,6 @@ export function ResumeModal({
         }
         return [last];
     })();
-
-    function extractText(m: any): string {
-        return m?.parts?.map((p: any) => p.text).join(" ") || m?.text || "";
-    }
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">

@@ -1,0 +1,74 @@
+"use client";
+
+import { extractText } from "@/lib/utils";
+import { MessageCircle } from "lucide-react";
+
+export function ResumeModal({
+    messages,
+    onContinue,
+    onStartFresh,
+}: {
+    messages: any[];
+    onContinue: () => void;
+    onStartFresh: () => void;
+}) {
+    const previewMessages = (() => {
+        if (messages.length === 0) return [];
+        const last = messages[messages.length - 1];
+        const secondLast = messages[messages.length - 2];
+        const lastText = extractText(last);
+        if (secondLast && lastText.length < 200) return [secondLast, last];
+        return [last];
+    })();
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+            <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-zinc-100 overflow-hidden">
+                <div className="flex items-center gap-2 px-5 py-4 border-b border-zinc-100">
+                    <MessageCircle size={15} className="text-zinc-400" />
+                    <span className="text-sm font-semibold text-zinc-800">Welcome back</span>
+                </div>
+
+                <div className="relative px-5 pt-4 pb-2">
+                    <p className="text-xs text-zinc-400 mb-3">You have an unfinished idea in progress.</p>
+
+                    <div className="relative rounded-xl overflow-hidden border border-zinc-100 bg-zinc-50 max-h-48">
+                        <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-zinc-50 to-transparent z-10 pointer-events-none" />
+                        <div className="p-4 space-y-2 overflow-y-auto max-h-48 flex flex-col justify-end">
+                            {previewMessages.map((m, i) => {
+                                const text = extractText(m);
+                                const isUser = m.role === "user";
+                                return (
+                                    <div key={i} className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+                                        <div className={`px-3 py-2 rounded-xl text-xs max-w-[85%] leading-relaxed ${
+                                            isUser
+                                                ? "bg-zinc-900 text-white"
+                                                : "bg-white border border-zinc-200 text-zinc-700"
+                                        }`}>
+                                            {text}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="px-5 py-4 flex items-center justify-between gap-2">
+                    <button
+                        onClick={onStartFresh}
+                        className="px-4 py-2 text-sm text-zinc-500 hover:text-zinc-700 transition"
+                    >
+                        Start fresh
+                    </button>
+                    <button
+                        onClick={onContinue}
+                        className="px-4 py-2 text-sm font-medium bg-zinc-900 text-white rounded-lg hover:opacity-90 transition"
+                    >
+                        Continue
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
