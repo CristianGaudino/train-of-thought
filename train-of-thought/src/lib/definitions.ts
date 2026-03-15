@@ -117,6 +117,13 @@ export interface ChatProps {
     isShaping?: boolean;
 }
 
+export interface ResumeModalProps {
+    messages: any[];
+    onContinue: () => void;
+    onStartFresh: (keepConcepts: boolean) => void;
+    showConceptsStep?: boolean;
+}
+
 export interface BriefPanelProps {
     sections: BriefSection[];
     filledCount: number;
