@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { X, Sparkles } from "lucide-react";
+import { Trash2, Sparkles } from "lucide-react";
 import { IdeaCard } from "@/lib/definitions";
 
 export function ConceptCard({
@@ -51,7 +51,7 @@ export function ConceptCard({
                 onClick={onRemove}
                 className="absolute top-2 right-2 w-5 h-5 flex items-center justify-center rounded opacity-0 group-hover:opacity-100 hover:bg-zinc-100 transition"
             >
-                <X size={11} className="text-zinc-400" />
+                <Trash2 size={11} className="text-zinc-400" />
             </button>
 
             {/* Title */}
