@@ -33,6 +33,11 @@ export type SummaryMarker = {
 
 export type StageThreads = Record<string, any[]>;
 
+export type ShapeResult = {
+    stages: Stage[];
+    brief: Record<string, string>;
+};
+
 
 // Interfaces
 export interface BriefSection {

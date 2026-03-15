@@ -9,9 +9,10 @@ import { BriefPanel } from "./_components/BriefPanel";
 import { ResumeModal } from "@/components/chat/ResumeModal";
 import { ChatHeader } from "@/components/chat/ChatHeader";
 import { Chat } from "@/components/chat/Chat";
+import { useShapeIdea } from "./_hooks/useShapeIdea";
 import { useSaveMessages, loadPersistedMessages, clearPersistedMessages } from "@/lib/hooks/usePersistedMessages";
 import { Stage, StageThreads } from "@/lib/definitions";
-import { extractText, getDisplayContent, parseBrief, parseStages } from "@/lib/utils";
+import { getDisplayContent, parseBrief } from "@/lib/utils";
 
 const IDEA_STAGE_ID = "idea";
 const STORAGE_KEY = "structuredMessages";
@@ -24,19 +25,24 @@ export default function StructuredPage() {
     const [resumeMessages, setResumeMessages] = useState<any[]>([]);
 
     const [stages, setStages] = useState<Stage[]>([]);
-    const [generated, setGenerated] = useState(false);
-    const [generating, setGenerating] = useState(false);
+    const [generatedAtIndex, setGeneratedAtIndex] = useState<number | null>(null);
 
     const [activeStageId, setActiveStageId] = useState<string>(IDEA_STAGE_ID);
     const [stageThreads, setStageThreads] = useState<StageThreads>({ [IDEA_STAGE_ID]: [] });
     const [brief, setBrief] = useState<Record<string, string>>({});
     const [railOpen, setRailOpen] = useState(true);
 
-    // Index in the idea thread where shaping happened — used to render the divider
-    const [generatedAtIndex, setGeneratedAtIndex] = useState<number | null>(null);
-
     const [chatId, setChatId] = useState(() => `${IDEA_STAGE_ID}-${crypto.randomUUID()}`);
     const savingFromStageRef = useRef<string>(IDEA_STAGE_ID);
+
+    const {
+        generating,
+        generated,
+        error: shapeError,
+        shapeIdea,
+        reset: resetShape,
+    } = useShapeIdea();
+
     const { messages, sendMessage, status, setMessages } = useChat({
         id: chatId,
         transport: new DefaultChatTransport({ api: "/api/structured-chat" }),
@@ -46,7 +52,6 @@ export default function StructuredPage() {
             } else {
                 setChatError("Something went wrong. Please try again.");
             }
-            setGenerating(false);
         },
     });
 
@@ -63,33 +68,15 @@ export default function StructuredPage() {
         setStageThreads((prev) => ({ ...prev, [stageId]: messages }));
     }, [messages]);
 
-    // Parse stages + brief from assistant messages
+    // Parse brief updates from assistant messages
     useEffect(() => {
         const assistantMessages = messages.filter((m) => m.role === "assistant");
         if (assistantMessages.length === 0) return;
-
         const lastMsg = assistantMessages[assistantMessages.length - 1];
-        const lastText = extractText(lastMsg);
-
-        if (activeStageId === IDEA_STAGE_ID && generating && lastText.includes("%%STAGES:")) {
-            const parsed = parseStages(lastText);
-            if (parsed && parsed.length > 0) {
-                setStages(parsed);
-                setGenerated(true);
-                setGenerating(false);
-                setStageThreads((prev) => {
-                    const next = { ...prev };
-                    parsed.forEach((s) => { if (!next[s.id]) next[s.id] = []; });
-                    return next;
-                });
-            }
-        }
-
+        const lastText = lastMsg.parts?.filter((p: any) => p.type === "text").map((p: any) => p.text).join("") ?? "";
         const briefUpdates = parseBrief(lastText);
-        if (briefUpdates) {
-            setBrief((prev) => ({ ...prev, ...briefUpdates }));
-        }
-    }, [messages, activeStageId, generating]);
+        if (briefUpdates) setBrief((prev) => ({ ...prev, ...briefUpdates }));
+    }, [messages]);
 
     // Persist the idea stage thread
     useSaveMessages(stageThreads[IDEA_STAGE_ID] ?? [], STORAGE_KEY);
@@ -97,9 +84,7 @@ export default function StructuredPage() {
     // On mount, check for persisted idea thread
     useEffect(() => {
         const persisted = loadPersistedMessages(STORAGE_KEY);
-        if (persisted.length > 0) {
-            setResumeMessages(persisted);
-        }
+        if (persisted.length > 0) setResumeMessages(persisted);
     }, []);
 
     function handleContinue() {
@@ -126,14 +111,17 @@ export default function StructuredPage() {
     }, [activeStageId, messages]);
 
     function handleShapeIdea() {
-        if (status !== "ready" || generating) return;
-        setGenerating(true);
-        // generatedAtIndex marks the position — the hidden user message lands here
-        setGeneratedAtIndex(messages.length);
-        sendMessage(
-            { text: "__SHAPE__" },
-            { body: { depth, activeStageId: IDEA_STAGE_ID, stages: [], generatingRequest: true } }
-        );
+        const ideaMessages = stageThreads[IDEA_STAGE_ID] ?? [];
+        shapeIdea(ideaMessages, depth, (result, messageIndex) => {
+            setStages(result.stages);
+            setBrief((prev) => ({ ...prev, ...result.brief }));
+            setGeneratedAtIndex(messageIndex);
+            setStageThreads((prev) => {
+                const next = { ...prev };
+                result.stages.forEach((s) => { if (!next[s.id]) next[s.id] = []; });
+                return next;
+            });
+        });
     }
 
     function handleSubmit(e?: React.FormEvent) {
@@ -152,8 +140,6 @@ export default function StructuredPage() {
     function handleReset() {
         setShowIntro(true);
         setStages([]);
-        setGenerated(false);
-        setGenerating(false);
         setGeneratedAtIndex(null);
         setActiveStageId(IDEA_STAGE_ID);
         setStageThreads({ [IDEA_STAGE_ID]: [] });
@@ -162,6 +148,7 @@ export default function StructuredPage() {
         clearPersistedMessages(STORAGE_KEY);
         savingFromStageRef.current = IDEA_STAGE_ID;
         setChatId(`${IDEA_STAGE_ID}-${crypto.randomUUID()}`);
+        resetShape();
     }
 
     const activeStage = stages.find((s) => s.id === activeStageId) ?? null;
@@ -175,12 +162,6 @@ export default function StructuredPage() {
         { id: IDEA_STAGE_ID, label: "The idea", content: brief[IDEA_STAGE_ID] },
         ...stages.map((s) => ({ id: s.id, label: s.label, content: brief[s.id] })),
     ];
-
-    // Filter out the hidden "Shape this idea" user message from the chat
-    const visibleMessages = messages.filter((m, i) => {
-        if (m.role === "user" && generatedAtIndex !== null && i === generatedAtIndex) return false;
-        return true;
-    });
 
     return (
         <main className="h-screen flex bg-white text-zinc-900 overflow-hidden">
@@ -217,11 +198,10 @@ export default function StructuredPage() {
                     {canShape && (
                         <button
                             onClick={handleShapeIdea}
-                            disabled={generating}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 rounded-lg transition disabled:opacity-40"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 rounded-lg transition"
                         >
                             <Sparkles size={13} />
-                            {generating ? "Shaping…" : "Shape this idea"}
+                            Shape this idea
                         </button>
                     )}
                     {hasMessages && (
@@ -236,7 +216,7 @@ export default function StructuredPage() {
                 </ChatHeader>
 
                 <Chat
-                    messages={visibleMessages}
+                    messages={messages}
                     status={status}
                     input={input}
                     onInputChange={setInput}
@@ -250,11 +230,11 @@ export default function StructuredPage() {
                     getDisplayContent={getDisplayContent}
                     placeholder={activeStageQuestion ? "Respond freely…" : "Describe your idea…"}
                     hint={activeStageQuestion ? `${activeStageQuestion} — or just say whatever comes to mind.` : undefined}
-                    error={chatError}
+                    error={chatError ?? shapeError}
                     onErrorClose={() => setChatError(null)}
-                    generatedAtIndex={generatedAtIndex}
                     generating={generating}
                     generated={generated}
+                    generatedAtIndex={generatedAtIndex}
                 />
             </div>
 
