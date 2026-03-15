@@ -76,12 +76,11 @@ export interface ChatWindowProps {
     onToggleSave: (message: any) => void;
     getDisplayContent?: (message: any) => string;
     showSaveButton?: boolean;
-    // Freeform summary markers
     markers?: SummaryMarker[];
     onMarkerClick?: (markerId: string) => void;
-    // Structured shaping
     shapedAtIndex?: number | null;
     isShaping?: boolean;
+    isShaped?: boolean;
 }
 
 export interface ChatEventProps {
@@ -115,6 +114,7 @@ export interface ChatProps {
     // Structured shaping
     shapedAtIndex?: number | null;
     isShaping?: boolean;
+    isShaped?: boolean;
 }
 
 export interface ResumeModalProps {

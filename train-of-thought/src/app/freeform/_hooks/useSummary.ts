@@ -13,10 +13,12 @@ export function useSummary(messages: any[]) {
     const isStale =
         summaryCache !== null && summaryCache.messageCount < messages.length;
 
-    // Summarise is useful if there's no cache yet, or the cache is stale
-    const canSummarise = summarising === false && (summaryCache === null || isStale);
+    const canSummarise = !summarising && (summaryCache === null || isStale);
 
     const fetchSummary = useCallback(async () => {
+        // Capture index before the async call so marker lands in the right place
+        const markerIndex = messages.length;
+
         setSummarising(true);
         setError(null);
         try {
@@ -39,12 +41,11 @@ export function useSummary(messages: any[]) {
             }
             if (!res.ok) throw new Error(`Server error: ${res.status}`);
             const idea = await res.json();
-            setSummaryCache({ idea, messageCount: messages.length });
+            setSummaryCache({ idea, messageCount: markerIndex });
 
-            // Add a marker at the current message position
             const marker: SummaryMarker = {
                 id: crypto.randomUUID(),
-                messageIndex: messages.length,
+                messageIndex: markerIndex,
                 idea,
             };
             setMarkers((prev) => [...prev, marker]);

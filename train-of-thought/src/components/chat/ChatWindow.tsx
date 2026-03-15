@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { Loader2 } from "lucide-react";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { ChatEvent } from "@/components/chat/ChatEvent";
-import { defaultGetDisplayContent } from "@/lib/utils";
 import { ChatWindowProps } from "@/lib/definitions";
+import { defaultGetDisplayContent } from "@/lib/utils";
 
 export function ChatWindow({
     messages,
@@ -20,6 +21,7 @@ export function ChatWindow({
     onMarkerClick,
     shapedAtIndex = null,
     isShaping = false,
+    isShaped = false,
 }: ChatWindowProps) {
     const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -44,11 +46,12 @@ export function ChatWindow({
                     if (!displayContent) return null;
                     const clean = { ...m, parts: [{ type: "text" as const, text: displayContent }] };
 
-                    // Markers that sit before this message index
+                    // Summary markers that sit before this message
                     const markersHere = markers.filter((mk) => mk.messageIndex === i);
 
-                    // Shaped divider — show before the first assistant message after shaping
+                    // Shaped divider — only once shaping is complete, before first assistant message after the index
                     const showShapedDivider =
+                        isShaped &&
                         shapedAtIndex !== null &&
                         i === shapedAtIndex &&
                         m.role === "assistant";
@@ -65,9 +68,7 @@ export function ChatWindow({
                                     } : undefined}
                                 />
                             ))}
-                            {showShapedDivider && (
-                                <ChatEvent label="Idea shaped" />
-                            )}
+                            {showShapedDivider && <ChatEvent label="Idea shaped" />}
                             <ChatMessage
                                 message={clean}
                                 saved={isMessageSaved(m)}
@@ -78,17 +79,15 @@ export function ChatWindow({
                     );
                 })}
 
-                {/* Shaping loader */}
+                {/* Shaping spinner */}
                 {isShaping && (
-                    <div>
-                        <ChatEvent label="Shaping" />
-                        <div className="flex justify-start mb-2">
-                            <div className="flex gap-1 px-4 py-3 bg-zinc-100 rounded-2xl rounded-bl-sm">
-                                <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:0ms]" />
-                                <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:150ms]" />
-                                <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:300ms]" />
-                            </div>
+                    <div className="flex items-center gap-3 my-4">
+                        <div className="flex-1 h-px bg-zinc-100" />
+                        <div className="flex items-center gap-1.5">
+                            <Loader2 size={11} className="text-zinc-300 animate-spin" />
+                            <span className="text-[10px] text-zinc-300 uppercase tracking-widest">Shaping</span>
                         </div>
+                        <div className="flex-1 h-px bg-zinc-100" />
                     </div>
                 )}
 

@@ -25,6 +25,7 @@ export function Chat({
     onMarkerClick,
     shapedAtIndex,
     isShaping,
+    isShaped,
 }: ChatProps) {
     return (
         <>
@@ -42,6 +43,7 @@ export function Chat({
                 onMarkerClick={onMarkerClick}
                 shapedAtIndex={shapedAtIndex}
                 isShaping={isShaping}
+                isShaped={isShaped}
             />
             <ChatInputBar
                 value={input}
