@@ -71,6 +71,14 @@ export interface ChatWindowProps {
     showSaveButton?: boolean;
 }
 
+export interface ChatEventProps {
+    label: string;
+    action?: {
+        label: string;
+        onClick: () => void;
+    };
+}
+
 export interface ChatProps {
     messages: any[];
     status: string;
