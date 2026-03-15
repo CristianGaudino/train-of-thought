@@ -53,11 +53,7 @@ export function ChatWindow({
                     if (!displayContent) return null;
                     const clean = { ...m, parts: [{ type: "text" as const, text: displayContent }] };
 
-                    const showShapedDivider =
-                        generated &&
-                        generatedAtIndex !== null &&
-                        i === generatedAtIndex &&
-                        m.role === "assistant";
+                    const showShapedDivider = false; // divider is rendered as trailing event below
 
                     return (
                         <div key={m.id}>
@@ -94,7 +90,12 @@ export function ChatWindow({
                     />
                 ))}
 
-                {/* Generating spinner */}
+                {/* Shaped divider — no message is added by shaping so render as trailing */}
+                {generated && generatedAtIndex !== null && generatedAtIndex >= messages.length && (
+                    <ChatEvent label="Idea generated" />
+                )}
+
+                {/* Generating indicator */}
                 {generating && (
                     <ChatEvent label="Generating" loading />
                 )}
