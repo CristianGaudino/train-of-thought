@@ -1,19 +1,5 @@
+import { SummaryCache } from "@/lib/definitions";
 import { useState, useCallback } from "react";
-
-type Idea = {
-    title?: string;
-    coreConcept?: string;
-    audience?: string;
-    problem?: string;
-    variations?: string[];
-    openQuestions?: string[];
-    summary?: string;
-};
-
-type SummaryCache = {
-    idea: Idea;
-    messageCount: number;
-};
 
 export function useSummary(messages: any[]) {
     const [summaryCache, setSummaryCache] = useState<SummaryCache | null>(null);
@@ -86,6 +72,4 @@ export function useSummary(messages: any[]) {
         resetSummary,
         fetchSummary,
     };
-}
-
-export type { Idea };
+};

@@ -1,3 +1,5 @@
+import { Idea } from "./schemas";
+
 // Constants
 export const DEPTH_OPTIONS = [
   { label: "Light", value: 1, hint: "Quick, casual" },
@@ -18,14 +20,9 @@ export type IdeaCard = {
     createdAt: number;
 };
 
-export type Idea = {
-    title?: string;
-    coreConcept?: string;
-    audience?: string;
-    problem?: string;
-    variations?: string[];
-    openQuestions?: string[];
-    summary?: string;
+export type SummaryCache = {
+    idea: Idea;
+    messageCount: number;
 };
 
 export type StageThreads = Record<string, any[]>;
