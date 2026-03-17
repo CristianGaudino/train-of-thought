@@ -1,9 +1,4 @@
-interface PillProps {
-    children: React.ReactNode;
-    bg: string;
-    color: string;
-    className?: string;
-}
+import { PillProps } from "@/lib/projects/definitions";
 
 export default function Pill({ children, bg, color, className = '' }: PillProps) {
     return (

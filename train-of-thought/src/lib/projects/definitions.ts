@@ -1,5 +1,15 @@
+import { LayoutGrid, CheckSquare, Bell, Lightbulb, LayoutTemplate } from 'lucide-react';
+import { ACCENT_PALETTE, ME_ID } from './config';
 
 // Constants
+
+export const NAV_ITEMS = [
+    { id: 'projects',      href: '/projects',     icon: LayoutGrid,     label: 'Project Space' },
+    { id: 'tasks',         href: '/tasks',         icon: CheckSquare,    label: 'My Tasks'      },
+    { id: 'notifications', href: '/notifications', icon: Bell,           label: 'Notifications' },
+    { id: 'ideas',         href: '/ideas',         icon: Lightbulb,      label: 'Ideas'         },
+    { id: 'templates',     href: '/templates',     icon: LayoutTemplate, label: 'Templates'     },
+];
 
 export const TYPE_FILTERS: { value: TypeFilter; label: string }[] = [
     { value: 'all',       label: 'All'       },
@@ -12,6 +22,18 @@ export const TYPE_FILTERS: { value: TypeFilter; label: string }[] = [
 export const STATUS_FILTERS: (ProjectStatus | 'All')[] = [
     'All', 'Not Started', 'Planning', 'In Progress', 'Review', 'Done',
 ];
+
+export const STEPS = ['Basics', 'Details', 'Team'] as const;
+
+export const EMPTY_FORM: FormState = {
+    title:       '',
+    description: '',
+    status:      'Planning',
+    deadline:    '',
+    accent:      ACCENT_PALETTE[0].accent,
+    color:       ACCENT_PALETTE[0].color,
+    members:     [ME_ID],
+};
 
 // Types
 
@@ -126,7 +148,7 @@ export interface PriorityConfig {
     bg: string;
 }
 
-export interface NotifConfig {
+export interface NotificationConfig {
     icon: string;
     color: string;
     bg: string;
@@ -148,8 +170,60 @@ export interface HeaderForm {
     members:     string[];
 }
 
-export interface NotifRowProps {
+export interface FormState {
+    title:       string;
+    description: string;
+    status:      ProjectStatus;
+    deadline:    string;
+    accent:      string;
+    color:       string;
+    members:     string[];
+}
+
+// Props
+
+export interface NotificationRowProps {
     notif:   Notification;
     onRead:  (id: string) => void;
     compact?: boolean;
+}
+
+export interface TaskPanelProps {
+    task:         Task;
+    accent:       string;
+    projectColor: string;
+    onClose:      () => void;
+}
+
+export interface AvatarProps {
+    member: Member;
+    size?: number;
+}
+
+export interface AvatarStackProps {
+    ids: string[];
+    size?: number;
+}
+
+export interface NewProjectModalProps {
+    onClose: () => void;
+    onCreate: (project: Project) => void;
+}
+
+export interface PillProps {
+    children: React.ReactNode;
+    bg: string;
+    color: string;
+    className?: string;
+}
+
+export interface ProjectCardProps {
+    project: Project;
+}
+
+export interface RingProps {
+    done: number;
+    total: number;
+    accent: string;
+    size?: number;
 }

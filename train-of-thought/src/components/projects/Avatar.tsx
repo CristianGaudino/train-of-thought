@@ -1,10 +1,4 @@
-import { getMember } from '@/lib/projects/utils';
-import type { Member } from '@/lib/projects/definitions';
-
-interface AvatarProps {
-    member: Member;
-    size?: number;
-}
+import type { AvatarProps } from '@/lib/projects/definitions';
 
 export function Avatar({ member, size = 26 }: AvatarProps) {
     return (
@@ -28,30 +22,6 @@ export function Avatar({ member, size = 26 }: AvatarProps) {
             ) : (
                 member.initials
             )}
-        </div>
-    );
-}
-
-interface AvatarStackProps {
-    ids: string[];
-    size?: number;
-}
-
-export function AvatarStack({ ids, size = 24 }: AvatarStackProps) {
-    return (
-        <div className="flex">
-            {ids.map((id, i) => {
-                const member = getMember(id);
-                if (!member) return null;
-                return (
-                    <div
-                        key={id}
-                        style={{ marginLeft: i ? -8 : 0, zIndex: ids.length - i }}
-                    >
-                        <Avatar member={member} size={size} />
-                    </div>
-                );
-            })}
         </div>
     );
 }

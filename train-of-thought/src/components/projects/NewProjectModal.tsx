@@ -2,40 +2,13 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { X, Plus, ChevronRight } from 'lucide-react';
-import type { Project, ProjectStatus } from '@/lib/projects/definitions';
+import { EMPTY_FORM, STEPS, type FormState, type NewProjectModalProps, type Project, type ProjectStatus } from '@/lib/projects/definitions';
 import { ACCENT_PALETTE, STATUS_CONFIG, STATUS_OPTIONS } from '@/lib/projects/config';
 import { MOCK_MEMBERS, ME_ID } from '@/lib/projects/config';
 import { generateId } from '@/lib/projects/utils';
 import Pill from './Pill';
 import { Avatar } from './Avatar';
 import { formatDate } from '@/lib/utils';
-
-interface NewProjectModalProps {
-    onClose: () => void;
-    onCreate: (project: Project) => void;
-}
-
-const STEPS = ['Basics', 'Details', 'Team'] as const;
-
-interface FormState {
-    title:       string;
-    description: string;
-    status:      ProjectStatus;
-    deadline:    string;
-    accent:      string;
-    color:       string;
-    members:     string[];
-}
-
-const EMPTY_FORM: FormState = {
-    title:       '',
-    description: '',
-    status:      'Planning',
-    deadline:    '',
-    accent:      ACCENT_PALETTE[0].accent,
-    color:       ACCENT_PALETTE[0].color,
-    members:     [ME_ID],
-};
 
 export default function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
     const [form, setForm]         = useState<FormState>(EMPTY_FORM);

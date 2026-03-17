@@ -2,16 +2,12 @@
 
 import { useRouter } from 'next/navigation';
 import { AlertTriangle } from 'lucide-react';
-import type { Project } from '@/lib/projects/definitions';
+import type { ProjectCardProps } from '@/lib/projects/definitions';
 import { STATUS_CONFIG } from '@/lib/projects/config';
 import { countTasks, getDeadlineInfo } from '@/lib/projects/utils';
-import { AvatarStack } from './Avatar';
 import Ring from './Ring';
 import Pill from './Pill';
-
-interface ProjectCardProps {
-    project: Project;
-}
+import { AvatarStack } from './AvatarStack';
 
 export default function ProjectCard({ project }: ProjectCardProps) {
     const router = useRouter();

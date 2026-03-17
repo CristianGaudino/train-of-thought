@@ -2,20 +2,18 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { UserButton } from '@clerk/nextjs';
-import { LayoutGrid, CheckSquare, Bell, Lightbulb, LayoutTemplate } from 'lucide-react';
+import { UserButton, useUser } from '@clerk/nextjs';
+import { NAV_ITEMS } from '@/lib/projects/definitions';
 import NotificationBell from './NotificationBell';
 
-const NAV_ITEMS = [
-    { id: 'projects',      href: '/projects',      icon: LayoutGrid,     label: 'Project Space' },
-    { id: 'tasks',         href: '/tasks',         icon: CheckSquare,    label: 'My Tasks'      },
-    { id: 'notifications', href: '/notifications', icon: Bell,           label: 'Notifications' },
-    { id: 'ideas',         href: '/ideas',         icon: Lightbulb,      label: 'Ideas'         },
-    { id: 'templates',     href: '/templates',     icon: LayoutTemplate, label: 'Templates'     },
-];
-
 export default function Sidebar() {
-    const pathname = usePathname();
+    const pathname    = usePathname();
+    const { user }    = useUser();
+
+    const displayName = user?.firstName
+        ?? user?.username
+        ?? user?.emailAddresses?.[0]?.emailAddress?.split('@')[0]
+        ?? 'My Account';
 
     return (
         <aside className="w-56 flex-shrink-0 bg-white border-r border-zinc-200 flex flex-col py-7">
@@ -24,7 +22,7 @@ export default function Sidebar() {
             <div className="flex items-center justify-between px-5 pb-6 border-b border-zinc-100">
                 <div>
                     <div className="text-xl font-secondary text-zinc-900 tracking-tight">
-                        Train of Thought
+                        forma
                     </div>
                     <div className="text-[11px] text-zinc-400 mt-0.5 font-primary">
                         your creative space
@@ -37,7 +35,7 @@ export default function Sidebar() {
             <nav className="flex-1 px-3 pt-4">
                 {NAV_ITEMS.map(item => {
                     const active = pathname.startsWith(item.href);
-                    const Icon = item.icon;
+                    const Icon   = item.icon;
                     return (
                         <Link
                             key={item.id}
@@ -61,7 +59,7 @@ export default function Sidebar() {
                 })}
             </nav>
 
-            {/* User — Clerk UserButton */}
+            {/* User */}
             <div className="px-5 pt-4 border-t border-zinc-100 flex items-center gap-2.5">
                 <UserButton
                     appearance={{
@@ -70,8 +68,15 @@ export default function Sidebar() {
                         },
                     }}
                 />
-                <div className="text-[13px] font-semibold text-zinc-900 font-primary">
-                    My Account
+                <div className="min-w-0">
+                    <div className="text-[13px] font-semibold text-zinc-900 font-primary truncate">
+                        {displayName}
+                    </div>
+                    {user?.emailAddresses?.[0]?.emailAddress && (
+                        <div className="text-[11px] text-zinc-400 font-primary truncate">
+                            {user.emailAddresses[0].emailAddress}
+                        </div>
+                    )}
                 </div>
             </div>
         </aside>

@@ -1,9 +1,4 @@
-interface RingProps {
-    done: number;
-    total: number;
-    accent: string;
-    size?: number;
-}
+import { RingProps } from "@/lib/projects/definitions";
 
 export default function Ring({ done, total, accent, size = 40 }: RingProps) {
     const pct  = total ? done / total : 0;

@@ -1,47 +1,113 @@
 'use client';
 
 import { useState } from 'react';
+import { useUser } from '@clerk/nextjs';
 import { X, Plus, ArrowUp, ChevronRight } from 'lucide-react';
-import type { Task, Subtask, Comment } from '@/lib/projects/definitions';
+import type { Subtask, Comment, TaskPanelProps } from '@/lib/projects/definitions';
 import { PRIORITY_CONFIG } from '@/lib/projects/config';
 import { getMember, generateId } from '@/lib/projects/utils';
-import { ME_ID } from '@/lib/projects/config';
 import Pill from './Pill';
 import { Avatar } from './Avatar';
 import { formatDate } from '@/lib/utils';
-
-interface TaskPanelProps {
-    task: Task;
-    accent: string;
-    projectColor: string;
-    onClose: () => void;
-}
+import { SectionLabel } from './SectionLabel';
 
 export default function TaskPanel({ task, accent, projectColor, onClose }: TaskPanelProps) {
+    const { user } = useUser();
+
     const [comments, setComments] = useState<Comment[]>(task.comments ?? []);
     const [subtasks, setSubtasks] = useState<Subtask[]>(task.subtasks ?? []);
     const [comment, setComment]   = useState('');
     const [newSub, setNewSub]     = useState('');
+    const [submitting, setSubmitting] = useState(false);
 
     const pr = PRIORITY_CONFIG[task.priority];
 
-    const addComment = () => {
-        if (!comment.trim()) return;
-        setComments(c => [
-            ...c,
-            { id: generateId('c'), author: ME_ID, text: comment.trim(), time: 'just now' },
-        ]);
-        setComment('');
-    };
+    // ── Subtasks — local only for now ──
+    // In a future iteration these could persist via PATCH /api/tasks/[id]
 
-    const toggleSub = (id: string) => {
+    const toggleSub = async (id: string) => {
+        // Optimistic local update
         setSubtasks(s => s.map(st => st.id === id ? { ...st, done: !st.done } : st));
+        // Persist updated subtasks array
+        const updated = subtasks.map(st => st.id === id ? { ...st, done: !st.done } : st);
+        try {
+            await fetch(`/api/tasks/${task.id}`, {
+                method:  'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ subtasks: updated }),
+            });
+        } catch {
+            // Rollback
+            setSubtasks(s => s.map(st => st.id === id ? { ...st, done: !st.done } : st));
+        }
     };
 
-    const addSub = () => {
+    const addSub = async () => {
         if (!newSub.trim()) return;
-        setSubtasks(s => [...s, { id: generateId('st'), label: newSub.trim(), done: false }]);
+        const newSubtask: Subtask = { id: generateId('st'), label: newSub.trim(), done: false };
+        const updated = [...subtasks, newSubtask];
+        setSubtasks(updated);
         setNewSub('');
+        try {
+            await fetch(`/api/tasks/${task.id}`, {
+                method:  'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ subtasks: updated }),
+            });
+        } catch {
+            setSubtasks(s => s.filter(st => st.id !== newSubtask.id));
+        }
+    };
+
+    // ── Comments — POST to API ──
+
+    const addComment = async () => {
+        if (!comment.trim() || submitting) return;
+
+        const tempComment: Comment = {
+            id:     generateId('c'),
+            author: user?.id ?? 'unknown',
+            text:   comment.trim(),
+            time:   'just now',
+        };
+
+        // Optimistic
+        setComments(c => [...c, tempComment]);
+        setComment('');
+        setSubmitting(true);
+
+        try {
+            const res = await fetch(`/api/tasks/${task.id}/comments`, {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ text: tempComment.text }),
+            });
+            if (!res.ok) throw new Error('Failed');
+            const saved: Comment = await res.json();
+            // Replace temp with server response
+            setComments(c => c.map(cm => cm.id === tempComment.id ? saved : cm));
+        } catch {
+            // Rollback
+            setComments(c => c.filter(cm => cm.id !== tempComment.id));
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    // ── Helper: resolve comment author ──
+    // For the current user we use Clerk's profile image if available;
+    // for other members we use the mock member data.
+
+    const resolveAuthor = (authorId: string) => {
+        if (user && authorId === user.id) {
+            return {
+                name:     user.firstName ?? user.username ?? 'You',
+                imageUrl: user.imageUrl,
+                initials: (user.firstName?.[0] ?? '') + (user.lastName?.[0] ?? ''),
+                color:    '#2D7A5F',
+            };
+        }
+        return getMember(authorId);
     };
 
     return (
@@ -109,7 +175,10 @@ export default function TaskPanel({ task, accent, projectColor, onClose }: TaskP
                                 })}
                             </div>
                             <span className="text-[12px] text-zinc-600 font-primary">
-                                {task.assignees.map(id => getMember(id)?.name).filter(Boolean).join(', ')}
+                                {task.assignees
+                                    .map(id => getMember(id)?.name)
+                                    .filter(Boolean)
+                                    .join(', ')}
                             </span>
                         </div>
                     )}
@@ -138,7 +207,9 @@ export default function TaskPanel({ task, accent, projectColor, onClose }: TaskP
                         </SectionLabel>
                         <div className="flex flex-col gap-1.5 mb-2">
                             {subtasks.length === 0 && (
-                                <p className="text-[13px] text-zinc-300 font-primary m-0">No sub-tasks yet.</p>
+                                <p className="text-[13px] text-zinc-300 font-primary m-0">
+                                    No sub-tasks yet.
+                                </p>
                             )}
                             {subtasks.map(st => (
                                 <div
@@ -149,7 +220,7 @@ export default function TaskPanel({ task, accent, projectColor, onClose }: TaskP
                                     <div
                                         className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all duration-200"
                                         style={{
-                                            border: `2px solid ${st.done ? accent : '#D1D5DB'}`,
+                                            border:     `2px solid ${st.done ? accent : '#D1D5DB'}`,
                                             background: st.done ? accent : 'transparent',
                                         }}
                                     >
@@ -160,7 +231,7 @@ export default function TaskPanel({ task, accent, projectColor, onClose }: TaskP
                                     <span
                                         className="text-[13px] font-primary transition-colors"
                                         style={{
-                                            color: st.done ? '#BBBBBB' : '#374151',
+                                            color:          st.done ? '#BBBBBB' : '#374151',
                                             textDecoration: st.done ? 'line-through' : 'none',
                                         }}
                                     >
@@ -193,15 +264,38 @@ export default function TaskPanel({ task, accent, projectColor, onClose }: TaskP
                             Comments{' '}
                             <span className="text-zinc-300 font-normal">({comments.length})</span>
                         </SectionLabel>
+
                         {comments.length === 0 && (
-                            <p className="text-[13px] text-zinc-300 font-primary mb-2.5 m-0">No comments yet.</p>
+                            <p className="text-[13px] text-zinc-300 font-primary mb-2.5 m-0">
+                                No comments yet.
+                            </p>
                         )}
+
                         <div className="flex flex-col gap-2.5 mb-3">
                             {comments.map(c => {
-                                const author = getMember(c.author);
+                                const author = resolveAuthor(c.author);
                                 return (
                                     <div key={c.id} className="flex gap-2.5 items-start">
-                                        {author && <Avatar member={author} size={28} />}
+                                        {author && (
+                                            'imageUrl' in author && author.imageUrl ? (
+                                                // eslint-disable-next-line @next/next/no-img-element
+                                                <img
+                                                    src={author.imageUrl}
+                                                    alt={author.name ?? ''}
+                                                    className="w-7 h-7 rounded-full object-cover flex-shrink-0 border-2 border-white"
+                                                />
+                                            ) : (
+                                                <div
+                                                    className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-white font-bold text-white font-primary"
+                                                    style={{
+                                                        background: 'color' in author ? author.color : '#888',
+                                                        fontSize:   10,
+                                                    }}
+                                                >
+                                                    {'initials' in author ? author.initials : '?'}
+                                                </div>
+                                            )
+                                        )}
                                         <div className="flex-1 bg-zinc-50 rounded-xl px-3.5 py-2.5">
                                             <div className="flex justify-between mb-1">
                                                 <span className="text-[12px] font-semibold text-zinc-800 font-primary">
@@ -222,20 +316,32 @@ export default function TaskPanel({ task, accent, projectColor, onClose }: TaskP
 
                         {/* Comment input */}
                         <div className="flex gap-2 items-center">
-                            {(() => {
-                                const me = getMember(ME_ID);
-                                return me ? <Avatar member={me} size={28} /> : null;
-                            })()}
+                            {user?.imageUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                    src={user.imageUrl}
+                                    alt={user.firstName ?? 'You'}
+                                    className="w-7 h-7 rounded-full object-cover flex-shrink-0 border-2 border-white"
+                                />
+                            ) : (
+                                <div
+                                    className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-white font-bold text-white font-primary text-[10px] bg-zinc-400"
+                                >
+                                    {user?.firstName?.[0] ?? '?'}
+                                </div>
+                            )}
                             <input
                                 value={comment}
                                 onChange={e => setComment(e.target.value)}
                                 onKeyDown={e => e.key === 'Enter' && addComment()}
                                 placeholder="Add a comment…"
-                                className="flex-1 px-3 py-2 rounded-lg border border-zinc-200 text-[13px] font-primary text-zinc-800 bg-zinc-50 outline-none focus:border-zinc-400 transition-colors"
+                                disabled={submitting}
+                                className="flex-1 px-3 py-2 rounded-lg border border-zinc-200 text-[13px] font-primary text-zinc-800 bg-zinc-50 outline-none focus:border-zinc-400 transition-colors disabled:opacity-60"
                             />
                             <button
                                 onClick={addComment}
-                                className="px-3 py-2 rounded-lg text-white cursor-pointer transition-opacity hover:opacity-80 flex items-center justify-center"
+                                disabled={submitting || !comment.trim()}
+                                className="px-3 py-2 rounded-lg text-white cursor-pointer transition-opacity hover:opacity-80 flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
                                 style={{ background: accent }}
                             >
                                 <ArrowUp size={16} />
@@ -245,13 +351,5 @@ export default function TaskPanel({ task, accent, projectColor, onClose }: TaskP
                 </div>
             </div>
         </>
-    );
-}
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-    return (
-        <div className="text-[11px] font-semibold tracking-widest uppercase text-zinc-300 font-primary mb-2.5">
-            {children}
-        </div>
     );
 }
