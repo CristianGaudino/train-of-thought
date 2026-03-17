@@ -1,86 +1,18 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
 import { CheckCheck, Bell } from 'lucide-react';
-import { TYPE_FILTERS, type Notification, type ReadFilter, type TypeFilter } from '@/lib/projects/definitions';
-import { NOTIF_CONFIG } from '@/lib/projects/config';
+import { NOTIFICATION_CONFIG } from '@/lib/projects/config';
+import { useNotifications } from '@/hooks/projects/useNotifications';
 import { NotificationRow } from '@/components/projects/NotificationRow';
+import { ReadFilter, TYPE_FILTERS } from '@/lib/projects/definitions';
 
 export default function NotificationsPage() {
-    const [notifications, setNotifications] = useState<Notification[]>([]);
-    const [loading, setLoading]             = useState(true);
-    const [typeFilter, setTypeFilter]       = useState<TypeFilter>('all');
-    const [readFilter, setReadFilter]       = useState<ReadFilter>('all');
-
-    const fetchNotifications = useCallback(async () => {
-        try {
-            const res = await fetch('/api/notifications');
-            if (!res.ok) throw new Error('Failed to fetch');
-            setNotifications(await res.json());
-        } catch {
-            // Keep empty state — non-critical
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    useEffect(() => { fetchNotifications(); }, [fetchNotifications]);
-
-    const unreadCount = notifications.filter(n => !n.read).length;
-
-    const markRead = async (id: string) => {
-        // Optimistic
-        setNotifications(ns => ns.map(n => n.id === id ? { ...n, read: true } : n));
-        try {
-            await fetch('/api/notifications', {
-                method:  'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ id }),
-            });
-        } catch {
-            // Rollback
-            setNotifications(ns => ns.map(n => n.id === id ? { ...n, read: false } : n));
-        }
-    };
-
-    const markAll = async () => {
-        const prev = notifications;
-        // Optimistic
-        setNotifications(ns => ns.map(n => ({ ...n, read: true })));
-        try {
-            await fetch('/api/notifications', {
-                method:  'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ all: true }),
-            });
-        } catch {
-            setNotifications(prev);
-        }
-    };
-
-    const filtered = useMemo(() =>
-        notifications
-            .filter(n => typeFilter === 'all' || n.type === typeFilter)
-            .filter(n => {
-                if (readFilter === 'unread') return !n.read;
-                if (readFilter === 'read')   return  n.read;
-                return true;
-            }),
-        [notifications, typeFilter, readFilter],
-    );
-
-    const grouped = useMemo(() => {
-        const today:   Notification[] = [];
-        const earlier: Notification[] = [];
-        filtered.forEach(n => {
-            if (n.time.includes('min') || n.time.includes('hr')) today.push(n);
-            else earlier.push(n);
-        });
-        const g: { label: string; items: Notification[] }[] = [];
-        if (today.length)   g.push({ label: 'Today',   items: today   });
-        if (earlier.length) g.push({ label: 'Earlier', items: earlier });
-        return g;
-    }, [filtered]);
+    const {
+        notifications, grouped, loading, unreadCount,
+        typeFilter, readFilter,
+        setTypeFilter, setReadFilter,
+        markRead, markAll,
+    } = useNotifications();
 
     return (
         <div className="flex flex-col h-full overflow-hidden">
@@ -94,7 +26,10 @@ export default function NotificationsPage() {
                         </h1>
                         <p className="text-[13px] text-zinc-400 font-primary mt-1 m-0">
                             {loading ? 'Loading…' : unreadCount > 0 ? (
-                                <><span className="text-zinc-900 font-semibold">{unreadCount} unread</span> · {notifications.length} total</>
+                                <>
+                                    <span className="text-zinc-900 font-semibold">{unreadCount} unread</span>
+                                    {' · '}{notifications.length} total
+                                </>
                             ) : `${notifications.length} notifications`}
                         </p>
                     </div>
@@ -113,7 +48,7 @@ export default function NotificationsPage() {
                 <div className="flex items-center gap-2.5 pb-4 border-b border-zinc-100 flex-wrap">
                     <div className="flex gap-1.5 flex-wrap">
                         {TYPE_FILTERS.map(({ value, label }) => {
-                            const cfg    = value !== 'all' ? NOTIF_CONFIG[value] : null;
+                            const cfg    = value !== 'all' ? NOTIFICATION_CONFIG[value] : null;
                             const active = typeFilter === value;
                             return (
                                 <button
@@ -128,19 +63,32 @@ export default function NotificationsPage() {
                                         }
                                     `}
                                 >
-                                    {cfg && <span style={{ color: active ? '#fff' : cfg.color, fontSize: 11 }}>{cfg.icon}</span>}
+                                    {cfg && (
+                                        <span style={{ color: active ? '#fff' : cfg.color, fontSize: 11 }}>
+                                            {cfg.icon}
+                                        </span>
+                                    )}
                                     {label}
                                 </button>
                             );
                         })}
                     </div>
+
                     <div className="flex-1" />
+
                     <div className="flex bg-zinc-100 rounded-xl p-0.5">
                         {(['all', 'unread', 'read'] as ReadFilter[]).map(v => (
                             <button
                                 key={v}
                                 onClick={() => setReadFilter(v)}
-                                className={`px-3 py-1 rounded-lg text-[12px] font-primary capitalize transition-all duration-150 cursor-pointer ${readFilter === v ? 'bg-white text-zinc-900 font-semibold shadow-sm' : 'text-zinc-500 hover:text-zinc-700'}`}
+                                className={`
+                                    px-3 py-1 rounded-lg text-[12px] font-primary capitalize
+                                    transition-all duration-150 cursor-pointer
+                                    ${readFilter === v
+                                        ? 'bg-white text-zinc-900 font-semibold shadow-sm'
+                                        : 'text-zinc-500 hover:text-zinc-700'
+                                    }
+                                `}
                             >
                                 {v.charAt(0).toUpperCase() + v.slice(1)}
                             </button>
@@ -171,7 +119,10 @@ export default function NotificationsPage() {
                                 </div>
                                 <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
                                     {group.items.map((n, i) => (
-                                        <div key={n.id} className={i < group.items.length - 1 ? 'border-b border-zinc-50' : ''}>
+                                        <div
+                                            key={n.id}
+                                            className={i < group.items.length - 1 ? 'border-b border-zinc-50' : ''}
+                                        >
                                             <NotificationRow notif={n} onRead={markRead} />
                                         </div>
                                     ))}

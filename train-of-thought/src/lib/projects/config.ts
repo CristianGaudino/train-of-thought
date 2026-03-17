@@ -25,7 +25,7 @@ export const PRIORITY_CONFIG: Record<string, PriorityConfig> = {
     Low:      { color: '#888888', bg: '#F2F2F2' },
 };
 
-export const NOTIF_CONFIG: Record<string, NotificationConfig> = {
+export const NOTIFICATION_CONFIG: Record<string, NotificationConfig> = {
     assigned:  { icon: '◈', color: '#3A5FA0', bg: '#EDF3FC', label: 'Assignment' },
     comment:   { icon: '◎', color: '#8A4FA0', bg: '#F5EEF5', label: 'Comment'    },
     completed: { icon: '✓', color: '#2D7A5F', bg: '#E8F4F0', label: 'Completed'  },

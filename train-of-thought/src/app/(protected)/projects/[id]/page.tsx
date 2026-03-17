@@ -1,22 +1,22 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
     ArrowLeft, Pencil, Plus, ChevronDown, ChevronRight,
     AlertTriangle, MessageSquare, X, Check,
 } from 'lucide-react';
-import type { HeaderForm, Project, Section, Tab, Task } from '@/lib/projects/definitions';
 import {
     STATUS_CONFIG, ACCENT_PALETTE, STATUS_OPTIONS,
-    PRIORITY_CONFIG, NOTIF_CONFIG, ACTIVITY_DATA,
+    PRIORITY_CONFIG, NOTIFICATION_CONFIG, ACTIVITY_DATA,
 } from '@/lib/projects/config';
-import { getDeadlineInfo, generateId, getMember } from '@/lib/projects/utils';
-import { ME_ID } from '@/lib/projects/config';
+import { getDeadlineInfo, getMember } from '@/lib/projects/utils';
 import { Avatar } from '@/components/projects/Avatar';
 import Ring from '@/components/projects/Ring';
 import Pill from '@/components/projects/Pill';
 import TaskPanel from '@/components/projects/TaskPanel';
+import type { HeaderData, Tab, Task } from '@/lib/projects/definitions';
+import { useProject } from '@/hooks/projects/useProject';
 import { AvatarStack } from '@/components/projects/AvatarStack';
 
 export default function ProjectPage() {
@@ -24,56 +24,47 @@ export default function ProjectPage() {
     const router = useRouter();
     const id     = params.id as string;
 
-    const [project, setProject]           = useState<Project | null>(null);
-    const [loading, setLoading]           = useState(true);
-    const [error, setError]               = useState<string | null>(null);
-    const [sections, setSections]         = useState<Section[]>([]);
-    const [activeTask, setActiveTask]     = useState<Task | null>(null);
-    const [collapsed, setCollapsed]       = useState<Record<string, boolean>>({});
-    const [activeTab, setActiveTab]       = useState<Tab>('tasks');
-    const [editingHeader, setEditingHeader] = useState(false);
-    const [savingHeader, setSavingHeader] = useState(false);
-    const [newTaskSec, setNewTaskSec]     = useState<string | null>(null);
-    const [newTaskVal, setNewTaskVal]     = useState('');
-    const [newSecMode, setNewSecMode]     = useState(false);
-    const [newSecVal, setNewSecVal]       = useState('');
-    const [hf, setHf]                    = useState<HeaderForm | null>(null);
+    const {
+        project, sections, loading, error,
+        toggleTask, addTask, addSection,
+        saveHeader, savingHeader,
+    } = useProject(id);
 
-    // ── Fetch project ──
+    const [activeTask, setActiveTask]         = useState<Task | null>(null);
+    const [collapsed, setCollapsed]           = useState<Record<string, boolean>>({});
+    const [activeTab, setActiveTab]           = useState<Tab>('tasks');
+    const [editingHeader, setEditingHeader]   = useState(false);
+    const [newTaskSec, setNewTaskSec]         = useState<string | null>(null);
+    const [newTaskVal, setNewTaskVal]         = useState('');
+    const [newSecMode, setNewSecMode]         = useState(false);
+    const [newSecVal, setNewSecVal]           = useState('');
 
-    const fetchProject = useCallback(async () => {
-        try {
-            const res = await fetch(`/api/projects/${id}`);
-            if (res.status === 404) { router.push('/projects'); return; }
-            if (!res.ok) throw new Error('Failed to fetch');
-            const data: Project = await res.json();
-            setProject(data);
-            setSections(data.sections);
-            setHf({
-                title:       data.title,
-                description: data.description,
-                status:      data.status,
-                deadline:    data.deadline ?? '',
-                accent:      data.accent,
-                color:       data.color,
-                members:     [...data.members],
-            });
-        } catch {
-            setError('Could not load project.');
-        } finally {
-            setLoading(false);
-        }
-    }, [id, router]);
+    // Local header form — initialised from project, saved on submit
+    const [hf, setHf] = useState<HeaderData | null>(null);
 
-    useEffect(() => { fetchProject(); }, [fetchProject]);
+    // Sync hf when project first loads
+    if (project && !hf) {
+        setHf({
+            title:       project.title,
+            description: project.description,
+            status:      project.status,
+            deadline:    project.deadline ?? '',
+            accent:      project.accent,
+            color:       project.color,
+            members:     [...project.members],
+        });
+    }
+
+    // ── Loading / error ──
 
     if (loading || !hf || !project) {
+        if (error === 'not_found') { router.push('/projects'); return null; }
         return (
             <div className="flex-1 flex items-center justify-center">
                 {error ? (
-                    <div className="text-[14px] text-zinc-400 font-primary">{error}</div>
+                    <p className="text-[14px] text-zinc-400 font-primary">{error}</p>
                 ) : (
-                    <div className="flex flex-col gap-3 w-full max-w-2xl px-8">
+                    <div className="flex flex-col gap-3 w-full max-w-2xl px-8 pt-8">
                         <div className="h-8 bg-zinc-100 rounded-xl animate-pulse w-64" />
                         <div className="h-4 bg-zinc-100 rounded-lg animate-pulse w-full" />
                         <div className="h-4 bg-zinc-100 rounded-lg animate-pulse w-3/4" />
@@ -91,124 +82,21 @@ export default function ProjectPage() {
     const done     = allTasks.filter(t => t.done).length;
     const pct      = allTasks.length ? Math.round((done / allTasks.length) * 100) : 0;
 
-    // ── Handlers ──
-
-    const toggleTask = async (taskId: string) => {
-        // Find the task
-        const task = allTasks.find(t => t.id === taskId);
-        if (!task) return;
-        const newDone = !task.done;
-
-        // Optimistic update
-        setSections(ss => ss.map(s => ({
-            ...s,
-            tasks: s.tasks.map(t => t.id === taskId ? { ...t, done: newDone } : t),
-        })));
-
-        try {
-            await fetch(`/api/tasks/${taskId}`, {
-                method:  'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ done: newDone }),
-            });
-        } catch {
-            // Rollback
-            setSections(ss => ss.map(s => ({
-                ...s,
-                tasks: s.tasks.map(t => t.id === taskId ? { ...t, done: task.done } : t),
-            })));
-        }
+    const handleSaveHeader = async () => {
+        await saveHeader(hf);
+        setEditingHeader(false);
     };
 
-    const addTask = async (secId: string) => {
-        if (!newTaskVal.trim()) { setNewTaskSec(null); return; }
-        const tempId = generateId('t');
-        const newTask: Task = {
-            id:          tempId,
-            title:       newTaskVal.trim(),
-            description: '',
-            done:        false,
-            priority:    'Medium',
-            due:         null,
-            assignees:   [ME_ID],
-            subtasks:    [],
-            comments:    [],
-        };
-
-        // Optimistic
-        setSections(ss => ss.map(s => s.id === secId ? { ...s, tasks: [...s.tasks, newTask] } : s));
+    const handleAddTask = async (secId: string) => {
+        await addTask(secId, newTaskVal);
         setNewTaskVal('');
         setNewTaskSec(null);
-
-        try {
-            const res = await fetch('/api/tasks', {
-                method:  'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({
-                    sectionId: secId,
-                    projectId: id,
-                    title:     newTask.title,
-                    assignees: [ME_ID],
-                    order:     sections.find(s => s.id === secId)?.tasks.length ?? 0,
-                }),
-            });
-            if (!res.ok) throw new Error('Failed');
-            const saved: Task = await res.json();
-            // Replace temp task with saved
-            setSections(ss => ss.map(s => ({
-                ...s,
-                tasks: s.tasks.map(t => t.id === tempId ? saved : t),
-            })));
-        } catch {
-            // Rollback
-            setSections(ss => ss.map(s => ({
-                ...s,
-                tasks: s.tasks.filter(t => t.id !== tempId),
-            })));
-        }
     };
 
-    const addSection = async () => {
-        if (!newSecVal.trim()) { setNewSecMode(false); return; }
-        const tempId   = generateId('s');
-        const newSec: Section = { id: tempId, title: newSecVal.trim(), tasks: [] };
-
-        // Optimistic
-        setSections(ss => [...ss, newSec]);
+    const handleAddSection = async () => {
+        await addSection(newSecVal);
         setNewSecVal('');
         setNewSecMode(false);
-
-        try {
-            const res = await fetch('/api/sections', {
-                method:  'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ projectId: id, title: newSec.title, order: sections.length }),
-            });
-            if (!res.ok) throw new Error('Failed');
-            const { id: savedId } = await res.json();
-            setSections(ss => ss.map(s => s.id === tempId ? { ...s, id: savedId } : s));
-        } catch {
-            setSections(ss => ss.filter(s => s.id !== tempId));
-        }
-    };
-
-    const saveHeader = async () => {
-        setSavingHeader(true);
-        try {
-            await fetch(`/api/projects/${id}`, {
-                method:  'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({
-                    ...hf,
-                    deadline: hf.deadline || null,
-                }),
-            });
-            setEditingHeader(false);
-        } catch {
-            // Header still updates locally — user can retry
-        } finally {
-            setSavingHeader(false);
-        }
     };
 
     const toggleCollapse = (id: string) => setCollapsed(c => ({ ...c, [id]: !c[id] }));
@@ -218,12 +106,10 @@ export default function ProjectPage() {
         font-primary text-zinc-800 outline-none focus:border-zinc-400 transition-colors w-full
     `;
 
-    // ── Render ──
-
     return (
         <div className="flex flex-col h-full overflow-hidden">
 
-            {/* Header */}
+            {/* ── Header ── */}
             <div className="flex-shrink-0 border-b border-black/7" style={{ background: hf.color }}>
 
                 {/* Top bar */}
@@ -236,14 +122,12 @@ export default function ProjectPage() {
                         Projects
                     </button>
                     <div className="w-px h-4 bg-black/12" />
-                    <span className="text-[13px] text-zinc-500 font-primary flex-1 truncate">{hf.title}</span>
+                    <span className="text-[13px] text-zinc-500 font-primary flex-1 truncate">
+                        {hf.title}
+                    </span>
                     <button
                         onClick={() => setEditingHeader(v => !v)}
-                        className={`
-                            flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px]
-                            font-medium font-primary text-zinc-600 transition-colors cursor-pointer
-                            ${editingHeader ? 'bg-black/12' : 'bg-black/7 hover:bg-black/12'}
-                        `}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium font-primary text-zinc-600 transition-colors cursor-pointer ${editingHeader ? 'bg-black/12' : 'bg-black/7 hover:bg-black/12'}`}
                     >
                         <Pencil size={13} />
                         Edit
@@ -297,7 +181,7 @@ export default function ProjectPage() {
                                         Cancel
                                     </button>
                                     <button
-                                        onClick={saveHeader}
+                                        onClick={handleSaveHeader}
                                         disabled={savingHeader}
                                         className="px-5 py-2 rounded-lg text-white text-[13px] font-semibold font-primary cursor-pointer transition-opacity hover:opacity-85 disabled:opacity-60"
                                         style={{ background: hf.accent }}
@@ -334,7 +218,7 @@ export default function ProjectPage() {
                                     </div>
                                 </div>
 
-                                {/* Progress card */}
+                                {/* Progress */}
                                 <div className="rounded-2xl px-4 py-3.5 min-w-44" style={{ background: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(4px)' }}>
                                     <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-widest font-primary mb-2">Progress</div>
                                     <div className="flex items-center gap-3">
@@ -372,7 +256,7 @@ export default function ProjectPage() {
                 </div>
             </div>
 
-            {/* Tab body */}
+            {/* ── Tab body ── */}
             <div className="flex-1 overflow-y-auto">
 
                 {/* Tasks */}
@@ -392,14 +276,11 @@ export default function ProjectPage() {
                                         <span className="text-[11px] text-zinc-300 font-primary">{secDone}/{section.tasks.length}</span>
                                         <div className="flex-1 h-px bg-zinc-100" />
                                         <div className="w-16 h-1 rounded-full bg-zinc-100 overflow-hidden">
-                                            <div
-                                                className="h-full rounded-full transition-all duration-500"
-                                                style={{ width: `${section.tasks.length ? (secDone / section.tasks.length) * 100 : 0}%`, background: hf.accent }}
-                                            />
+                                            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${section.tasks.length ? (secDone / section.tasks.length) * 100 : 0}%`, background: hf.accent }} />
                                         </div>
                                     </div>
 
-                                    {/* Tasks */}
+                                    {/* Task rows */}
                                     {!isC && (
                                         <div className="flex flex-col gap-1.5 pl-1">
                                             {section.tasks.map(task => {
@@ -421,6 +302,7 @@ export default function ProjectPage() {
                                                         >
                                                             {task.done && <Check size={10} color="#fff" strokeWidth={3} />}
                                                         </button>
+
                                                         <span
                                                             onClick={() => setActiveTask(task)}
                                                             className="flex-1 text-[14px] font-primary cursor-pointer transition-colors"
@@ -428,6 +310,7 @@ export default function ProjectPage() {
                                                         >
                                                             {task.title}
                                                         </span>
+
                                                         <div className="flex items-center gap-2.5 flex-shrink-0">
                                                             {task.subtasks.length > 0 && <span className="text-[11px] text-zinc-300 font-primary">{task.subtasks.filter(s => s.done).length}/{task.subtasks.length} sub</span>}
                                                             {task.assignees.length > 0 && <AvatarStack ids={task.assignees} size={22} />}
@@ -443,9 +326,9 @@ export default function ProjectPage() {
                                             {/* Add task */}
                                             {newTaskSec === section.id ? (
                                                 <div className="flex gap-2 mt-1">
-                                                    <input autoFocus value={newTaskVal} onChange={e => setNewTaskVal(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') addTask(section.id); if (e.key === 'Escape') { setNewTaskSec(null); setNewTaskVal(''); }}} placeholder="Task name…" className="flex-1 px-3.5 py-2 rounded-xl border text-[13px] font-primary text-zinc-800 bg-white outline-none" style={{ borderColor: hf.accent }} />
-                                                    <button onClick={() => addTask(section.id)} className="px-4 py-2 rounded-xl text-white text-[13px] font-semibold font-primary cursor-pointer hover:opacity-85 transition-opacity" style={{ background: hf.accent }}>Add</button>
-                                                    <button onClick={() => { setNewTaskSec(null); setNewTaskVal(''); }} className="px-3 py-2 rounded-xl border border-zinc-200 bg-white text-zinc-400 cursor-pointer hover:bg-zinc-50 transition-colors"><X size={14} /></button>
+                                                    <input autoFocus value={newTaskVal} onChange={e => setNewTaskVal(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleAddTask(section.id); if (e.key === 'Escape') { setNewTaskSec(null); setNewTaskVal(''); }}} placeholder="Task name…" className="flex-1 px-3.5 py-2 rounded-xl border text-[13px] font-primary text-zinc-800 bg-white outline-none" style={{ borderColor: hf.accent }} />
+                                                    <button onClick={() => handleAddTask(section.id)} className="px-4 py-2 rounded-xl text-white text-[13px] font-semibold font-primary cursor-pointer hover:opacity-85 transition-opacity" style={{ background: hf.accent }}>Add</button>
+                                                    <button onClick={() => { setNewTaskSec(null); setNewTaskVal(''); }} className="px-3 py-2 rounded-xl border border-zinc-200 bg-white text-zinc-400 cursor-pointer hover:bg-zinc-50"><X size={14} /></button>
                                                 </div>
                                             ) : (
                                                 <button
@@ -466,9 +349,9 @@ export default function ProjectPage() {
                         {/* Add section */}
                         {newSecMode ? (
                             <div className="flex gap-2 items-center">
-                                <input autoFocus value={newSecVal} onChange={e => setNewSecVal(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') addSection(); if (e.key === 'Escape') { setNewSecMode(false); setNewSecVal(''); }}} placeholder="Section name…" className="flex-1 px-3.5 py-2.5 rounded-xl border text-[14px] font-semibold font-primary text-zinc-800 bg-white outline-none" style={{ borderColor: hf.accent }} />
-                                <button onClick={addSection} className="px-4 py-2.5 rounded-xl text-white text-[13px] font-semibold font-primary cursor-pointer hover:opacity-85 transition-opacity" style={{ background: hf.accent }}>Add</button>
-                                <button onClick={() => { setNewSecMode(false); setNewSecVal(''); }} className="px-3 py-2.5 rounded-xl border border-zinc-200 bg-white text-zinc-400 cursor-pointer hover:bg-zinc-50 transition-colors"><X size={14} /></button>
+                                <input autoFocus value={newSecVal} onChange={e => setNewSecVal(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleAddSection(); if (e.key === 'Escape') { setNewSecMode(false); setNewSecVal(''); }}} placeholder="Section name…" className="flex-1 px-3.5 py-2.5 rounded-xl border text-[14px] font-semibold font-primary text-zinc-800 bg-white outline-none" style={{ borderColor: hf.accent }} />
+                                <button onClick={handleAddSection} className="px-4 py-2.5 rounded-xl text-white text-[13px] font-semibold font-primary cursor-pointer hover:opacity-85 transition-opacity" style={{ background: hf.accent }}>Add</button>
+                                <button onClick={() => { setNewSecMode(false); setNewSecVal(''); }} className="px-3 py-2.5 rounded-xl border border-zinc-200 bg-white text-zinc-400 cursor-pointer hover:bg-zinc-50"><X size={14} /></button>
                             </div>
                         ) : (
                             <button
@@ -489,7 +372,7 @@ export default function ProjectPage() {
                         <div className="flex flex-col">
                             {ACTIVITY_DATA.map((a, i) => {
                                 const actor = getMember(a.actor);
-                                const cfg   = NOTIF_CONFIG[a.type] ?? NOTIF_CONFIG.comment;
+                                const cfg   = NOTIFICATION_CONFIG[a.type] ?? NOTIFICATION_CONFIG.comment;
                                 return (
                                     <div key={a.id} className="flex gap-3.5 items-start pb-5 relative">
                                         {i < ACTIVITY_DATA.length - 1 && <div className="absolute left-[15px] top-8 bottom-0 w-px bg-zinc-100" />}
@@ -516,7 +399,7 @@ export default function ProjectPage() {
                             {['1', '2', '3', '4'].map(memberId => {
                                 const member   = getMember(memberId);
                                 const isMember = hf.members.includes(memberId);
-                                const isMe     = memberId === ME_ID;
+                                const isMe     = memberId === '1';
                                 if (!member) return null;
                                 return (
                                     <div key={memberId} className="flex items-center gap-3.5 p-3.5 rounded-xl border transition-all duration-150" style={{ borderColor: isMember ? hf.accent + '40' : '#E4E4E7', background: isMember ? '#fff' : '#FAFAFA' }}>
@@ -538,7 +421,7 @@ export default function ProjectPage() {
                                 );
                             })}
                         </div>
-                        <button onClick={saveHeader} className="px-5 py-2.5 rounded-xl text-white text-[13px] font-semibold font-primary cursor-pointer hover:opacity-85 transition-opacity" style={{ background: hf.accent }}>
+                        <button onClick={handleSaveHeader} className="px-5 py-2.5 rounded-xl text-white text-[13px] font-semibold font-primary cursor-pointer hover:opacity-85 transition-opacity" style={{ background: hf.accent }}>
                             Save changes
                         </button>
                     </div>

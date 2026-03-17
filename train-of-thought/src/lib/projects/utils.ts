@@ -1,4 +1,4 @@
-import type { Project, FlatTask, Member } from './definitions';
+import type { Project, FlatTask, Member, TaskGroup } from './definitions';
 import { MOCK_MEMBERS, ME_ID } from './config';
 import { formatDate } from '../utils';
 
@@ -44,13 +44,6 @@ export function getFlatMyTasks(projects: Project[], userId = ME_ID): FlatTask[] 
         }
     }
     return out;
-}
-
-export interface TaskGroup {
-    id: string;
-    label: string;
-    accent: string;
-    tasks: FlatTask[];
 }
 
 export function groupTasksByTime(tasks: FlatTask[]): TaskGroup[] {

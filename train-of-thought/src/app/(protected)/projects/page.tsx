@@ -1,54 +1,19 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { Plus, Search } from 'lucide-react';
 import { STATUS_FILTERS, type Project, type ProjectStatus } from '@/lib/projects/definitions';
 import { STATUS_CONFIG } from '@/lib/projects/config';
 import ProjectCard from '@/components/projects/ProjectCard';
 import NewProjectModal from '@/components/projects/NewProjectModal';
+import { useProjects } from '@/hooks/projects/useProjects';
 
 export default function ProjectsPage() {
-    const [projects, setProjects]   = useState<Project[]>([]);
-    const [loading, setLoading]     = useState(true);
-    const [error, setError]         = useState<string | null>(null);
+    const { projects, loading, error, refetch, addProject, updateProject } = useProjects();
+
     const [filter, setFilter]       = useState<ProjectStatus | 'All'>('All');
     const [search, setSearch]       = useState('');
     const [showModal, setShowModal] = useState(false);
-
-    const fetchProjects = useCallback(async () => {
-        try {
-            const res = await fetch('/api/projects');
-            if (!res.ok) throw new Error('Failed to fetch');
-            const data = await res.json();
-            setProjects(data);
-        } catch {
-            setError('Could not load projects. Please try again.');
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    useEffect(() => { fetchProjects(); }, [fetchProjects]);
-
-    const handleCreate = async (project: Project) => {
-        // Optimistic — add immediately, then confirm with server
-        setProjects(ps => [project, ...ps]);
-
-        try {
-            const res = await fetch('/api/projects', {
-                method:  'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify(project),
-            });
-            if (!res.ok) throw new Error('Failed to create');
-            // Replace optimistic entry with server response (gets real DB id/timestamps)
-            const saved = await res.json();
-            setProjects(ps => ps.map(p => p.id === project.id ? saved : p));
-        } catch {
-            // Rollback
-            setProjects(ps => ps.filter(p => p.id !== project.id));
-        }
-    };
 
     const filtered = projects.filter(p => {
         const matchStatus = filter === 'All' || p.status === filter;
@@ -58,6 +23,24 @@ export default function ProjectsPage() {
             p.description.toLowerCase().includes(q);
         return matchStatus && matchSearch;
     });
+
+    const handleCreate = async (project: Project) => {
+        // Optimistic add
+        addProject(project);
+        try {
+            const res = await fetch('/api/projects', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(project),
+            });
+            if (!res.ok) throw new Error('Failed');
+            const saved: Project = await res.json();
+            updateProject(saved);
+        } catch {
+            // Rollback by removing the temp project
+            refetch();
+        }
+    };
 
     return (
         <div className="flex flex-col h-full overflow-hidden">
@@ -69,9 +52,10 @@ export default function ProjectsPage() {
                         Project Space
                     </h1>
                     <p className="text-[13px] text-zinc-400 font-primary mt-1 m-0">
-                        {loading ? 'Loading…' : (
-                            `${projects.length} projects · ${projects.filter(p => p.status === 'In Progress').length} active`
-                        )}
+                        {loading
+                            ? 'Loading…'
+                            : `${projects.length} projects · ${projects.filter(p => p.status === 'In Progress').length} active`
+                        }
                     </p>
                 </div>
                 <div className="flex items-center gap-2.5">
@@ -127,15 +111,13 @@ export default function ProjectsPage() {
             {/* Grid */}
             <div className="flex-1 overflow-y-auto px-8 py-5">
 
-                {/* Error */}
                 {error && (
                     <div className="mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-[13px] text-red-600 font-primary flex items-center justify-between">
                         {error}
-                        <button onClick={fetchProjects} className="underline cursor-pointer">Retry</button>
+                        <button onClick={refetch} className="underline cursor-pointer">Retry</button>
                     </div>
                 )}
 
-                {/* Loading skeleton */}
                 {loading && (
                     <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
                         {[1, 2, 3].map(i => (
@@ -148,12 +130,14 @@ export default function ProjectsPage() {
                     </div>
                 )}
 
-                {/* Empty */}
                 {!loading && !error && filtered.length === 0 && (
                     <div className="flex flex-col items-center justify-center h-48 text-zinc-300 gap-3">
                         <span className="text-4xl">◎</span>
                         <span className="text-[14px] font-primary">
-                            {search || filter !== 'All' ? 'No projects match your filters' : 'No projects yet'}
+                            {search || filter !== 'All'
+                                ? 'No projects match your filters'
+                                : 'No projects yet'
+                            }
                         </span>
                         {!search && filter === 'All' && (
                             <button
@@ -167,12 +151,9 @@ export default function ProjectsPage() {
                     </div>
                 )}
 
-                {/* Cards */}
                 {!loading && filtered.length > 0 && (
                     <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
-                        {filtered.map(p => (
-                            <ProjectCard key={p.id} project={p} />
-                        ))}
+                        {filtered.map(p => <ProjectCard key={p.id} project={p} />)}
                         <button
                             onClick={() => setShowModal(true)}
                             className="border-2 border-dashed border-zinc-200 rounded-2xl p-6 flex flex-col items-center justify-center gap-2.5 min-h-40 cursor-pointer hover:border-zinc-400 hover:bg-zinc-50 transition-all duration-150"

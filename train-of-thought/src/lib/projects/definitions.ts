@@ -180,6 +180,88 @@ export interface FormState {
     members:     string[];
 }
 
+export interface TaskGroup {
+    id: string;
+    label: string;
+    accent: string;
+    tasks: FlatTask[];
+}
+
+export interface UseProjectsReturn {
+    projects:      Project[];
+    loading:       boolean;
+    error:         string | null;
+    refetch:       () => Promise<void>;
+    addProject:    (project: Project) => void;
+    updateProject: (updated: Project) => void;
+    removeProject: (id: string) => void;
+}
+
+export interface UseProjectReturn {
+    project:        Project | null;
+    sections:       Section[];
+    loading:        boolean;
+    error:          string | null;
+    // Task mutations
+    toggleTask:     (taskId: string) => Promise<void>;
+    addTask:        (sectionId: string, title: string) => Promise<void>;
+    // Section mutations
+    addSection:     (title: string) => Promise<void>;
+    // Header mutations
+    saveHeader:     (data: HeaderData) => Promise<void>;
+    savingHeader:   boolean;
+}
+
+export interface HeaderData {
+    title:       string;
+    description: string;
+    status:      string;
+    deadline:    string;
+    accent:      string;
+    color:       string;
+    members:     string[];
+}
+
+export interface UseTasksReturn {
+    // Data
+    groups:          TaskGroup[];
+    allMyTasks:      FlatTask[];
+    filtered:        FlatTask[];
+    loading:         boolean;
+    // Counts
+    totalOpen:       number;
+    todayCount:      number;
+    overdueCount:    number;
+    // Filters
+    filterProject:   string;
+    filterPriority:  string;
+    groupBy:         GroupBy;
+    setFilterProject:  (v: string) => void;
+    setFilterPriority: (v: string) => void;
+    setGroupBy:        (v: GroupBy) => void;
+    // Unique project list for filter dropdown
+    uniqueProjects:  { id: string; title: string }[];
+    // Mutations
+    markDone:        (taskId: string) => Promise<void>;
+}
+
+export interface UseNotificationsReturn {
+    // Data
+    notifications: Notification[];
+    filtered:      Notification[];
+    grouped:       { label: string; items: Notification[] }[];
+    loading:       boolean;
+    unreadCount:   number;
+    // Filters
+    typeFilter:    TypeFilter;
+    readFilter:    ReadFilter;
+    setTypeFilter: (v: TypeFilter) => void;
+    setReadFilter: (v: ReadFilter) => void;
+    // Mutations
+    markRead:      (id: string) => Promise<void>;
+    markAll:       () => Promise<void>;
+}
+
 // Props
 
 export interface NotificationRowProps {

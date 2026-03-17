@@ -1,9 +1,9 @@
-import { NOTIF_CONFIG } from "@/lib/projects/config";
+import { NOTIFICATION_CONFIG } from "@/lib/projects/config";
 import { NotificationRowProps } from "@/lib/projects/definitions";
 import { getMember } from "@/lib/projects/utils";
 
 export function NotificationRow({ notif, onRead, compact = false }: NotificationRowProps) {
-    const cfg   = NOTIF_CONFIG[notif.type];
+    const cfg   = NOTIFICATION_CONFIG[notif.type];
     const actor = getMember(notif.actor);
     const py    = compact ? 'py-3' : 'py-3.5';
 
