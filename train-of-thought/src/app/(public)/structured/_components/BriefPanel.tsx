@@ -1,6 +1,6 @@
 "use client";
 
-import { BriefPanelProps } from "@/lib/definitions";
+import { BriefPanelProps } from "@/lib/chat/definitions";
 
 export function BriefPanel({ sections, filledCount, onExport }: BriefPanelProps) {
     return (

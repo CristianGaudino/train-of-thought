@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { MessageCircle } from "lucide-react";
-import { extractText } from "@/lib/utils";
-import { ResumeModalProps } from "@/lib/definitions";
+import { extractText } from "@/lib/chat/utils";
+import { ResumeModalProps } from "@/lib/chat/definitions";
 
 export function ResumeModal({ messages, onContinue, onStartFresh, showConceptsStep = false }: ResumeModalProps) {
     const [step, setStep] = useState<"resume" | "concepts">("resume");

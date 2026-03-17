@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Trash2, Sparkles } from "lucide-react";
-import { IdeaCard } from "@/lib/definitions";
+import { IdeaCard } from "@/lib/chat/definitions";
 
 export function ConceptCard({
     card,

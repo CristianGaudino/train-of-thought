@@ -1,5 +1,5 @@
 import { generateText, Output } from "ai";
-import { ideaSchema } from "@/lib/schemas";
+import { ideaSchema } from "@/lib/chat/schemas";
 import { model } from "@/lib/ai";
 import { rateLimit } from "@/lib/rateLimit";
 

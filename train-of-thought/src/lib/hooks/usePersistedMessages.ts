@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { cleanMessages } from "../utils";
+import { cleanMessages } from "../chat/utils";
 
 export function useSaveMessages(messages: any[], storageKey: string) {
     const initialised = useRef(false);

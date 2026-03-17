@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { ShapeResult } from "@/lib/definitions";
+import { ShapeResult } from "@/lib/chat/definitions";
 
 export function useShapeIdea() {
     const [generating, setGenerating] = useState(false);

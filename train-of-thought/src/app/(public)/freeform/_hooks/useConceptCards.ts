@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { IdeaCard } from "@/lib/definitions";
+import { IdeaCard } from "@/lib/chat/definitions";
 
 export function useConceptCards() {
     const [cards, setCards] = useState<IdeaCard[]>([]);

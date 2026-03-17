@@ -2,7 +2,7 @@
 
 import { ChatWindow } from "./ChatWindow";
 import { ChatInputBar } from "./ChatInputBar";
-import { ChatProps } from "@/lib/definitions";
+import { ChatProps } from "@/lib/chat/definitions";
 
 export function Chat({
     messages,

@@ -1,6 +1,6 @@
 "use client";
 
-import { DEPTH_OPTIONS } from "@/lib/definitions";
+import { DEPTH_OPTIONS } from "@/lib/chat/definitions";
 
 export function DepthSelector({
     depth,

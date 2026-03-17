@@ -1,7 +1,7 @@
 "use client";
 
 import { ErrorAlert } from "@/components/ui/alerts";
-import { ChatInputBarProps } from "@/lib/definitions";
+import { ChatInputBarProps } from "@/lib/chat/definitions";
 
 export function ChatInputBar({
     value,

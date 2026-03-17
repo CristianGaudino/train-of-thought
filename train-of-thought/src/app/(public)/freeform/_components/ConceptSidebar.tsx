@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState } from "react";
 import { BookmarkCheck, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
-import { IdeaCard } from "@/lib/definitions";
+import { IdeaCard } from "@/lib/chat/definitions";
 import { ConceptCard } from "./ConceptCard";
 
 function DraftCard({

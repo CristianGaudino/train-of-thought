@@ -1,8 +1,8 @@
 "use client";
 
 import { X, Sparkles, RotateCcw, ArrowRight } from "lucide-react";
-import { IdeaCard } from "@/lib/definitions";
-import { Idea } from "@/lib/schemas";
+import { IdeaCard } from "@/lib/chat/definitions";
+import { Idea } from "@/lib/chat/schemas";
 
 export function SummaryModal({
     idea,

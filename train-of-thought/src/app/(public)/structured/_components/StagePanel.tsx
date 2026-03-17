@@ -1,7 +1,7 @@
 "use client";
 
 import { StageIndicator } from "@/components/ui/misc";
-import { StagePanelProps } from "@/lib/definitions";
+import { StagePanelProps } from "@/lib/chat/definitions";
 import { ChevronLeft } from "lucide-react";
 
 export function StagePanel({ stages, activeStageId, brief, ideaStageId, onStageClick, onClose }: StagePanelProps) {

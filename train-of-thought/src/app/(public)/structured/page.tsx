@@ -11,8 +11,8 @@ import { ChatHeader } from "@/components/chat/ChatHeader";
 import { Chat } from "@/components/chat/Chat";
 import { useShapeIdea } from "./_hooks/useShapeIdea";
 import { useSaveMessages, loadPersistedMessages, clearPersistedMessages } from "@/lib/hooks/usePersistedMessages";
-import { Stage, StageThreads } from "@/lib/definitions";
-import { getDisplayContent, parseBrief } from "@/lib/utils";
+import { Stage, StageThreads } from "@/lib/chat/definitions";
+import { getDisplayContent, parseBrief } from "@/lib/chat/utils";
 
 const IDEA_STAGE_ID = "idea";
 const STORAGE_KEY = "structuredMessages";

@@ -3,8 +3,8 @@
 import { useEffect, useRef } from "react";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { ChatEvent } from "@/components/chat/ChatEvent";
-import { ChatWindowProps } from "@/lib/definitions";
-import { defaultGetDisplayContent } from "@/lib/utils";
+import { ChatWindowProps } from "@/lib/chat/definitions";
+import { defaultGetDisplayContent } from "@/lib/chat/utils";
 
 export function ChatWindow({
     messages,

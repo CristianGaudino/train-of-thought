@@ -1,7 +1,7 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { ChatEventProps } from "@/lib/definitions";
+import { ChatEventProps } from "@/lib/chat/definitions";
 
 export function ChatEvent({ label, loading = false, action }: ChatEventProps) {
     return (

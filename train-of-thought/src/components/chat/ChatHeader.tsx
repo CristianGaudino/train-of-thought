@@ -1,6 +1,6 @@
 "use client";
 
-import { ChatHeaderProps } from "@/lib/definitions";
+import { ChatHeaderProps } from "@/lib/chat/definitions";
 import { DepthSelector } from "./DepthSelector";
 
 export function ChatHeader({ title, depth, setDepth, left, children }: ChatHeaderProps) {

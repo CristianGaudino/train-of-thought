@@ -1,5 +1,5 @@
-import { SummaryCache, SummaryMarker } from "@/lib/definitions";
-import { Idea } from "@/lib/schemas";
+import { SummaryCache, SummaryMarker } from "@/lib/chat/definitions";
+import { Idea } from "@/lib/chat/schemas";
 import { useState, useCallback } from "react";
 
 export function useSummary(messages: any[]) {
