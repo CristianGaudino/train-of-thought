@@ -9,6 +9,10 @@ export const TYPE_FILTERS: { value: TypeFilter; label: string }[] = [
     { value: 'project',   label: 'Projects'  },
 ];
 
+export const STATUS_FILTERS: (ProjectStatus | 'All')[] = [
+    'All', 'Not Started', 'Planning', 'In Progress', 'Review', 'Done',
+];
+
 // Types
 
 export type Priority = 'Critical' | 'High' | 'Medium' | 'Low';
@@ -31,7 +35,12 @@ export type FlatTask = Task & Required<Pick<Task,
 >>;
 
 export type ReadFilter = 'all' | 'unread' | 'read';
+
 export type TypeFilter = NotificationType | 'all';
+
+export type Tab = 'tasks' | 'activity' | 'members';
+
+export type GroupBy = 'time' | 'project' | 'priority';
 
 // Interfaces
 
@@ -127,4 +136,14 @@ export interface NotifConfig {
 export interface AccentPair {
     accent: string;
     color: string;
+}
+
+export interface HeaderForm {
+    title:       string;
+    description: string;
+    status:      string;
+    deadline:    string;
+    accent:      string;
+    color:       string;
+    members:     string[];
 }

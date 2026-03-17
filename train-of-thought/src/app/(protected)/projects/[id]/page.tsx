@@ -6,7 +6,7 @@ import {
     ArrowLeft, Pencil, Plus, ChevronDown, ChevronRight,
     AlertTriangle, MessageSquare, X, Check,
 } from 'lucide-react';
-import type { Project, Section, Task } from '@/lib/projects/definitions';
+import type { HeaderForm, Project, Section, Tab, Task } from '@/lib/projects/definitions';
 import {
     STATUS_CONFIG, ACCENT_PALETTE, STATUS_OPTIONS,
     PRIORITY_CONFIG, NOTIF_CONFIG, ACTIVITY_DATA,
@@ -17,18 +17,6 @@ import { AvatarStack, Avatar } from '@/components/projects/Avatar';
 import Ring from '@/components/projects/Ring';
 import Pill from '@/components/projects/Pill';
 import TaskPanel from '@/components/projects/TaskPanel';
-
-type Tab = 'tasks' | 'activity' | 'members';
-
-interface HeaderForm {
-    title:       string;
-    description: string;
-    status:      string;
-    deadline:    string;
-    accent:      string;
-    color:       string;
-    members:     string[];
-}
 
 export default function ProjectPage() {
     const params = useParams();

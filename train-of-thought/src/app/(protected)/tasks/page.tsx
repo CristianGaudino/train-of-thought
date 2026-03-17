@@ -6,7 +6,7 @@ import {
     Plus, ChevronDown, ChevronRight,
     AlertTriangle, Check, SlidersHorizontal,
 } from 'lucide-react';
-import type { Project, FlatTask } from '@/lib/projects/definitions';
+import type { Project, FlatTask, GroupBy } from '@/lib/projects/definitions';
 import { PRIORITY_CONFIG } from '@/lib/projects/config';
 import {
     getFlatMyTasks,
@@ -16,9 +16,7 @@ import {
     type TaskGroup,
 } from '@/lib/projects/utils';
 import Pill from '@/components/projects/Pill';
-import TaskPanel from '@/components/projects/TaskPanel';
-
-type GroupBy = 'time' | 'project' | 'priority';
+import TaskPanel from '@/components/projects/TaskPanel'
 
 export default function TasksPage() {
     const { user } = useUser();

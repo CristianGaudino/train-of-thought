@@ -11,6 +11,12 @@ export const STAGES_REGEX = /%%STAGES:([\s\S]*?)%%/;
 
 export const BRIEF_REGEX = /%%BRIEF:([\s\S]*?)%%/g;
 
+export const IDEA_STAGE_ID = "idea";
+
+export const FREEFORM_STORAGE_KEY = "freeformMessages";
+
+export const STRUCTURED_STORAGE_KEY = "structuredMessages";
+
 // Types 
 export type IdeaCard = {
     id: string;

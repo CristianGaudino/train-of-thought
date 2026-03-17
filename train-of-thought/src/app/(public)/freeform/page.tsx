@@ -4,17 +4,15 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useState, useEffect } from "react";
 import { Sparkles, RotateCcw } from "lucide-react";
-
-import { ConceptSidebar } from "./_components/ConceptSidebar";
-import { SummaryModal } from "./_components/SummaryModal";
+import { ConceptSidebar } from "../../../components/chat/freeform/ConceptSidebar";
+import { SummaryModal } from "../../../components/chat/freeform/SummaryModal";
 import { ResumeModal } from "@/components/chat/ResumeModal";
-import { useConceptCards } from "./_hooks/useConceptCards";
-import { useSummary } from "./_hooks/useSummary";
-import { useSaveMessages, loadPersistedMessages, clearPersistedMessages } from "@/lib/hooks/usePersistedMessages";
+import { useConceptCards } from "../../../hooks/chat/freeform/useConceptCards";
+import { useSummary } from "../../../hooks/chat/freeform/useSummary";
+import { useSaveMessages, loadPersistedMessages, clearPersistedMessages } from "@/hooks/chat/usePersistedMessages";
 import { ChatHeader } from "@/components/chat/ChatHeader";
 import { Chat } from "@/components/chat/Chat";
-
-const STORAGE_KEY = "freeformMessages";
+import { FREEFORM_STORAGE_KEY } from "@/lib/chat/definitions";
 
 export default function FreeformPage() {
     const [depth, setDepth] = useState(1);
@@ -65,10 +63,10 @@ export default function FreeformPage() {
         fetchSummary,
     } = useSummary(messages);
 
-    useSaveMessages(messages, STORAGE_KEY);
+    useSaveMessages(messages, FREEFORM_STORAGE_KEY);
 
     useEffect(() => {
-        const persisted = loadPersistedMessages(STORAGE_KEY);
+        const persisted = loadPersistedMessages(FREEFORM_STORAGE_KEY);
         if (persisted.length > 0) setResumeMessages(persisted);
     }, []);
 
@@ -89,7 +87,7 @@ export default function FreeformPage() {
 
     function handleStartFresh(keepConcepts: boolean) {
         if (!keepConcepts) removeAllCards();
-        clearPersistedMessages(STORAGE_KEY);
+        clearPersistedMessages(FREEFORM_STORAGE_KEY);
         setResumeMessages([]);
         setShowIntro(true);
         resetSummary();

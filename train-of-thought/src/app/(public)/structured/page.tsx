@@ -4,18 +4,15 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { RotateCcw, ChevronLeft, Sparkles } from "lucide-react";
-import { StagePanel } from "./_components/StagePanel";
-import { BriefPanel } from "./_components/BriefPanel";
+import { StagePanel } from "../../../components/chat/structured/StagePanel";
+import { BriefPanel } from "../../../components/chat/structured/BriefPanel";
 import { ResumeModal } from "@/components/chat/ResumeModal";
 import { ChatHeader } from "@/components/chat/ChatHeader";
 import { Chat } from "@/components/chat/Chat";
-import { useShapeIdea } from "./_hooks/useShapeIdea";
-import { useSaveMessages, loadPersistedMessages, clearPersistedMessages } from "@/lib/hooks/usePersistedMessages";
-import { Stage, StageThreads } from "@/lib/chat/definitions";
+import { useShapeIdea } from "../../../hooks/chat/structured/useShapeIdea";
+import { useSaveMessages, loadPersistedMessages, clearPersistedMessages } from "@/hooks/chat/usePersistedMessages";
+import { IDEA_STAGE_ID, Stage, StageThreads, STRUCTURED_STORAGE_KEY } from "@/lib/chat/definitions";
 import { getDisplayContent, parseBrief } from "@/lib/chat/utils";
-
-const IDEA_STAGE_ID = "idea";
-const STORAGE_KEY = "structuredMessages";
 
 export default function StructuredPage() {
     const [depth, setDepth] = useState(1);
@@ -79,11 +76,11 @@ export default function StructuredPage() {
     }, [messages]);
 
     // Persist the idea stage thread
-    useSaveMessages(stageThreads[IDEA_STAGE_ID] ?? [], STORAGE_KEY);
+    useSaveMessages(stageThreads[IDEA_STAGE_ID] ?? [], STRUCTURED_STORAGE_KEY);
 
     // On mount, check for persisted idea thread
     useEffect(() => {
-        const persisted = loadPersistedMessages(STORAGE_KEY);
+        const persisted = loadPersistedMessages(STRUCTURED_STORAGE_KEY);
         if (persisted.length > 0) setResumeMessages(persisted);
     }, []);
 
@@ -95,7 +92,7 @@ export default function StructuredPage() {
     }
 
     function handleStartFresh() {
-        clearPersistedMessages(STORAGE_KEY);
+        clearPersistedMessages(STRUCTURED_STORAGE_KEY);
         setResumeMessages([]);
         setShowIntro(true);
     }
@@ -145,7 +142,7 @@ export default function StructuredPage() {
         setStageThreads({ [IDEA_STAGE_ID]: [] });
         setBrief({});
         setChatError(null);
-        clearPersistedMessages(STORAGE_KEY);
+        clearPersistedMessages(STRUCTURED_STORAGE_KEY);
         savingFromStageRef.current = IDEA_STAGE_ID;
         setChatId(`${IDEA_STAGE_ID}-${crypto.randomUUID()}`);
         resetShape();

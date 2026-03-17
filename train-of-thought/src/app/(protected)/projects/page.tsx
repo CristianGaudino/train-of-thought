@@ -2,14 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, Search } from 'lucide-react';
-import type { Project, ProjectStatus } from '@/lib/projects/definitions';
+import { STATUS_FILTERS, type Project, type ProjectStatus } from '@/lib/projects/definitions';
 import { STATUS_CONFIG } from '@/lib/projects/config';
 import ProjectCard from '@/components/projects/ProjectCard';
 import NewProjectModal from '@/components/projects/NewProjectModal';
-
-const STATUS_FILTERS: (ProjectStatus | 'All')[] = [
-    'All', 'Not Started', 'Planning', 'In Progress', 'Review', 'Done',
-];
 
 export default function ProjectsPage() {
     const [projects, setProjects]   = useState<Project[]>([]);
