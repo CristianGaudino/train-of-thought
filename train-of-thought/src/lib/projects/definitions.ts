@@ -147,3 +147,9 @@ export interface HeaderForm {
     color:       string;
     members:     string[];
 }
+
+export interface NotifRowProps {
+    notif:   Notification;
+    onRead:  (id: string) => void;
+    compact?: boolean;
+}

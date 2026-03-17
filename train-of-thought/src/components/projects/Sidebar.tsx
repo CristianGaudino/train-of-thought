@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { UserButton } from '@clerk/nextjs';
 import { LayoutGrid, CheckSquare, Bell, Lightbulb, LayoutTemplate } from 'lucide-react';
-import NotifBell from './NotifBell';
+import NotificationBell from './NotificationBell';
 
 const NAV_ITEMS = [
     { id: 'projects',      href: '/projects',      icon: LayoutGrid,     label: 'Project Space' },
@@ -30,7 +30,7 @@ export default function Sidebar() {
                         your creative space
                     </div>
                 </div>
-                <NotifBell />
+                <NotificationBell />
             </div>
 
             {/* Nav */}

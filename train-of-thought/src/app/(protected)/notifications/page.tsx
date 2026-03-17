@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { CheckCheck, Bell } from 'lucide-react';
 import { TYPE_FILTERS, type Notification, type ReadFilter, type TypeFilter } from '@/lib/projects/definitions';
 import { NOTIF_CONFIG } from '@/lib/projects/config';
-import { NotifRow } from '@/components/projects/NotifBell';
+import { NotificationRow } from '@/components/projects/NotificationRow';
 
 export default function NotificationsPage() {
     const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -172,7 +172,7 @@ export default function NotificationsPage() {
                                 <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
                                     {group.items.map((n, i) => (
                                         <div key={n.id} className={i < group.items.length - 1 ? 'border-b border-zinc-50' : ''}>
-                                            <NotifRow notif={n} onRead={markRead} />
+                                            <NotificationRow notif={n} onRead={markRead} />
                                         </div>
                                     ))}
                                 </div>
