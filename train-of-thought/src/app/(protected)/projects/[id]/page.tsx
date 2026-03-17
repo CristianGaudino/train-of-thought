@@ -13,10 +13,11 @@ import {
 } from '@/lib/projects/config';
 import { getDeadlineInfo, generateId, getMember } from '@/lib/projects/utils';
 import { ME_ID } from '@/lib/projects/config';
-import { AvatarStack, Avatar } from '@/components/projects/Avatar';
+import { Avatar } from '@/components/projects/Avatar';
 import Ring from '@/components/projects/Ring';
 import Pill from '@/components/projects/Pill';
 import TaskPanel from '@/components/projects/TaskPanel';
+import { AvatarStack } from '@/components/projects/AvatarStack';
 
 export default function ProjectPage() {
     const params = useParams();
