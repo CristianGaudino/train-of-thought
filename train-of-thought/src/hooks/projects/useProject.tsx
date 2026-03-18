@@ -1,15 +1,15 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { useToast } from '@/components/ui/Toast';
 import type { HeaderData, Project, Section, Task, UseProjectReturn } from '@/lib/projects/definitions';
 import { generateId } from '@/lib/projects/utils';
-import { useUser } from '@clerk/nextjs';
-
-
 
 export function useProject(id: string): UseProjectReturn {
     const { user } = useUser();
     const userId = user?.id ?? '';
+    const { success, error: toastError } = useToast();
 
     const [project, setProject]       = useState<Project | null>(null);
     const [sections, setSections]     = useState<Section[]>([]);
@@ -59,6 +59,7 @@ export function useProject(id: string): UseProjectReturn {
                 body:    JSON.stringify({ done: !previousDone }),
             });
         } catch {
+            toastError('Failed to update task', 'Your change could not be saved.');
             // Rollback
             setSections(ss => ss.map(s => ({
                 ...s,
@@ -111,8 +112,9 @@ export function useProject(id: string): UseProjectReturn {
                 ...s,
                 tasks: s.tasks.map(t => t.id === tempId ? saved : t),
             })));
+            success('Task added');
         } catch {
-            // Rollback
+            toastError('Failed to add task', 'Your task could not be saved.');
             setSections(ss => ss.map(s => ({
                 ...s,
                 tasks: s.tasks.filter(t => t.id !== tempId),
@@ -144,7 +146,9 @@ export function useProject(id: string): UseProjectReturn {
             if (!res.ok) throw new Error('Failed');
             const { id: savedId } = await res.json();
             setSections(ss => ss.map(s => s.id === tempId ? { ...s, id: savedId } : s));
+            success('Section added');
         } catch {
+            toastError('Failed to add section');
             setSections(ss => ss.filter(s => s.id !== tempId));
         }
     };

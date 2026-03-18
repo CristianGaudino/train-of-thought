@@ -1,9 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useToast } from '@/components/ui/Toast';
 import type { Project, UseProjectsReturn } from '@/lib/projects/definitions';
 
 export function useProjects(): UseProjectsReturn {
+    const { success, error: toastError } = useToast();
+
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading]   = useState(true);
     const [error, setError]       = useState<string | null>(null);
@@ -17,6 +20,7 @@ export function useProjects(): UseProjectsReturn {
             setError(null);
         } catch {
             setError('Could not load projects. Please try again.');
+            toastError('Failed to load projects', 'Check your connection and try again.');
         } finally {
             setLoading(false);
         }
@@ -36,5 +40,8 @@ export function useProjects(): UseProjectsReturn {
         setProjects(ps => ps.filter(p => p.id !== id));
     };
 
-    return { projects, loading, error, refetch, addProject, updateProject, removeProject };
+    const notifySuccess = (title: string, message?: string) => success(title, message);
+    const notifyError   = (title: string, message?: string) => toastError(title, message);
+
+    return { projects, loading, error, refetch, addProject, updateProject, removeProject, notifySuccess, notifyError };
 }

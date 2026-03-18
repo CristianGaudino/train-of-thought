@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useUser } from '@clerk/nextjs';
+import { useToast } from '@/components/ui/Toast';
 import { X, Plus, ArrowUp, ChevronRight } from 'lucide-react';
 import type { Subtask, Comment, TaskPanelProps } from '@/lib/projects/definitions';
 import { PRIORITY_CONFIG } from '@/lib/projects/config';
@@ -13,6 +14,7 @@ import { SectionLabel } from './SectionLabel';
 
 export default function TaskPanel({ task, accent, projectColor, onClose }: TaskPanelProps) {
     const { user } = useUser();
+    const { success, error: toastError } = useToast();
 
     const [comments, setComments] = useState<Comment[]>(task.comments ?? []);
     const [subtasks, setSubtasks] = useState<Subtask[]>(task.subtasks ?? []);
@@ -37,7 +39,7 @@ export default function TaskPanel({ task, accent, projectColor, onClose }: TaskP
                 body:    JSON.stringify({ subtasks: updated }),
             });
         } catch {
-            // Rollback
+            toastError('Failed to update sub-task');
             setSubtasks(s => s.map(st => st.id === id ? { ...st, done: !st.done } : st));
         }
     };
@@ -55,6 +57,7 @@ export default function TaskPanel({ task, accent, projectColor, onClose }: TaskP
                 body:    JSON.stringify({ subtasks: updated }),
             });
         } catch {
+            toastError('Failed to add sub-task');
             setSubtasks(s => s.filter(st => st.id !== newSubtask.id));
         }
     };
@@ -86,8 +89,9 @@ export default function TaskPanel({ task, accent, projectColor, onClose }: TaskP
             const saved: Comment = await res.json();
             // Replace temp with server response
             setComments(c => c.map(cm => cm.id === tempComment.id ? saved : cm));
+            success('Comment posted');
         } catch {
-            // Rollback
+            toastError('Failed to post comment', 'Please try again.');
             setComments(c => c.filter(cm => cm.id !== tempComment.id));
         } finally {
             setSubmitting(false);

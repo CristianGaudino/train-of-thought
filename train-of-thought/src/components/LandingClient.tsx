@@ -4,8 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Sparkles, Lightbulb, ArrowRight, LayoutGrid, CheckSquare, Bell } from 'lucide-react';
 import Logo from './ui/svg';
-
-type Mode = 'idle' | 'explore';
+import { Mode } from '@/lib/definitions';
 
 export default function LandingClient() {
     const [mode, setMode] = useState<Mode>('idle');

@@ -1,9 +1,12 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useToast } from '@/components/ui/Toast';
 import type { Notification, ReadFilter, TypeFilter, UseNotificationsReturn } from '@/lib/projects/definitions';
 
 export function useNotifications(): UseNotificationsReturn {
+    const { error: toastError } = useToast();
+
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading]             = useState(true);
     const [typeFilter, setTypeFilter]       = useState<TypeFilter>('all');
@@ -69,7 +72,7 @@ export function useNotifications(): UseNotificationsReturn {
                 body:    JSON.stringify({ id }),
             });
         } catch {
-            // Rollback
+            toastError('Failed to mark as read');
             if (prev) {
                 setNotifications(ns => ns.map(n => n.id === id ? prev : n));
             }
@@ -86,6 +89,7 @@ export function useNotifications(): UseNotificationsReturn {
                 body:    JSON.stringify({ all: true }),
             });
         } catch {
+            toastError('Failed to mark all as read');
             setNotifications(prev);
         }
     };
