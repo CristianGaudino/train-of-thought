@@ -1,7 +1,7 @@
 import Logo from '@/components/ui/svg';
-import { SignIn } from '@clerk/nextjs';
+import { SignUp } from '@clerk/nextjs';
 
-export default function SignInPage() {
+export default function SignUpPage() {
     return (
         <div className="min-h-screen bg-zinc-50 flex">
 
@@ -20,50 +20,47 @@ export default function SignInPage() {
                 </div>
 
                 <div>
-                    <blockquote className="text-[22px] font-secondary text-zinc-800 leading-snug tracking-tight">
-                        "The best projects start with a single clear thought."
-                    </blockquote>
-                    <p className="text-[13px] text-zinc-400 font-primary mt-4">
-                        Capture it. Break it down. Ship it.
-                    </p>
+                    <h2 className="text-[24px] font-secondary text-zinc-900 tracking-tight leading-snug">
+                        Everything you need to manage projects — personal or professional.
+                    </h2>
+                    <div className="flex flex-col gap-4 mt-8">
+                        {[
+                            {
+                                icon:  '⬡',
+                                label: 'Project Space',
+                                desc:  'Organise work into projects with sections and tasks',
+                            },
+                            {
+                                icon:  '◈',
+                                label: 'My Tasks',
+                                desc:  'See everything assigned to you across all projects',
+                            },
+                            {
+                                icon:  '🔔',
+                                label: 'Notifications',
+                                desc:  'Stay on top of activity without checking every tab',
+                            },
+                        ].map(f => (
+                            <div key={f.label} className="flex items-start gap-3">
+                                <div className="w-8 h-8 rounded-xl bg-zinc-100 flex items-center justify-center text-sm flex-shrink-0 mt-0.5">
+                                    {f.icon}
+                                </div>
+                                <div>
+                                    <div className="text-[13px] font-semibold text-zinc-800 font-primary">
+                                        {f.label}
+                                    </div>
+                                    <div className="text-[12px] text-zinc-400 font-primary mt-0.5 leading-relaxed">
+                                        {f.desc}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
 
-                {/* Decorative project cards */}
-                <div className="flex flex-col gap-3">
-                    {[
-                        { title: 'Brand Redesign',    accent: '#2D7A5F', color: '#E8F4F0', pct: 58 },
-                        { title: 'Q2 Product Launch', accent: '#3A5FA0', color: '#EEF2F8', pct: 24 },
-                        { title: 'Learn Ceramics',    accent: '#A0714F', color: '#F5F0EA', pct: 40 },
-                    ].map(card => (
-                        <div
-                            key={card.title}
-                            className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-zinc-100"
-                            style={{ background: card.color }}
-                        >
-                            <div
-                                className="w-1 h-8 rounded-full flex-shrink-0"
-                                style={{ background: card.accent }}
-                            />
-                            <div className="flex-1 min-w-0">
-                                <div className="text-[13px] font-semibold text-zinc-800 font-primary truncate">
-                                    {card.title}
-                                </div>
-                                <div className="h-1 rounded-full bg-zinc-200 mt-1.5 overflow-hidden">
-                                    <div
-                                        className="h-full rounded-full"
-                                        style={{ width: `${card.pct}%`, background: card.accent }}
-                                    />
-                                </div>
-                            </div>
-                            <div
-                                className="text-[11px] font-semibold font-primary flex-shrink-0"
-                                style={{ color: card.accent }}
-                            >
-                                {card.pct}%
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                <p className="text-[12px] text-zinc-300 font-primary">
+                    Free to get started. No credit card required.
+                </p>
             </div>
 
             {/* Right panel */}
@@ -81,14 +78,14 @@ export default function SignInPage() {
 
                     <div className="mb-8 text-center lg:text-left">
                         <h1 className="text-[26px] font-secondary text-zinc-900 tracking-tight">
-                            Welcome back
+                            Create your account
                         </h1>
                         <p className="text-[14px] text-zinc-400 font-primary mt-1">
-                            Sign in to your workspace
+                            Start organising your work today
                         </p>
                     </div>
 
-                    <SignIn
+                    <SignUp
                         appearance={{
                             elements: {
                                 rootBox:          'w-full',
