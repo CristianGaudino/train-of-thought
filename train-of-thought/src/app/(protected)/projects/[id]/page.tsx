@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
     ArrowLeft, Pencil, Plus, ChevronDown, ChevronRight,
-    AlertTriangle, MessageSquare, X, Check,
+    AlertTriangle, MessageSquare, X, Check, Trash2,
 } from 'lucide-react';
 import {
     STATUS_CONFIG, ACCENT_PALETTE, STATUS_OPTIONS,
@@ -15,6 +15,7 @@ import { Avatar } from '@/components/projects/Avatar';
 import Ring from '@/components/projects/Ring';
 import Pill from '@/components/projects/Pill';
 import TaskPanel from '@/components/projects/TaskPanel';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 import type { HeaderData, Tab, Task } from '@/lib/projects/definitions';
 import { useProject } from '@/hooks/projects/useProject';
 import { AvatarStack } from '@/components/projects/AvatarStack';
@@ -26,21 +27,21 @@ export default function ProjectPage() {
 
     const {
         project, sections, loading, error,
-        toggleTask, addTask, addSection,
+        toggleTask, updateTask, addTask, addSection,
         saveHeader, savingHeader,
+        deleteProject, deleting,
     } = useProject(id);
 
     const [activeTask, setActiveTask]         = useState<Task | null>(null);
     const [collapsed, setCollapsed]           = useState<Record<string, boolean>>({});
     const [activeTab, setActiveTab]           = useState<Tab>('tasks');
     const [editingHeader, setEditingHeader]   = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [newTaskSec, setNewTaskSec]         = useState<string | null>(null);
     const [newTaskVal, setNewTaskVal]         = useState('');
     const [newSecMode, setNewSecMode]         = useState(false);
     const [newSecVal, setNewSecVal]           = useState('');
-
-    // Local header form — initialised from project, saved on submit
-    const [hf, setHf] = useState<HeaderData | null>(null);
+    const [hf, setHf]                        = useState<HeaderData | null>(null);
 
     // Sync hf when project first loads
     if (project && !hf) {
@@ -74,13 +75,15 @@ export default function ProjectPage() {
         );
     }
 
-    // ── Derived values ──
+    // ── Derived ──
 
     const sc       = STATUS_CONFIG[hf.status] ?? STATUS_CONFIG['Planning'];
     const dl       = getDeadlineInfo(hf.deadline || null);
     const allTasks = sections.flatMap(s => s.tasks);
     const done     = allTasks.filter(t => t.done).length;
     const pct      = allTasks.length ? Math.round((done / allTasks.length) * 100) : 0;
+
+    // ── Handlers ──
 
     const handleSaveHeader = async () => {
         await saveHeader(hf);
@@ -97,6 +100,11 @@ export default function ProjectPage() {
         await addSection(newSecVal);
         setNewSecVal('');
         setNewSecMode(false);
+    };
+
+    const handleDelete = async () => {
+        const ok = await deleteProject();
+        if (ok) router.push('/projects');
     };
 
     const toggleCollapse = (id: string) => setCollapsed(c => ({ ...c, [id]: !c[id] }));
@@ -122,16 +130,23 @@ export default function ProjectPage() {
                         Projects
                     </button>
                     <div className="w-px h-4 bg-black/12" />
-                    <span className="text-[13px] text-zinc-500 font-primary flex-1 truncate">
-                        {hf.title}
-                    </span>
-                    <button
-                        onClick={() => setEditingHeader(v => !v)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium font-primary text-zinc-600 transition-colors cursor-pointer ${editingHeader ? 'bg-black/12' : 'bg-black/7 hover:bg-black/12'}`}
-                    >
-                        <Pencil size={13} />
-                        Edit
-                    </button>
+                    <span className="text-[13px] text-zinc-500 font-primary flex-1 truncate">{hf.title}</span>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setEditingHeader(v => !v)}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium font-primary text-zinc-600 transition-colors cursor-pointer ${editingHeader ? 'bg-black/12' : 'bg-black/7 hover:bg-black/12'}`}
+                        >
+                            <Pencil size={13} />
+                            Edit
+                        </button>
+                        <button
+                            onClick={() => setShowDeleteConfirm(true)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/7 hover:bg-red-50 hover:text-red-500 text-[12px] font-medium font-primary text-zinc-600 transition-colors cursor-pointer"
+                        >
+                            <Trash2 size={13} />
+                            Delete
+                        </button>
+                    </div>
                 </div>
 
                 {/* Identity */}
@@ -163,29 +178,13 @@ export default function ProjectPage() {
                                     <div className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest font-primary mb-1.5">Colour</div>
                                     <div className="flex gap-1.5">
                                         {ACCENT_PALETTE.map(pair => (
-                                            <button
-                                                key={pair.accent}
-                                                onClick={() => setHf(f => f ? { ...f, accent: pair.accent, color: pair.color } : f)}
-                                                className="w-6 h-6 rounded-full cursor-pointer transition-all duration-150 flex-shrink-0"
-                                                style={{
-                                                    background: pair.accent,
-                                                    boxShadow:  hf.accent === pair.accent ? `0 0 0 2px #fff, 0 0 0 4px ${pair.accent}` : 'none',
-                                                    transform:  hf.accent === pair.accent ? 'scale(1.2)' : 'scale(1)',
-                                                }}
-                                            />
+                                            <button key={pair.accent} onClick={() => setHf(f => f ? { ...f, accent: pair.accent, color: pair.color } : f)} className="w-6 h-6 rounded-full cursor-pointer transition-all duration-150 flex-shrink-0" style={{ background: pair.accent, boxShadow: hf.accent === pair.accent ? `0 0 0 2px #fff, 0 0 0 4px ${pair.accent}` : 'none', transform: hf.accent === pair.accent ? 'scale(1.2)' : 'scale(1)' }} />
                                         ))}
                                     </div>
                                 </div>
                                 <div className="flex gap-2 ml-auto">
-                                    <button onClick={() => setEditingHeader(false)} className="px-4 py-2 rounded-lg border border-zinc-200 bg-white text-zinc-600 text-[13px] font-primary cursor-pointer hover:bg-zinc-50 transition-colors">
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={handleSaveHeader}
-                                        disabled={savingHeader}
-                                        className="px-5 py-2 rounded-lg text-white text-[13px] font-semibold font-primary cursor-pointer transition-opacity hover:opacity-85 disabled:opacity-60"
-                                        style={{ background: hf.accent }}
-                                    >
+                                    <button onClick={() => setEditingHeader(false)} className="px-4 py-2 rounded-lg border border-zinc-200 bg-white text-zinc-600 text-[13px] font-primary cursor-pointer hover:bg-zinc-50 transition-colors">Cancel</button>
+                                    <button onClick={handleSaveHeader} disabled={savingHeader} className="px-5 py-2 rounded-lg text-white text-[13px] font-semibold font-primary cursor-pointer transition-opacity hover:opacity-85 disabled:opacity-60" style={{ background: hf.accent }}>
                                         {savingHeader ? 'Saving…' : 'Save'}
                                     </button>
                                 </div>
@@ -195,14 +194,8 @@ export default function ProjectPage() {
                         <div className="pb-5">
                             <div className="flex items-start gap-4 flex-wrap">
                                 <div className="flex-1 min-w-48">
-                                    <h1 className="text-[28px] font-secondary text-zinc-900 tracking-tight m-0 leading-tight">
-                                        {hf.title}
-                                    </h1>
-                                    {hf.description && (
-                                        <p className="text-[14px] text-zinc-500 font-primary mt-1.5 m-0 leading-relaxed max-w-lg">
-                                            {hf.description}
-                                        </p>
-                                    )}
+                                    <h1 className="text-[28px] font-secondary text-zinc-900 tracking-tight m-0 leading-tight">{hf.title}</h1>
+                                    {hf.description && <p className="text-[14px] text-zinc-500 font-primary mt-1.5 m-0 leading-relaxed max-w-lg">{hf.description}</p>}
                                     <div className="flex items-center gap-2.5 mt-3 flex-wrap">
                                         <Pill bg={sc.bg} color={sc.text}>
                                             <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: sc.dot }} />
@@ -217,8 +210,6 @@ export default function ProjectPage() {
                                         <AvatarStack ids={hf.members} size={24} />
                                     </div>
                                 </div>
-
-                                {/* Progress */}
                                 <div className="rounded-2xl px-4 py-3.5 min-w-44" style={{ background: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(4px)' }}>
                                     <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-widest font-primary mb-2">Progress</div>
                                     <div className="flex items-center gap-3">
@@ -240,16 +231,7 @@ export default function ProjectPage() {
                 {/* Tabs */}
                 <div className="flex px-8 -mb-px">
                     {(['tasks', 'activity', 'members'] as Tab[]).map(t => (
-                        <button
-                            key={t}
-                            onClick={() => setActiveTab(t)}
-                            className="px-4 py-2.5 text-[13px] font-primary border-b-2 transition-all duration-150 cursor-pointer capitalize"
-                            style={{
-                                color:       activeTab === t ? hf.accent : '#A1A1AA',
-                                fontWeight:  activeTab === t ? 600 : 400,
-                                borderColor: activeTab === t ? hf.accent : 'transparent',
-                            }}
-                        >
+                        <button key={t} onClick={() => setActiveTab(t)} className="px-4 py-2.5 text-[13px] font-primary border-b-2 transition-all duration-150 cursor-pointer capitalize" style={{ color: activeTab === t ? hf.accent : '#A1A1AA', fontWeight: activeTab === t ? 600 : 400, borderColor: activeTab === t ? hf.accent : 'transparent' }}>
                             {t}
                         </button>
                     ))}
@@ -267,7 +249,6 @@ export default function ProjectPage() {
                             const isC     = collapsed[section.id];
                             return (
                                 <div key={section.id}>
-                                    {/* Section heading */}
                                     <div className="flex items-center gap-2.5 mb-2.5">
                                         <button onClick={() => toggleCollapse(section.id)} className="text-zinc-300 hover:text-zinc-500 transition-colors cursor-pointer">
                                             {isC ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
@@ -280,7 +261,6 @@ export default function ProjectPage() {
                                         </div>
                                     </div>
 
-                                    {/* Task rows */}
                                     {!isC && (
                                         <div className="flex flex-col gap-1.5 pl-1">
                                             {section.tasks.map(task => {
@@ -302,15 +282,9 @@ export default function ProjectPage() {
                                                         >
                                                             {task.done && <Check size={10} color="#fff" strokeWidth={3} />}
                                                         </button>
-
-                                                        <span
-                                                            onClick={() => setActiveTask(task)}
-                                                            className="flex-1 text-[14px] font-primary cursor-pointer transition-colors"
-                                                            style={{ color: task.done ? '#BBBBBB' : '#18181B', textDecoration: task.done ? 'line-through' : 'none' }}
-                                                        >
+                                                        <span onClick={() => setActiveTask(task)} className="flex-1 text-[14px] font-primary cursor-pointer transition-colors" style={{ color: task.done ? '#BBBBBB' : '#18181B', textDecoration: task.done ? 'line-through' : 'none' }}>
                                                             {task.title}
                                                         </span>
-
                                                         <div className="flex items-center gap-2.5 flex-shrink-0">
                                                             {task.subtasks.length > 0 && <span className="text-[11px] text-zinc-300 font-primary">{task.subtasks.filter(s => s.done).length}/{task.subtasks.length} sub</span>}
                                                             {task.assignees.length > 0 && <AvatarStack ids={task.assignees} size={22} />}
@@ -323,7 +297,6 @@ export default function ProjectPage() {
                                                 );
                                             })}
 
-                                            {/* Add task */}
                                             {newTaskSec === section.id ? (
                                                 <div className="flex gap-2 mt-1">
                                                     <input autoFocus value={newTaskVal} onChange={e => setNewTaskVal(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleAddTask(section.id); if (e.key === 'Escape') { setNewTaskSec(null); setNewTaskVal(''); }}} placeholder="Task name…" className="flex-1 px-3.5 py-2 rounded-xl border text-[13px] font-primary text-zinc-800 bg-white outline-none" style={{ borderColor: hf.accent }} />
@@ -346,7 +319,6 @@ export default function ProjectPage() {
                             );
                         })}
 
-                        {/* Add section */}
                         {newSecMode ? (
                             <div className="flex gap-2 items-center">
                                 <input autoFocus value={newSecVal} onChange={e => setNewSecVal(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleAddSection(); if (e.key === 'Escape') { setNewSecMode(false); setNewSecVal(''); }}} placeholder="Section name…" className="flex-1 px-3.5 py-2.5 rounded-xl border text-[14px] font-semibold font-primary text-zinc-800 bg-white outline-none" style={{ borderColor: hf.accent }} />
@@ -409,11 +381,7 @@ export default function ProjectPage() {
                                             <div className="text-[12px] text-zinc-400 font-primary mt-0.5">{isMember ? 'Member' : 'Not a member'}</div>
                                         </div>
                                         {!isMe && (
-                                            <button
-                                                onClick={() => setHf(f => f ? { ...f, members: isMember ? f.members.filter(id => id !== memberId) : [...f.members, memberId] } : f)}
-                                                className="px-3.5 py-1.5 rounded-lg border text-[12px] font-medium font-primary cursor-pointer transition-all duration-150"
-                                                style={{ borderColor: isMember ? '#E4E4E7' : hf.accent, background: isMember ? '#fff' : hf.color, color: isMember ? '#71717A' : hf.accent }}
-                                            >
+                                            <button onClick={() => setHf(f => f ? { ...f, members: isMember ? f.members.filter(id => id !== memberId) : [...f.members, memberId] } : f)} className="px-3.5 py-1.5 rounded-lg border text-[12px] font-medium font-primary cursor-pointer transition-all duration-150" style={{ borderColor: isMember ? '#E4E4E7' : hf.accent, background: isMember ? '#fff' : hf.color, color: isMember ? '#71717A' : hf.accent }}>
                                                 {isMember ? 'Remove' : 'Add'}
                                             </button>
                                         )}
@@ -428,6 +396,7 @@ export default function ProjectPage() {
                 )}
             </div>
 
+            {/* Task panel — passes updateTask so edits persist */}
             {activeTask && (
                 <TaskPanel
                     key={activeTask.id}
@@ -435,6 +404,20 @@ export default function ProjectPage() {
                     accent={hf.accent}
                     projectColor={hf.color}
                     onClose={() => setActiveTask(null)}
+                    onUpdate={updateTask}
+                />
+            )}
+
+            {/* Delete confirmation */}
+            {showDeleteConfirm && (
+                <ConfirmModal
+                    title="Delete project"
+                    message={`Are you sure you want to delete "${project.title}"? All sections, tasks and comments will be permanently removed. This cannot be undone.`}
+                    confirmLabel="Delete project"
+                    destructive
+                    loading={deleting}
+                    onConfirm={handleDelete}
+                    onCancel={() => setShowDeleteConfirm(false)}
                 />
             )}
         </div>

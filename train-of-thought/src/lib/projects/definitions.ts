@@ -35,6 +35,8 @@ export const EMPTY_FORM: FormState = {
     members:     [ME_ID],
 };
 
+export const PRIORITIES: Priority[] = ['Critical', 'High', 'Medium', 'Low'];
+
 // Types
 
 export type Priority = 'Critical' | 'High' | 'Medium' | 'Low';
@@ -206,12 +208,16 @@ export interface UseProjectReturn {
     error:          string | null;
     // Task mutations
     toggleTask:     (taskId: string) => Promise<void>;
+    updateTask:     (taskId: string, data: Partial<Task>) => Promise<void>;
     addTask:        (sectionId: string, title: string) => Promise<void>;
     // Section mutations
     addSection:     (title: string) => Promise<void>;
     // Header mutations
     saveHeader:     (data: HeaderData) => Promise<void>;
     savingHeader:   boolean;
+    // Project deletion
+    deleteProject:  () => Promise<boolean>;
+    deleting:       boolean;
 }
 
 export interface HeaderData {
@@ -278,6 +284,7 @@ export interface TaskPanelProps {
     accent:       string;
     projectColor: string;
     onClose:      () => void;
+    onUpdate?:    (taskId: string, data: Partial<Task>) => Promise<void>;
 }
 
 export interface AvatarProps {

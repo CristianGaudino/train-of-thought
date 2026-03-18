@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useToast } from '@/components/ui/Toast';
-import type { HeaderData, Project, Section, Task, UseProjectReturn } from '@/lib/projects/definitions';
+import type { Project, Section, Task, HeaderData, UseProjectReturn } from '@/lib/projects/definitions';
 import { generateId } from '@/lib/projects/utils';
 
 export function useProject(id: string): UseProjectReturn {
@@ -16,6 +16,7 @@ export function useProject(id: string): UseProjectReturn {
     const [loading, setLoading]       = useState(true);
     const [error, setError]           = useState<string | null>(null);
     const [savingHeader, setSaving]   = useState(false);
+    const [deleting, setDeleting]     = useState(false);
 
     // ── Fetch ──
 
@@ -67,6 +68,36 @@ export function useProject(id: string): UseProjectReturn {
                     t.id === taskId ? { ...t, done: previousDone ?? t.done } : t
                 ),
             })));
+        }
+    };
+
+
+    // ── Update task fields ──
+
+    const updateTask = async (taskId: string, data: Partial<Task>) => {
+        // Optimistic
+        setSections(ss => ss.map(s => ({
+            ...s,
+            tasks: s.tasks.map(t => t.id === taskId ? { ...t, ...data } : t),
+        })));
+
+        try {
+            const payload: Record<string, unknown> = { ...data };
+            // Convert due date to ISO string if present
+            if ('due' in payload && payload.due) {
+                payload.due = payload.due;
+            }
+            const res = await fetch(`/api/tasks/${taskId}`, {
+                method:  'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(payload),
+            });
+            if (!res.ok) throw new Error('Failed');
+            success('Task updated');
+        } catch {
+            toastError('Failed to update task', 'Your changes could not be saved.');
+            // Rollback by refetching
+            fetch_();
         }
     };
 
@@ -182,15 +213,36 @@ export function useProject(id: string): UseProjectReturn {
         }
     };
 
+
+    // ── Delete project ──
+
+    const deleteProject = async (): Promise<boolean> => {
+        setDeleting(true);
+        try {
+            const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Failed');
+            success('Project deleted');
+            return true;
+        } catch {
+            toastError('Failed to delete project', 'Please try again.');
+            return false;
+        } finally {
+            setDeleting(false);
+        }
+    };
+
     return {
         project,
         sections,
         loading,
         error,
         toggleTask,
+        updateTask,
         addTask,
         addSection,
         saveHeader,
         savingHeader,
+        deleteProject,
+        deleting,
     };
 }
