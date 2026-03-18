@@ -22,7 +22,7 @@ export default function Sidebar() {
             <div className="flex items-center justify-between px-5 pb-6 border-b border-zinc-100">
                 <div>
                     <div className="text-xl font-secondary text-zinc-900 tracking-tight">
-                        forma
+                        Train of Thought
                     </div>
                     <div className="text-[11px] text-zinc-400 mt-0.5 font-primary">
                         your creative space
