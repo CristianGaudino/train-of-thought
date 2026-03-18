@@ -19,17 +19,32 @@ export default function TasksPage() {
         filterProject, filterPriority, groupBy,
         setFilterProject, setFilterPriority, setGroupBy,
         uniqueProjects,
-        markDone,
+        markDone, addQuickTask,
     } = useTasks();
 
-    const [activeTask, setActiveTask] = useState<FlatTask | null>(null);
-    const [collapsed, setCollapsed]   = useState<Record<string, boolean>>({});
-    const [showQuick, setShowQuick]   = useState(false);
-    const [quickTitle, setQuickTitle] = useState('');
+    const [activeTask, setActiveTask]   = useState<FlatTask | null>(null);
+    const [collapsed, setCollapsed]     = useState<Record<string, boolean>>({});
+    const [showQuick, setShowQuick]     = useState(false);
+    const [quickTitle, setQuickTitle]   = useState('');
+    const [quickProject, setQuickProject] = useState('');
 
     const toggleCollapse = (id: string) => setCollapsed(c => ({ ...c, [id]: !c[id] }));
+    const totalFiltered  = groups.reduce((sum, g) => sum + g.tasks.length, 0);
 
-    const totalFiltered = groups.reduce((sum, g) => sum + g.tasks.length, 0);
+    // Default quickProject to first available project when quick-add opens
+    const handleOpenQuick = () => {
+        if (!quickProject && uniqueProjects.length > 0) {
+            setQuickProject(uniqueProjects[0].id);
+        }
+        setShowQuick(true);
+    };
+
+    const handleQuickAdd = async () => {
+        if (!quickTitle.trim() || !quickProject) return;
+        await addQuickTask(quickTitle.trim(), quickProject);
+        setQuickTitle('');
+        setShowQuick(false);
+    };
 
     return (
         <div className="flex flex-col h-full overflow-hidden">
@@ -56,7 +71,7 @@ export default function TasksPage() {
                         </p>
                     </div>
                     <button
-                        onClick={() => setShowQuick(v => !v)}
+                        onClick={handleOpenQuick}
                         className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-zinc-900 text-white text-[13px] font-semibold font-primary cursor-pointer hover:bg-zinc-700 transition-colors"
                     >
                         <Plus size={15} />
@@ -67,6 +82,7 @@ export default function TasksPage() {
                 {/* Quick add */}
                 {showQuick && (
                     <div className="bg-white border border-zinc-200 rounded-2xl p-4 mb-4 flex gap-2.5 flex-wrap items-end shadow-sm">
+                        {/* Task title */}
                         <div className="flex-1 min-w-48">
                             <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-widest font-primary mb-1.5">
                                 Task
@@ -75,30 +91,43 @@ export default function TasksPage() {
                                 autoFocus
                                 value={quickTitle}
                                 onChange={e => setQuickTitle(e.target.value)}
-                                onKeyDown={e => {
-                                    if (e.key === 'Enter' && quickTitle.trim()) {
-                                        setShowQuick(false);
-                                        setQuickTitle('');
-                                    }
-                                }}
+                                onKeyDown={e => { if (e.key === 'Enter') handleQuickAdd(); }}
                                 placeholder="What needs to be done?"
                                 className="w-full px-3 py-2 rounded-xl border border-zinc-200 text-[13.5px] font-primary text-zinc-800 bg-zinc-50 outline-none focus:border-zinc-400 transition-colors"
                             />
                         </div>
-                        <div className="flex gap-2">
+
+                        {/* Project selector */}
+                        <div className="flex-shrink-0">
+                            <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-widest font-primary mb-1.5">
+                                Project
+                            </div>
+                            <select
+                                value={quickProject}
+                                onChange={e => setQuickProject(e.target.value)}
+                                className="px-3 py-2 rounded-xl border border-zinc-200 bg-zinc-50 text-[13px] font-primary text-zinc-700 outline-none focus:border-zinc-400 transition-colors cursor-pointer"
+                            >
+                                {uniqueProjects.length === 0 && (
+                                    <option value="">No projects</option>
+                                )}
+                                {uniqueProjects.map(p => (
+                                    <option key={p.id} value={p.id}>{p.title}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex gap-2 flex-shrink-0">
                             <button
-                                onClick={() => setShowQuick(false)}
+                                onClick={() => { setShowQuick(false); setQuickTitle(''); }}
                                 className="px-3.5 py-2 rounded-xl border border-zinc-200 bg-white text-zinc-500 text-[13px] font-primary cursor-pointer hover:bg-zinc-50 transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
-                                onClick={() => {
-                                    if (!quickTitle.trim()) return;
-                                    setShowQuick(false);
-                                    setQuickTitle('');
-                                }}
-                                className="px-4 py-2 rounded-xl bg-zinc-900 text-white text-[13px] font-semibold font-primary cursor-pointer hover:bg-zinc-700 transition-colors"
+                                onClick={handleQuickAdd}
+                                disabled={!quickTitle.trim() || !quickProject}
+                                className="px-4 py-2 rounded-xl bg-zinc-900 text-white text-[13px] font-semibold font-primary cursor-pointer hover:bg-zinc-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                             >
                                 Add
                             </button>
@@ -222,35 +251,64 @@ export default function TasksPage() {
                                                             (e.currentTarget as HTMLDivElement).style.transform   = '';
                                                         }}
                                                     >
-                                                        <div className="absolute left-0 top-0 bottom-0 w-0.5" style={{ background: task.projectAccent }} />
+                                                        {/* Project colour strip */}
+                                                        <div
+                                                            className="absolute left-0 top-0 bottom-0 w-0.5"
+                                                            style={{ background: task.projectAccent }}
+                                                        />
 
+                                                        {/* Checkbox */}
                                                         <button
                                                             onClick={e => { e.stopPropagation(); markDone(task.id); }}
                                                             className="w-[18px] h-[18px] rounded-full flex-shrink-0 border-2 border-zinc-300 bg-transparent flex items-center justify-center transition-all duration-200 cursor-pointer ml-1.5"
-                                                            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = task.projectAccent; (e.currentTarget as HTMLButtonElement).style.background = task.projectAccent + '20'; }}
-                                                            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = ''; (e.currentTarget as HTMLButtonElement).style.background = ''; }}
+                                                            onMouseEnter={e => {
+                                                                (e.currentTarget as HTMLButtonElement).style.borderColor = task.projectAccent;
+                                                                (e.currentTarget as HTMLButtonElement).style.background  = task.projectAccent + '20';
+                                                            }}
+                                                            onMouseLeave={e => {
+                                                                (e.currentTarget as HTMLButtonElement).style.borderColor = '';
+                                                                (e.currentTarget as HTMLButtonElement).style.background  = '';
+                                                            }}
                                                         />
 
+                                                        {/* Content */}
                                                         <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setActiveTask(task)}>
-                                                            <div className="text-[14px] font-medium font-primary text-zinc-900 truncate">{task.title}</div>
+                                                            <div className="text-[14px] font-medium font-primary text-zinc-900 truncate">
+                                                                {task.title}
+                                                            </div>
                                                             <div className="flex items-center gap-1.5 mt-0.5">
-                                                                <span className="w-1.5 h-1.5 rounded-full inline-block flex-shrink-0" style={{ background: task.projectAccent }} />
+                                                                <span
+                                                                    className="w-1.5 h-1.5 rounded-full inline-block flex-shrink-0"
+                                                                    style={{ background: task.projectAccent }}
+                                                                />
                                                                 <span className="text-[11px] text-zinc-400 font-primary">
-                                                                    {task.projectTitle}{task.sectionTitle && ` · ${task.sectionTitle}`}
+                                                                    {task.projectTitle}
+                                                                    {task.sectionTitle && ` · ${task.sectionTitle}`}
                                                                 </span>
                                                             </div>
                                                         </div>
 
+                                                        {/* Meta */}
                                                         <div className="flex items-center gap-2.5 flex-shrink-0">
-                                                            {task.subtasks.length > 0 && <span className="text-[11px] text-zinc-300 font-primary">{task.subtasks.filter(s => s.done).length}/{task.subtasks.length} sub</span>}
+                                                            {task.subtasks.length > 0 && (
+                                                                <span className="text-[11px] text-zinc-300 font-primary">
+                                                                    {task.subtasks.filter(s => s.done).length}/{task.subtasks.length} sub
+                                                                </span>
+                                                            )}
                                                             {pr && <Pill bg={pr.bg} color={pr.color}>{task.priority}</Pill>}
                                                             {tdl && (
-                                                                <span className="text-[12px] font-primary flex items-center gap-1" style={{ color: tdl.urgent ? '#D44444' : '#A1A1AA', fontWeight: tdl.urgent ? 600 : 400 }}>
+                                                                <span
+                                                                    className="text-[12px] font-primary flex items-center gap-1"
+                                                                    style={{ color: tdl.urgent ? '#D44444' : '#A1A1AA', fontWeight: tdl.urgent ? 600 : 400 }}
+                                                                >
                                                                     {tdl.urgent && <AlertTriangle size={11} />}
                                                                     {tdl.label}
                                                                 </span>
                                                             )}
-                                                            <button onClick={() => setActiveTask(task)} className="text-zinc-200 hover:text-zinc-400 transition-colors cursor-pointer">
+                                                            <button
+                                                                onClick={() => setActiveTask(task)}
+                                                                className="text-zinc-200 hover:text-zinc-400 transition-colors cursor-pointer"
+                                                            >
                                                                 <ChevronRight size={15} />
                                                             </button>
                                                         </div>

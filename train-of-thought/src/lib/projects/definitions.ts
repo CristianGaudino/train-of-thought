@@ -243,6 +243,7 @@ export interface UseTasksReturn {
     uniqueProjects:  { id: string; title: string }[];
     // Mutations
     markDone:        (taskId: string) => Promise<void>;
+    addQuickTask:    (title: string, projectId: string) => Promise<void>;
 }
 
 export interface UseNotificationsReturn {

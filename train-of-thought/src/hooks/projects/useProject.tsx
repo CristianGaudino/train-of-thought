@@ -3,11 +3,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { HeaderData, Project, Section, Task, UseProjectReturn } from '@/lib/projects/definitions';
 import { generateId } from '@/lib/projects/utils';
-import { ME_ID } from '@/lib/projects/config';
+import { useUser } from '@clerk/nextjs';
 
 
 
 export function useProject(id: string): UseProjectReturn {
+    const { user } = useUser();
+    const userId = user?.id ?? '';
+
     const [project, setProject]       = useState<Project | null>(null);
     const [sections, setSections]     = useState<Section[]>([]);
     const [loading, setLoading]       = useState(true);
@@ -79,7 +82,7 @@ export function useProject(id: string): UseProjectReturn {
             done:        false,
             priority:    'Medium',
             due:         null,
-            assignees:   [ME_ID],
+            assignees:   [userId],
             subtasks:    [],
             comments:    [],
         };
@@ -97,7 +100,7 @@ export function useProject(id: string): UseProjectReturn {
                     sectionId,
                     projectId: id,
                     title:     newTask.title,
-                    assignees: [ME_ID],
+                    assignees: [userId],
                     order:     sections.find(s => s.id === sectionId)?.tasks.length ?? 0,
                 }),
             });

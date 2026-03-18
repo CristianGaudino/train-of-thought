@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
-import type { GroupBy, Project, TaskGroup, UseTasksReturn } from '@/lib/projects/definitions';
+import type { Project, UseTasksReturn, GroupBy, TaskGroup } from '@/lib/projects/definitions';
 import {
     getFlatMyTasks,
     groupTasksByTime,
@@ -103,6 +103,36 @@ export function useTasks(): UseTasksReturn {
         }
     };
 
+
+    // ── Add quick task ──
+
+    const addQuickTask = async (title: string, projectId: string) => {
+        if (!title.trim() || !projectId) return;
+        const targetProject = projects.find(p => p.id === projectId);
+        if (!targetProject) return;
+        // Add to the last section of the target project
+        const lastSection = targetProject.sections[targetProject.sections.length - 1];
+        if (!lastSection) return;
+
+        try {
+            await fetch('/api/tasks', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({
+                    sectionId: lastSection.id,
+                    projectId,
+                    title:     title.trim(),
+                    assignees: user?.id ? [user.id] : [],
+                    order:     lastSection.tasks.length,
+                }),
+            });
+            // Refetch projects so the new task appears
+            fetchProjects();
+        } catch {
+            // Non-critical — silent fail, user can try again
+        }
+    };
+
     return {
         groups,
         allMyTasks,
@@ -119,5 +149,6 @@ export function useTasks(): UseTasksReturn {
         setGroupBy,
         uniqueProjects,
         markDone,
+        addQuickTask,
     };
 }
