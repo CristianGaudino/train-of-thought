@@ -10,7 +10,7 @@ import { getDeadlineInfo } from '@/lib/projects/utils';
 import type { FlatTask } from '@/lib/projects/definitions';
 import Pill from '@/components/projects/Pill';
 import TaskPanel from '@/components/projects/TaskPanel';
-import { useTasks } from '@/hooks/projects/useTask';
+import { useTasks } from '@/hooks/projects/useTasks';
 
 export default function TasksPage() {
     const {

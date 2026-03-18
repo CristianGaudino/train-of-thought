@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
+import { useToast } from '@/components/ui/Toast';
 import type { Project, UseTasksReturn, GroupBy, TaskGroup } from '@/lib/projects/definitions';
 import {
     getFlatMyTasks,
@@ -12,6 +13,7 @@ import {
 
 export function useTasks(): UseTasksReturn {
     const { user }    = useUser();
+    const { success, error: toastError } = useToast();
 
     const [projects, setProjects]             = useState<Project[]>([]);
     const [loading, setLoading]               = useState(true);
@@ -94,6 +96,7 @@ export function useTasks(): UseTasksReturn {
                 body:    JSON.stringify({ done: true }),
             });
         } catch {
+            toastError('Failed to complete task', 'Please try again.');
             // Rollback — task reappears
             setDoneIds(d => {
                 const next = new Set(d);
@@ -128,8 +131,9 @@ export function useTasks(): UseTasksReturn {
             });
             // Refetch projects so the new task appears
             fetchProjects();
+            success('Task added');
         } catch {
-            // Non-critical — silent fail, user can try again
+            toastError('Failed to add task', 'Your task could not be saved.');
         }
     };
 
