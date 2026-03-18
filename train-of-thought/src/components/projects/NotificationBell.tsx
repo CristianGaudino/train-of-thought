@@ -27,6 +27,12 @@ export default function NotificationBell() {
 
     useEffect(() => { fetchNotifications(); }, [fetchNotifications]);
 
+    // ── Poll every 30 seconds for new notifications ──
+    useEffect(() => {
+        const interval = setInterval(fetchNotifications, 60_000);
+        return () => clearInterval(interval);
+    }, [fetchNotifications]);
+
     // ── Close on outside click ──
 
     useEffect(() => {
@@ -124,7 +130,7 @@ export default function NotificationBell() {
                             </div>
                         ) : (
                             notifications.slice(0, 5).map(n => (
-                                <NotificationRow key={n.id} notif={n} onRead={markRead} compact />
+                                <NotificationRow key={n.id} notification={n} onRead={markRead} compact />
                             ))
                         )}
                     </div>

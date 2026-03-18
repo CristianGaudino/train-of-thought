@@ -194,7 +194,9 @@ export interface UseProjectsReturn {
     refetch:       () => Promise<void>;
     addProject:    (project: Project) => void;
     updateProject: (updated: Project) => void;
-    removeProject: (id: string) => void;
+    removeProject:   (id: string) => void;
+    notifySuccess:   (title: string, message?: string) => void;
+    notifyError:     (title: string, message?: string) => void;
 }
 
 export interface UseProjectReturn {
@@ -266,7 +268,7 @@ export interface UseNotificationsReturn {
 // Props
 
 export interface NotificationRowProps {
-    notif:   Notification;
+    notification:   Notification;
     onRead:  (id: string) => void;
     compact?: boolean;
 }
