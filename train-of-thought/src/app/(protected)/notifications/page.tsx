@@ -123,7 +123,7 @@ export default function NotificationsPage() {
                                             key={n.id}
                                             className={i < group.items.length - 1 ? 'border-b border-zinc-50' : ''}
                                         >
-                                            <NotificationRow notif={n} onRead={markRead} />
+                                            <NotificationRow notification={n} onRead={markRead} />
                                         </div>
                                     ))}
                                 </div>
