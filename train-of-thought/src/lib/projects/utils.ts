@@ -1,6 +1,7 @@
-import type { Project, FlatTask, Member, TaskGroup } from './definitions';
+import type { Project, FlatTask, Member, TaskGroup, PreviewSection, Priority } from './definitions';
 import { MOCK_MEMBERS, ME_ID } from './config';
 import { formatDate } from '../utils';
+import { GeneratedProject } from '@/app/api/generate-project/route';
 
 export interface DeadlineInfo {
     label: string;
@@ -133,4 +134,17 @@ export function getMemberName(id: string, members: Member[] = MOCK_MEMBERS): str
 
 export function generateId(prefix = ''): string {
     return prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+export function toPreviewSections(generated: GeneratedProject): PreviewSection[] {
+    return generated.sections.map(s => ({
+        id:    generateId('s'),
+        title: s.title,
+        tasks: s.tasks.map(t => ({
+            id:       generateId('t'),
+            title:    t.title,
+            priority: t.priority as Priority,
+            notes:    t.notes,
+        })),
+    }));
 }

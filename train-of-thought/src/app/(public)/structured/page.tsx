@@ -11,6 +11,8 @@ import { ChatHeader } from "@/components/chat/ChatHeader";
 import { Chat } from "@/components/chat/Chat";
 import { useShapeIdea } from "../../../hooks/chat/structured/useShapeIdea";
 import { useSaveMessages, loadPersistedMessages, clearPersistedMessages } from "@/hooks/chat/usePersistedMessages";
+import { useGenerateProject } from "@/hooks/chat/useGenerateProject";
+import ProjectPreviewModal from "@/components/projects/ProjectPreviewModal";
 import { IDEA_STAGE_ID, Stage, StageThreads, STRUCTURED_STORAGE_KEY } from "@/lib/chat/definitions";
 import { getDisplayContent, parseBrief } from "@/lib/chat/utils";
 
@@ -29,16 +31,26 @@ export default function StructuredPage() {
     const [brief, setBrief] = useState<Record<string, string>>({});
     const [railOpen, setRailOpen] = useState(true);
 
+    const [showPreview, setShowPreview] = useState(false);
+
     const [chatId, setChatId] = useState(() => `${IDEA_STAGE_ID}-${crypto.randomUUID()}`);
     const savingFromStageRef = useRef<string>(IDEA_STAGE_ID);
 
     const {
-        generating,
+        generating: shapingIdea,
         generated,
         error: shapeError,
         shapeIdea,
         reset: resetShape,
     } = useShapeIdea();
+
+    const {
+        generating: generatingProject,
+        generatedProject,
+        error: generateError,
+        generate: generateProject,
+        reset: resetGenerate,
+    } = useGenerateProject();
 
     const { messages, sendMessage, status, setMessages } = useChat({
         id: chatId,
@@ -52,20 +64,17 @@ export default function StructuredPage() {
         },
     });
 
-    // Seed messages when switching stages
     useEffect(() => {
         const stored = stageThreads[activeStageId] ?? [];
         setMessages(stored);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [chatId]);
 
-    // Sync active messages back to stageThreads
     useEffect(() => {
         const stageId = savingFromStageRef.current;
         setStageThreads((prev) => ({ ...prev, [stageId]: messages }));
     }, [messages]);
 
-    // Parse brief updates from assistant messages
     useEffect(() => {
         const assistantMessages = messages.filter((m) => m.role === "assistant");
         if (assistantMessages.length === 0) return;
@@ -75,14 +84,17 @@ export default function StructuredPage() {
         if (briefUpdates) setBrief((prev) => ({ ...prev, ...briefUpdates }));
     }, [messages]);
 
-    // Persist the idea stage thread
     useSaveMessages(stageThreads[IDEA_STAGE_ID] ?? [], STRUCTURED_STORAGE_KEY);
 
-    // On mount, check for persisted idea thread
     useEffect(() => {
         const persisted = loadPersistedMessages(STRUCTURED_STORAGE_KEY);
         if (persisted.length > 0) setResumeMessages(persisted);
     }, []);
+
+    // Open preview once project has been generated
+    useEffect(() => {
+        if (generatedProject) setShowPreview(true);
+    }, [generatedProject]);
 
     function handleContinue() {
         setStageThreads((prev) => ({ ...prev, [IDEA_STAGE_ID]: resumeMessages }));
@@ -121,6 +133,20 @@ export default function StructuredPage() {
         });
     }
 
+    async function handleAddToProjects() {
+        await generateProject({
+            source: 'structured',
+            stages,
+            brief,
+        });
+        // showPreview is triggered by the useEffect above when generatedProject is set
+    }
+
+    function handlePreviewClose() {
+        setShowPreview(false);
+        resetGenerate();
+    }
+
     function handleSubmit(e?: React.FormEvent) {
         e?.preventDefault();
         if (!input.trim() || status !== "ready") return;
@@ -146,14 +172,15 @@ export default function StructuredPage() {
         savingFromStageRef.current = IDEA_STAGE_ID;
         setChatId(`${IDEA_STAGE_ID}-${crypto.randomUUID()}`);
         resetShape();
+        resetGenerate();
     }
 
-    const activeStage = stages.find((s) => s.id === activeStageId) ?? null;
-    const activeStageQuestion = activeStage?.question ?? null;
-    const hasMessages = messages.length > 0;
-    const ideaMessages = stageThreads[IDEA_STAGE_ID] ?? [];
-    const canShape = !generated && !generating && ideaMessages.length >= 2;
-    const filledSections = Object.values(brief).filter(Boolean).length;
+    const activeStage             = stages.find((s) => s.id === activeStageId) ?? null;
+    const activeStageQuestion     = activeStage?.question ?? null;
+    const hasMessages             = messages.length > 0;
+    const ideaMessages            = stageThreads[IDEA_STAGE_ID] ?? [];
+    const canShape                = !generated && !shapingIdea && ideaMessages.length >= 2;
+    const filledSections          = Object.values(brief).filter(Boolean).length;
 
     const briefSections = [
         { id: IDEA_STAGE_ID, label: "The idea", content: brief[IDEA_STAGE_ID] },
@@ -227,9 +254,9 @@ export default function StructuredPage() {
                     getDisplayContent={getDisplayContent}
                     placeholder={activeStageQuestion ? "Respond freely…" : "Describe your idea…"}
                     hint={activeStageQuestion ? `${activeStageQuestion} — or just say whatever comes to mind.` : undefined}
-                    error={chatError ?? shapeError}
+                    error={chatError ?? shapeError ?? generateError}
                     onErrorClose={() => setChatError(null)}
-                    generating={generating}
+                    generating={shapingIdea}
                     generated={generated}
                     generatedAtIndex={generatedAtIndex}
                 />
@@ -240,6 +267,16 @@ export default function StructuredPage() {
                     sections={briefSections}
                     filledCount={filledSections}
                     onExport={() => {}}
+                    onAddToProjects={handleAddToProjects}
+                    generating={generatingProject}
+                />
+            )}
+
+            {/* Project preview modal */}
+            {showPreview && generatedProject && (
+                <ProjectPreviewModal
+                    generated={generatedProject}
+                    onClose={handlePreviewClose}
                 />
             )}
         </main>

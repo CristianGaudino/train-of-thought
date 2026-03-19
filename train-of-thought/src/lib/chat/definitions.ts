@@ -1,3 +1,4 @@
+import { GeneratedProject } from "@/app/api/generate-project/route";
 import { Idea } from "./schemas";
 
 // Constants
@@ -44,6 +45,8 @@ export type ShapeResult = {
     brief: Record<string, string>;
 };
 
+export type GenerateInput = GenerateFromFreeform | GenerateFromStructured;
+
 
 // Interfaces
 export interface BriefSection {
@@ -56,6 +59,25 @@ export interface Stage {
     id: string;
     label: string;
     question: string;
+}
+
+export interface GenerateFromFreeform {
+    source: 'freeform';
+    idea:   Idea;
+}
+
+export interface GenerateFromStructured {
+    source:  'structured';
+    stages:  Stage[];
+    brief:   Record<string, string>;
+}
+
+export interface UseGenerateProjectReturn {
+    generating:       boolean;
+    generatedProject: GeneratedProject | null;
+    error:            string | null;
+    generate:         (input: GenerateInput) => Promise<void>;
+    reset:            () => void;
 }
 
 // Props
@@ -140,6 +162,8 @@ export interface BriefPanelProps {
     sections: BriefSection[];
     filledCount: number;
     onExport: () => void;
+    onAddToProjects?: () => void;
+    generating?:      boolean;
 }
 
 export interface StagePanelProps {

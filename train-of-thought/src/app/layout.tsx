@@ -1,7 +1,8 @@
 import { Metadata } from 'next';
-import { ClerkProvider } from '@clerk/nextjs'
+import { ClerkProvider } from '@clerk/nextjs';
 import { montserrat, spectral } from '../components/ui/fonts';
 import "@/styles/globals.css";
+import Providers from '@/components/Providers';
 
 export const metadata: Metadata = {
     title: {
@@ -20,7 +21,9 @@ export default function RootLayout({
         <ClerkProvider>
             <html lang="en">
                 <body className={`${montserrat.variable} ${spectral.variable} font-primary antialiased bg-zinc-50 text-zinc-900`}>
-                    {children}
+                    <Providers>
+                        {children}
+                    </Providers>
                 </body>
             </html>
         </ClerkProvider>

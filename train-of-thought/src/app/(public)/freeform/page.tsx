@@ -109,11 +109,6 @@ export default function FreeformPage() {
         resetSummary();
     }
 
-    function handleAddToProjects(idea: any) {
-        localStorage.setItem("pendingProjectIdea", JSON.stringify(idea));
-        alert("Projects page coming soon! Idea has been staged.");
-    }
-
     const hasMessages = messages.length > 0;
 
     return (
@@ -158,7 +153,6 @@ export default function FreeformPage() {
                             onClose={closeSummary}
                             onRefresh={fetchSummary}
                             onSaveAsCard={addCard}
-                            onAddToProjects={handleAddToProjects}
                             refreshing={summarising}
                         />
                     )}
