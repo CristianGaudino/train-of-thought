@@ -1,13 +1,37 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useAuth } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Sparkles, Lightbulb, ArrowRight, LayoutGrid, CheckSquare, Bell } from 'lucide-react';
 import Logo from './ui/svg';
-import { Mode } from '@/lib/definitions';
+
+type Mode = 'idle' | 'explore';
 
 export default function LandingClient() {
+    const { isLoaded, isSignedIn } = useAuth();
+    const router = useRouter();
     const [mode, setMode] = useState<Mode>('idle');
+
+    // Redirect signed-in users to projects
+    useEffect(() => {
+        if (isLoaded && isSignedIn) {
+            router.replace('/projects');
+        }
+    }, [isLoaded, isSignedIn, router]);
+
+    // Show nothing while Clerk loads or while redirecting
+    if (!isLoaded || isSignedIn) {
+        return (
+            <div className="min-h-screen bg-zinc-50 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-3">
+                    <Logo size={40} />
+                    <div className="text-[13px] text-zinc-400 font-primary">Loading…</div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-zinc-50 flex flex-col">
@@ -15,7 +39,7 @@ export default function LandingClient() {
             {/* Nav */}
             <nav className="flex items-center justify-between px-8 py-4 bg-white border-b border-zinc-100">
                 <div className="flex items-center gap-2.5">
-                    <Logo size={32} />
+                    <Logo size={28} />
                     <div>
                         <div className="text-[15px] font-secondary text-zinc-900 tracking-tight leading-none">
                             Train of Thought
@@ -45,12 +69,10 @@ export default function LandingClient() {
             <div className="flex-1 flex flex-col items-center justify-center px-6 py-20">
                 <div className="flex flex-col items-center text-center w-full max-w-xl">
 
-                    {/* Logo mark */}
                     <div className="mb-6">
                         <Logo size={64} />
                     </div>
 
-                    {/* Heading */}
                     <h1 className="text-[48px] sm:text-[56px] font-secondary text-zinc-900 tracking-tight leading-none mb-4">
                         Train of Thought
                     </h1>
@@ -63,7 +85,7 @@ export default function LandingClient() {
                         Explore ideas freely with AI, then turn them into real structured projects — all in one place.
                     </p>
 
-                    {/* ── Two-mode entry ── */}
+                    {/* Two-mode entry */}
                     {mode === 'idle' ? (
                         <div className="flex flex-col items-center gap-4 w-full">
                             <button
@@ -90,7 +112,6 @@ export default function LandingClient() {
                                 How do you want to begin?
                             </p>
 
-                            {/* Freeform */}
                             <Link
                                 href="/freeform"
                                 className="group w-full px-5 py-4 rounded-2xl border border-zinc-200 bg-white hover:border-zinc-400 hover:shadow-sm transition-all text-left flex items-start gap-4"
@@ -109,7 +130,6 @@ export default function LandingClient() {
                                 <ArrowRight size={15} className="text-zinc-300 group-hover:text-zinc-500 mt-1 flex-shrink-0 transition-colors" />
                             </Link>
 
-                            {/* Structured */}
                             <Link
                                 href="/structured"
                                 className="group w-full px-5 py-4 rounded-2xl border border-zinc-200 bg-white hover:border-zinc-400 hover:shadow-sm transition-all text-left flex items-start gap-4"
@@ -128,7 +148,6 @@ export default function LandingClient() {
                                 <ArrowRight size={15} className="text-zinc-300 group-hover:text-zinc-500 mt-1 flex-shrink-0 transition-colors" />
                             </Link>
 
-                            {/* Sign up nudge */}
                             <div className="mt-2 pt-4 border-t border-zinc-100 flex items-center justify-between">
                                 <p className="text-[12px] text-zinc-400 font-primary">
                                     Want to save your work?
@@ -164,10 +183,7 @@ export default function LandingClient() {
                             <div className="text-[14px] font-semibold text-zinc-900 font-primary mt-1 truncate">
                                 {card.title}
                             </div>
-                            <div
-                                className="text-[11px] font-medium font-primary mt-0.5"
-                                style={{ color: card.accent }}
-                            >
+                            <div className="text-[11px] font-medium font-primary mt-0.5" style={{ color: card.accent }}>
                                 {card.status}
                             </div>
                             <div className="mt-4">
@@ -176,10 +192,7 @@ export default function LandingClient() {
                                     <span style={{ color: card.accent, fontWeight: 600 }}>{card.tasks} tasks</span>
                                 </div>
                                 <div className="h-1.5 rounded-full bg-zinc-200 overflow-hidden">
-                                    <div
-                                        className="h-full rounded-full"
-                                        style={{ width: `${card.pct}%`, background: card.accent }}
-                                    />
+                                    <div className="h-full rounded-full" style={{ width: `${card.pct}%`, background: card.accent }} />
                                 </div>
                             </div>
                         </div>
@@ -195,21 +208,9 @@ export default function LandingClient() {
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-10">
                         {[
-                            {
-                                icon:  LayoutGrid,
-                                title: 'Project Space',
-                                desc:  'Organise work into projects with sections, tasks and deadlines. Switch between a quick view and full detail.',
-                            },
-                            {
-                                icon:  CheckSquare,
-                                title: 'My Tasks',
-                                desc:  'See everything assigned to you across all projects in one view, grouped by date, project or priority.',
-                            },
-                            {
-                                icon:  Bell,
-                                title: 'Notifications',
-                                desc:  'Stay on top of comments, assignments and project activity without checking every tab.',
-                            },
+                            { icon: LayoutGrid,  title: 'Project Space', desc: 'Organise work into projects with sections, tasks and deadlines.' },
+                            { icon: CheckSquare, title: 'My Tasks',       desc: 'See everything assigned to you across all projects in one view.' },
+                            { icon: Bell,        title: 'Notifications',  desc: 'Stay on top of comments, assignments and activity.' },
                         ].map(f => {
                             const Icon = f.icon;
                             return (
@@ -217,12 +218,8 @@ export default function LandingClient() {
                                     <div className="w-10 h-10 rounded-2xl bg-zinc-100 flex items-center justify-center">
                                         <Icon size={18} className="text-zinc-600" />
                                     </div>
-                                    <div className="text-[15px] font-semibold text-zinc-900 font-primary">
-                                        {f.title}
-                                    </div>
-                                    <div className="text-[13px] text-zinc-500 font-primary leading-relaxed">
-                                        {f.desc}
-                                    </div>
+                                    <div className="text-[15px] font-semibold text-zinc-900 font-primary">{f.title}</div>
+                                    <div className="text-[13px] text-zinc-500 font-primary leading-relaxed">{f.desc}</div>
                                 </div>
                             );
                         })}

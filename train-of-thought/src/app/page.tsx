@@ -1,9 +1,5 @@
-import LandingClient from '@/components/LandingClient';
-import { auth } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
+import LandingClient from "@/components/LandingClient";
 
-export default async function RootPage() {
-    const { userId } = await auth();
-    if (userId) redirect('/projects');
+export default function RootPage() {
     return <LandingClient />;
 }
