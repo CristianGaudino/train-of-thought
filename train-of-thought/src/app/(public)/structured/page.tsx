@@ -8,6 +8,7 @@ import { StagePanel } from "../../../components/chat/structured/StagePanel";
 import { BriefPanel } from "../../../components/chat/structured/BriefPanel";
 import { ResumeModal } from "@/components/chat/ResumeModal";
 import { ChatHeader } from "@/components/chat/ChatHeader";
+import { ChatNav } from "@/components/chat/ChatNav";
 import { Chat } from "@/components/chat/Chat";
 import { useShapeIdea } from "../../../hooks/chat/structured/useShapeIdea";
 import { useSaveMessages, loadPersistedMessages, clearPersistedMessages } from "@/hooks/chat/usePersistedMessages";
@@ -209,6 +210,7 @@ export default function StructuredPage() {
             )}
 
             <div className="flex-1 flex flex-col min-w-0">
+                <ChatNav />
                 <ChatHeader
                     title="Structured"
                     depth={depth}

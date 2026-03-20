@@ -5,13 +5,16 @@ import { DepthSelector } from "./DepthSelector";
 
 export function ChatHeader({ title, depth, setDepth, left, children }: ChatHeaderProps) {
     return (
-        <header className="shrink-0 flex items-center justify-between px-6 py-3 border-b border-zinc-100">
-            <div className="flex items-center gap-4">
+        <header className="shrink-0 flex items-center justify-between px-6 py-3 border-b border-zinc-100 bg-white">
+            <div className="flex items-center gap-3">
                 {left}
-                <h1 className="font-semibold text-sm text-zinc-800">{title}</h1>
+                <h1 className="text-[14px] font-semibold font-primary text-zinc-800 tracking-tight">
+                    {title}
+                </h1>
+                <div className="w-px h-4 bg-zinc-100" />
                 <DepthSelector depth={depth} setDepth={setDepth} />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
                 {children}
             </div>
         </header>

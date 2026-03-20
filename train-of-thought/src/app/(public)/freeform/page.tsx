@@ -11,6 +11,7 @@ import { useConceptCards } from "../../../hooks/chat/freeform/useConceptCards";
 import { useSummary } from "../../../hooks/chat/freeform/useSummary";
 import { useSaveMessages, loadPersistedMessages, clearPersistedMessages } from "@/hooks/chat/usePersistedMessages";
 import { ChatHeader } from "@/components/chat/ChatHeader";
+import { ChatNav } from "@/components/chat/ChatNav";
 import { Chat } from "@/components/chat/Chat";
 import { FREEFORM_STORAGE_KEY } from "@/lib/chat/definitions";
 
@@ -123,6 +124,7 @@ export default function FreeformPage() {
             )}
 
             <div className="flex-1 flex flex-col min-w-0">
+                <ChatNav />
                 <ChatHeader title="Freeform" depth={depth} setDepth={setDepth}>
                     {hasMessages && (
                         <>
