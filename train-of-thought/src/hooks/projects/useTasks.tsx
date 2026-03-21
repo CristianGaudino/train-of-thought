@@ -107,6 +107,56 @@ export function useTasks(): UseTasksReturn {
     };
 
 
+
+    // ── Update task ──
+
+    const updateTask = async (taskId: string, data: Partial<import('@/lib/projects/definitions').Task>) => {
+        // Optimistic — update in local projects state
+        setProjects(ps => ps.map(p => ({
+            ...p,
+            sections: p.sections.map(s => ({
+                ...s,
+                tasks: s.tasks.map(t => t.id === taskId ? { ...t, ...data } : t),
+            })),
+        })));
+
+        try {
+            const res = await fetch(`/api/tasks/${taskId}`, {
+                method:  'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(data),
+            });
+            if (!res.ok) throw new Error('Failed');
+            success('Task updated');
+        } catch {
+            toastError('Failed to update task', 'Your changes could not be saved.');
+            fetchProjects();
+        }
+    };
+
+
+    // ── Delete task ──
+
+    const deleteTask = async (taskId: string) => {
+        // Optimistic — remove from projects state
+        setProjects(ps => ps.map(p => ({
+            ...p,
+            sections: p.sections.map(s => ({
+                ...s,
+                tasks: s.tasks.filter(t => t.id !== taskId),
+            })),
+        })));
+
+        try {
+            const res = await fetch(`/api/tasks/${taskId}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Failed');
+            success('Task deleted');
+        } catch {
+            toastError('Failed to delete task');
+            fetchProjects();
+        }
+    };
+
     // ── Add quick task ──
 
     const addQuickTask = async (title: string, projectId: string) => {
@@ -154,5 +204,7 @@ export function useTasks(): UseTasksReturn {
         uniqueProjects,
         markDone,
         addQuickTask,
+        updateTask,
+        deleteTask,
     };
 }

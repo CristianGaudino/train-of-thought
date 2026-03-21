@@ -1,6 +1,9 @@
-import { createComment } from '@/lib/db/actions';
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
+import { db } from '@/lib/db';
+import { tasks, projects } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
+import { createComment, createNotification } from '@/lib/db/actions';
 
 interface Params {
     params: Promise<{ id: string }>;
@@ -19,6 +22,51 @@ export async function POST(req: Request, { params }: Params) {
         }
 
         const comment = await createComment(taskId, userId, text.trim());
+
+        // ── Auto-create notifications for task assignees (except the commenter) ──
+        try {
+            const [task] = await db
+                .select({
+                    title:     tasks.title,
+                    assignees: tasks.assignees,
+                    projectId: tasks.projectId,
+                })
+                .from(tasks)
+                .where(eq(tasks.id, taskId));
+
+            if (task && task.projectId) {
+                const [project] = await db
+                    .select({ title: projects.title, accent: projects.accent })
+                    .from(projects)
+                    .where(eq(projects.id, task.projectId));
+
+                if (project) {
+                    const recipients = (task.assignees ?? []).filter(
+                        (id: string) => id !== userId
+                    );
+                    // const recipients = task.assignees ?? [];
+
+                    await Promise.allSettled(
+                        recipients.map((recipientId: string) =>
+                            createNotification({
+                                userId:        recipientId,
+                                type:          'comment',
+                                actorId:       userId,
+                                projectId:     task.projectId,
+                                projectTitle:  project.title,
+                                projectAccent: project.accent,
+                                subject:       task.title,
+                                text:          'Commented on',
+                            })
+                        )
+                    );
+                }
+            }
+        } catch (notifErr) {
+            // Don't fail the comment if notification creation fails
+            console.error('[POST /api/tasks/[id]/comments] notification error:', notifErr);
+        }
+
         return NextResponse.json(comment, { status: 201 });
     } catch (err) {
         console.error('[POST /api/tasks/[id]/comments]', err);

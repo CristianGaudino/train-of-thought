@@ -1,4 +1,4 @@
-import { createProject } from '@/lib/db/actions';
+import { createNotification, createProject } from '@/lib/db/actions';
 import { getProjectsByUser } from '@/lib/db/data';
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
@@ -38,6 +38,25 @@ export async function POST(req: Request) {
             tags:        tags   ?? [],
             members:     members ?? [userId],
         });
+
+        // Notify members (except creator)
+        const otherMembers = (members ?? []).filter((id: string) => id !== userId);
+        if (otherMembers.length > 0) {
+            await Promise.allSettled(
+                otherMembers.map((memberId: string) =>
+                    createNotification({
+                        userId:        memberId,
+                        type:          'project',
+                        actorId:       userId,
+                        projectId:     project.id,
+                        projectTitle:  project.title,
+                        projectAccent: project.accent,
+                        subject:       project.title,
+                        text:          'Added you to',
+                    })
+                )
+            );
+        }
 
         return NextResponse.json(project, { status: 201 });
     } catch (err) {

@@ -153,6 +153,29 @@ export function useProject(id: string): UseProjectReturn {
         }
     };
 
+
+    // ── Delete task ──
+
+    const deleteTask = async (taskId: string) => {
+        // Snapshot for rollback
+        const snapshot = sections;
+
+        // Optimistic
+        setSections(ss => ss.map(s => ({
+            ...s,
+            tasks: s.tasks.filter(t => t.id !== taskId),
+        })));
+
+        try {
+            const res = await fetch(`/api/tasks/${taskId}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Failed');
+            success('Task deleted');
+        } catch {
+            toastError('Failed to delete task');
+            setSections(snapshot);
+        }
+    };
+
     // ── Add section ──
 
     const addSection = async (title: string) => {
@@ -239,6 +262,7 @@ export function useProject(id: string): UseProjectReturn {
         toggleTask,
         updateTask,
         addTask,
+        deleteTask,
         addSection,
         saveHeader,
         savingHeader,

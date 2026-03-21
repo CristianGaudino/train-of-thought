@@ -6,9 +6,11 @@ import { useToast } from '@/components/ui/Toast';
 import {
     X, Plus, ArrowUp, ChevronRight,
     Pencil, Check, Calendar, Flag,
+    UserPlus,
+    Trash2,
 } from 'lucide-react';
 import { type Task, type Subtask, type Comment, type Priority, type TaskPanelProps, PRIORITIES } from '@/lib/projects/definitions';
-import { PRIORITY_CONFIG } from '@/lib/projects/config';
+import { MOCK_MEMBERS, PRIORITY_CONFIG } from '@/lib/projects/config';
 import { getMember, generateId } from '@/lib/projects/utils';
 import Pill from './Pill';
 import { Avatar } from './Avatar';
@@ -21,31 +23,36 @@ export default function TaskPanel({
     projectColor,
     onClose,
     onUpdate,
+    onDelete,
 }: TaskPanelProps) {
     const { user }    = useUser();
     const { success, error: toastError } = useToast();
 
     // ── Editable field state ──
-    const [title, setTitle]             = useState(task.title);
-    const [description, setDescription] = useState(task.description);
-    const [priority, setPriority]       = useState<Priority>(task.priority);
-    const [due, setDue]                 = useState(task.due ?? '');
-    const [editingTitle, setEditingTitle]       = useState(false);
-    const [editingDesc, setEditingDesc]         = useState(false);
-    const [showPriority, setShowPriority]       = useState(false);
-    const [showDue, setShowDue]                 = useState(false);
-    const [saving, setSaving]                   = useState(false);
+    const [title, setTitle]               = useState(task.title);
+    const [description, setDescription]   = useState(task.description);
+    const [priority, setPriority]         = useState<Priority>(task.priority);
+    const [due, setDue]                   = useState(task.due ?? '');
+    const [assignees, setAssignees]       = useState<string[]>(task.assignees ?? []);
+    const [editingTitle, setEditingTitle] = useState(false);
+    const [editingDesc, setEditingDesc]   = useState(false);
+    const [showPriority, setShowPriority] = useState(false);
+    const [showDue, setShowDue]           = useState(false);
+    const [showAssignees, setShowAssignees] = useState(false);
+    const [saving, setSaving]             = useState(false);
+    const [deleting, setDeleting]         = useState(false);
+    const [confirmDelete, setConfirmDelete] = useState(false);
 
     // ── Sub-tasks + comments ──
-    const [comments, setComments] = useState<Comment[]>(task.comments ?? []);
-    const [subtasks, setSubtasks] = useState<Subtask[]>(task.subtasks ?? []);
-    const [comment, setComment]   = useState('');
-    const [newSub, setNewSub]     = useState('');
+    const [comments, setComments]     = useState<Comment[]>(task.comments ?? []);
+    const [subtasks, setSubtasks]     = useState<Subtask[]>(task.subtasks ?? []);
+    const [comment, setComment]       = useState('');
+    const [newSub, setNewSub]         = useState('');
     const [submitting, setSubmitting] = useState(false);
 
     const pr = PRIORITY_CONFIG[priority];
 
-    // ── Save a field ──
+    // ── Save helper ──
 
     const saveField = async (data: Partial<Task>) => {
         if (!onUpdate) return;
@@ -56,6 +63,8 @@ export default function TaskPanel({
             setSaving(false);
         }
     };
+
+    // ── Field commits ──
 
     const commitTitle = async () => {
         setEditingTitle(false);
@@ -89,6 +98,31 @@ export default function TaskPanel({
         setDue('');
         setShowDue(false);
         await saveField({ due: null });
+    };
+
+    // ── Assignees ──
+
+    const toggleAssignee = async (memberId: string) => {
+        const next = assignees.includes(memberId)
+            ? assignees.filter(id => id !== memberId)
+            : [...assignees, memberId];
+        setAssignees(next);
+        await saveField({ assignees: next });
+    };
+
+    // ── Delete ──
+
+    const handleDelete = async () => {
+        if (!onDelete) return;
+        setDeleting(true);
+        try {
+            await onDelete(task.id);
+            onClose();
+        } catch {
+            toastError('Failed to delete task');
+            setDeleting(false);
+            setConfirmDelete(false);
+        }
     };
 
     // ── Sub-tasks ──
@@ -178,18 +212,24 @@ export default function TaskPanel({
             <div className="fixed right-0 top-0 bottom-0 w-[min(480px,92vw)] bg-white z-[201] flex flex-col shadow-2xl animate-in slide-in-from-right duration-200">
 
                 {/* ── Header ── */}
-                <div className="px-6 py-5 border-b border-zinc-100 flex-shrink-0" style={{ background: projectColor }}>
+                <div
+                    className="px-6 py-5 border-b border-zinc-100 flex-shrink-0"
+                    style={{ background: projectColor }}
+                >
                     <div className="flex justify-between items-start gap-3">
                         <div className="flex-1 min-w-0">
 
-                            {/* Title — editable */}
+                            {/* Title */}
                             {editingTitle ? (
                                 <input
                                     autoFocus
                                     value={title}
                                     onChange={e => setTitle(e.target.value)}
                                     onBlur={commitTitle}
-                                    onKeyDown={e => { if (e.key === 'Enter') commitTitle(); if (e.key === 'Escape') { setTitle(task.title); setEditingTitle(false); } }}
+                                    onKeyDown={e => {
+                                        if (e.key === 'Enter') commitTitle();
+                                        if (e.key === 'Escape') { setTitle(task.title); setEditingTitle(false); }
+                                    }}
                                     className="w-full text-[19px] font-bold font-secondary text-zinc-900 bg-white/70 rounded-lg px-2 py-1 outline-none border border-zinc-300 focus:border-zinc-500"
                                 />
                             ) : (
@@ -204,7 +244,7 @@ export default function TaskPanel({
                                 </button>
                             )}
 
-                            {/* Project breadcrumb */}
+                            {/* Breadcrumb */}
                             {task.projectTitle && (
                                 <div className="mt-1.5 text-[12px] text-zinc-500 font-primary flex items-center gap-1">
                                     <span className="inline-block w-2 h-2 rounded-full flex-shrink-0" style={{ background: accent }} />
@@ -215,18 +255,56 @@ export default function TaskPanel({
                                 </div>
                             )}
                         </div>
-                        <button onClick={onClose} className="text-zinc-400 hover:text-zinc-600 flex-shrink-0 transition-colors cursor-pointer p-1 rounded-lg hover:bg-black/5">
-                            <X size={18} />
-                        </button>
+
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                            {/* Delete button */}
+                            {onDelete && !confirmDelete && (
+                                <button
+                                    onClick={() => setConfirmDelete(true)}
+                                    className="p-1.5 rounded-lg text-zinc-300 hover:text-red-400 hover:bg-red-50 transition-colors cursor-pointer"
+                                    title="Delete task"
+                                >
+                                    <Trash2 size={15} />
+                                </button>
+                            )}
+                            <button
+                                onClick={onClose}
+                                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-600 hover:bg-black/5 transition-colors cursor-pointer"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
                     </div>
 
-                    {/* ── Editable meta pills ── */}
+                    {/* Delete confirm inline */}
+                    {confirmDelete && (
+                        <div className="mt-3 flex items-center gap-2 px-3 py-2.5 rounded-xl bg-red-50 border border-red-200">
+                            <span className="text-[12px] text-red-700 font-primary flex-1">
+                                Delete this task permanently?
+                            </span>
+                            <button
+                                onClick={() => setConfirmDelete(false)}
+                                className="text-[12px] text-zinc-500 font-primary hover:text-zinc-700 transition-colors cursor-pointer px-2"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                disabled={deleting}
+                                className="text-[12px] font-semibold text-white bg-red-500 hover:bg-red-600 font-primary px-3 py-1 rounded-lg transition-colors cursor-pointer disabled:opacity-60"
+                            >
+                                {deleting ? 'Deleting…' : 'Delete'}
+                            </button>
+                        </div>
+                    )}
+
+                    {/* ── Meta pills ── */}
                     <div className="flex items-center gap-2 mt-3 flex-wrap">
 
-                        {/* Priority picker */}
+                        {/* Priority */}
                         <div className="relative">
                             <button
-                                onClick={() => setShowPriority(v => !v)}
+                                onClick={() => { setShowPriority(v => !v); setShowDue(false); setShowAssignees(false); }}
                                 className="flex items-center gap-1 cursor-pointer"
                             >
                                 {pr ? (
@@ -261,10 +339,10 @@ export default function TaskPanel({
                             )}
                         </div>
 
-                        {/* Due date picker */}
+                        {/* Due date */}
                         <div className="relative">
                             <button
-                                onClick={() => setShowDue(v => !v)}
+                                onClick={() => { setShowDue(v => !v); setShowPriority(false); setShowAssignees(false); }}
                                 className="flex items-center gap-1 cursor-pointer"
                             >
                                 {due ? (
@@ -300,16 +378,20 @@ export default function TaskPanel({
                         </div>
 
                         {saving && (
-                            <span className="text-[11px] text-zinc-400 font-primary ml-auto">Saving…</span>
+                            <span className="text-[11px] text-zinc-400 font-primary ml-auto">
+                                Saving…
+                            </span>
                         )}
                     </div>
 
-                    {/* Assignees */}
-                    {task.assignees.length > 0 && (
-                        <div className="flex items-center gap-2 mt-3 flex-wrap">
-                            <span className="text-[12px] text-zinc-400 font-primary">Assigned to</span>
+                    {/* ── Assignees ── */}
+                    <div className="flex items-center gap-2 mt-3 flex-wrap">
+                        <span className="text-[12px] text-zinc-400 font-primary">Assigned to</span>
+
+                        {/* Current assignees */}
+                        {assignees.length > 0 && (
                             <div className="flex">
-                                {task.assignees.map((id, i) => {
+                                {assignees.map((id, i) => {
                                     const m = getMember(id);
                                     return m ? (
                                         <div key={id} style={{ marginLeft: i ? -8 : 0 }}>
@@ -318,17 +400,66 @@ export default function TaskPanel({
                                     ) : null;
                                 })}
                             </div>
-                            <span className="text-[12px] text-zinc-600 font-primary">
-                                {task.assignees.map(id => getMember(id)?.name).filter(Boolean).join(', ')}
-                            </span>
+                        )}
+
+                        {/* Assignee picker toggle */}
+                        <div className="relative">
+                            <button
+                                onClick={() => { setShowAssignees(v => !v); setShowPriority(false); setShowDue(false); }}
+                                className={`
+                                    flex items-center gap-1 text-[11px] font-primary px-2 py-1 rounded-full
+                                    transition-colors cursor-pointer
+                                    ${showAssignees
+                                        ? 'bg-zinc-200 text-zinc-700'
+                                        : 'text-zinc-400 hover:text-zinc-600 hover:bg-white/60'
+                                    }
+                                `}
+                            >
+                                <UserPlus size={11} />
+                                {assignees.length === 0 ? 'Assign' : 'Edit'}
+                            </button>
+
+                            {showAssignees && (
+                                <div className="absolute top-full left-0 mt-1 bg-white rounded-xl border border-zinc-200 shadow-lg z-10 overflow-hidden min-w-44">
+                                    <div className="px-3 py-2 border-b border-zinc-100">
+                                        <span className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 font-primary">
+                                            Assignees
+                                        </span>
+                                    </div>
+                                    {MOCK_MEMBERS.map(member => {
+                                        const assigned = assignees.includes(member.id);
+                                        return (
+                                            <button
+                                                key={member.id}
+                                                onClick={() => toggleAssignee(member.id)}
+                                                className="flex items-center gap-2.5 w-full px-3 py-2.5 hover:bg-zinc-50 transition-colors cursor-pointer"
+                                            >
+                                                <Avatar member={member} size={22} />
+                                                <span className="text-[12px] font-primary text-zinc-700 flex-1 text-left">
+                                                    {member.name}
+                                                </span>
+                                                {assigned && (
+                                                    <Check size={13} className="text-zinc-500 flex-shrink-0" />
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
-                    )}
+
+                        {assignees.length > 0 && (
+                            <span className="text-[12px] text-zinc-500 font-primary">
+                                {assignees.map(id => getMember(id)?.name).filter(Boolean).join(', ')}
+                            </span>
+                        )}
+                    </div>
                 </div>
 
                 {/* ── Body ── */}
                 <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-6">
 
-                    {/* Description — editable */}
+                    {/* Description */}
                     <div>
                         <SectionLabel>Description</SectionLabel>
                         {editingDesc ? (
@@ -358,10 +489,7 @@ export default function TaskPanel({
                                 </div>
                             </div>
                         ) : (
-                            <button
-                                onClick={() => setEditingDesc(true)}
-                                className="group w-full text-left"
-                            >
+                            <button onClick={() => setEditingDesc(true)} className="group w-full text-left">
                                 {description ? (
                                     <p className="text-[13px] text-zinc-600 font-primary leading-relaxed group-hover:text-zinc-800 transition-colors">
                                         {description}
@@ -403,7 +531,7 @@ export default function TaskPanel({
                                         {st.done && <span className="text-white text-[9px] leading-none">✓</span>}
                                     </div>
                                     <span
-                                        className="text-[13px] font-primary transition-colors"
+                                        className="text-[13px] font-primary transition-colors flex-1"
                                         style={{
                                             color:          st.done ? '#BBBBBB' : '#374151',
                                             textDecoration: st.done ? 'line-through' : 'none',
@@ -451,14 +579,19 @@ export default function TaskPanel({
                                                 // eslint-disable-next-line @next/next/no-img-element
                                                 <img src={author.imageUrl} alt={author.name ?? ''} className="w-7 h-7 rounded-full object-cover flex-shrink-0 border-2 border-white" />
                                             ) : (
-                                                <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-white font-bold text-white font-primary" style={{ background: 'color' in author ? author.color : '#888', fontSize: 10 }}>
+                                                <div
+                                                    className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-white font-bold text-white font-primary"
+                                                    style={{ background: 'color' in author ? author.color : '#888', fontSize: 10 }}
+                                                >
                                                     {'initials' in author ? author.initials : '?'}
                                                 </div>
                                             )
                                         )}
                                         <div className="flex-1 bg-zinc-50 rounded-xl px-3.5 py-2.5">
                                             <div className="flex justify-between mb-1">
-                                                <span className="text-[12px] font-semibold text-zinc-800 font-primary">{author?.name ?? 'Unknown'}</span>
+                                                <span className="text-[12px] font-semibold text-zinc-800 font-primary">
+                                                    {author?.name ?? 'Unknown'}
+                                                </span>
                                                 <span className="text-[11px] text-zinc-400 font-primary">{c.time}</span>
                                             </div>
                                             <p className="text-[13px] text-zinc-600 font-primary leading-relaxed m-0">{c.text}</p>

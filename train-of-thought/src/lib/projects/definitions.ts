@@ -213,6 +213,12 @@ export interface HeaderData {
     members:     string[];
 }
 
+export interface DeadlineInfo {
+    label: string;
+    urgent: boolean;
+    diff: number;
+}
+
 // Props
 
 export interface NotificationRowProps {
@@ -227,6 +233,7 @@ export interface TaskPanelProps {
     projectColor: string;
     onClose:      () => void;
     onUpdate?:    (taskId: string, data: Partial<Task>) => Promise<void>;
+    onDelete?:    (taskId: string) => Promise<void>;
 }
 
 export interface AvatarProps {
@@ -268,6 +275,10 @@ export interface ProjectPreviewModalProps {
     onCreated?:  (projectId: string) => void;
 }
 
+export interface OnboardingEmptyStateProps {
+    onNewProject: () => void;
+}
+
 // Hook Interfaces
 
 export interface UseProjectsReturn {
@@ -291,6 +302,7 @@ export interface UseProjectReturn {
     toggleTask:     (taskId: string) => Promise<void>;
     updateTask:     (taskId: string, data: Partial<Task>) => Promise<void>;
     addTask:        (sectionId: string, title: string) => Promise<void>;
+    deleteTask:     (taskId: string) => Promise<void>;
     // Section mutations
     addSection:     (title: string) => Promise<void>;
     // Header mutations
@@ -323,6 +335,8 @@ export interface UseTasksReturn {
     // Mutations
     markDone:        (taskId: string) => Promise<void>;
     addQuickTask:    (title: string, projectId: string) => Promise<void>;
+    updateTask:      (taskId: string, data: Partial<import('@/lib/projects/definitions').Task>) => Promise<void>;
+    deleteTask:      (taskId: string) => Promise<void>;
 }
 
 export interface UseNotificationsReturn {

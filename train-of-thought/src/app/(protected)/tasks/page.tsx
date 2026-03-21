@@ -19,7 +19,7 @@ export default function TasksPage() {
         filterProject, filterPriority, groupBy,
         setFilterProject, setFilterPriority, setGroupBy,
         uniqueProjects,
-        markDone, addQuickTask,
+        markDone, addQuickTask, updateTask, deleteTask,
     } = useTasks();
 
     const [activeTask, setActiveTask]   = useState<FlatTask | null>(null);
@@ -331,6 +331,8 @@ export default function TasksPage() {
                     accent={activeTask.projectAccent}
                     projectColor={activeTask.projectColor}
                     onClose={() => setActiveTask(null)}
+                    onUpdate={updateTask}
+                    onDelete={async (taskId) => { await deleteTask(taskId); setActiveTask(null); }}
                 />
             )}
         </div>

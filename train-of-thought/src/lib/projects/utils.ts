@@ -1,13 +1,7 @@
-import type { Project, FlatTask, Member, TaskGroup, PreviewSection, Priority } from './definitions';
+import type { Project, FlatTask, Member, TaskGroup, PreviewSection, Priority, DeadlineInfo } from './definitions';
 import { MOCK_MEMBERS, ME_ID } from './config';
 import { formatDate } from '../utils';
 import { GeneratedProject } from '@/app/api/generate-project/route';
-
-export interface DeadlineInfo {
-    label: string;
-    urgent: boolean;
-    diff: number;
-}
 
 export function getDeadlineInfo(str: string | null): DeadlineInfo | null {
     if (!str) return null;

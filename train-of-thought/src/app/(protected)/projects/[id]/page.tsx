@@ -27,7 +27,7 @@ export default function ProjectPage() {
 
     const {
         project, sections, loading, error,
-        toggleTask, updateTask, addTask, addSection,
+        toggleTask, updateTask, addTask, deleteTask, addSection,
         saveHeader, savingHeader,
         deleteProject, deleting,
     } = useProject(id);
@@ -246,12 +246,12 @@ export default function ProjectPage() {
                     <div className="px-8 py-7 flex flex-col gap-7">
                         {sections.map(section => {
                             const secDone = section.tasks.filter(t => t.done).length;
-                            const isC     = collapsed[section.id];
+                            const isCollapsed     = collapsed[section.id];
                             return (
                                 <div key={section.id}>
                                     <div className="flex items-center gap-2.5 mb-2.5">
                                         <button onClick={() => toggleCollapse(section.id)} className="text-zinc-300 hover:text-zinc-500 transition-colors cursor-pointer">
-                                            {isC ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
+                                            {isCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
                                         </button>
                                         <span className="text-[14px] font-bold text-zinc-900 font-primary">{section.title}</span>
                                         <span className="text-[11px] text-zinc-300 font-primary">{secDone}/{section.tasks.length}</span>
@@ -261,7 +261,7 @@ export default function ProjectPage() {
                                         </div>
                                     </div>
 
-                                    {!isC && (
+                                    {!isCollapsed && (
                                         <div className="flex flex-col gap-1.5 pl-1">
                                             {section.tasks.map(task => {
                                                 const pr  = PRIORITY_CONFIG[task.priority];
@@ -269,7 +269,7 @@ export default function ProjectPage() {
                                                 return (
                                                     <div
                                                         key={task.id}
-                                                        className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white border border-zinc-100 transition-all duration-150"
+                                                        className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white border border-zinc-100 transition-all duration-150 group"
                                                         onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = hf.accent + '35'; (e.currentTarget as HTMLDivElement).style.background = '#FAFAFA'; }}
                                                         onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = ''; (e.currentTarget as HTMLDivElement).style.background = ''; }}
                                                     >
@@ -292,6 +292,13 @@ export default function ProjectPage() {
                                                             {pr && <Pill bg={pr.bg} color={pr.color}>{task.priority}</Pill>}
                                                             {task.comments.length > 0 && <span className="flex items-center gap-1 text-[11px] text-zinc-300 font-primary"><MessageSquare size={12} />{task.comments.length}</span>}
                                                             <button onClick={() => setActiveTask(task)} className="text-zinc-200 hover:text-zinc-400 transition-colors cursor-pointer"><ChevronRight size={16} /></button>
+                                                            <button
+                                                                onClick={e => { e.stopPropagation(); deleteTask(task.id); }}
+                                                                className="text-zinc-200 hover:text-red-400 transition-colors cursor-pointer opacity-0 group-hover:opacity-100"
+                                                                title="Delete task"
+                                                            >
+                                                                <Trash2 size={13} />
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 );
@@ -405,6 +412,7 @@ export default function ProjectPage() {
                     projectColor={hf.color}
                     onClose={() => setActiveTask(null)}
                     onUpdate={updateTask}
+                    onDelete={async (taskId) => { await deleteTask(taskId); setActiveTask(null); }}
                 />
             )}
 

@@ -6,10 +6,11 @@ import { STATUS_FILTERS, type Project, type ProjectStatus } from '@/lib/projects
 import { STATUS_CONFIG } from '@/lib/projects/config';
 import ProjectCard from '@/components/projects/ProjectCard';
 import NewProjectModal from '@/components/projects/NewProjectModal';
+import OnboardingEmptyState from '@/components/projects/OnboardingState';
 import { useProjects } from '@/hooks/projects/useProjects';
 
 export default function ProjectsPage() {
-    const { projects, loading, error, refetch, addProject, updateProject } = useProjects();
+    const { projects, loading, error, refetch, addProject, updateProject, notifySuccess, notifyError } = useProjects();
 
     const [filter, setFilter]       = useState<ProjectStatus | 'All'>('All');
     const [search, setSearch]       = useState('');
@@ -36,8 +37,9 @@ export default function ProjectsPage() {
             if (!res.ok) throw new Error('Failed');
             const saved: Project = await res.json();
             updateProject(saved);
+            notifySuccess('Project created', project.title);
         } catch {
-            // Rollback by removing the temp project
+            notifyError('Failed to create project', 'Please try again.');
             refetch();
         }
     };
@@ -130,24 +132,19 @@ export default function ProjectsPage() {
                     </div>
                 )}
 
-                {!loading && !error && filtered.length === 0 && (
+                {/* Onboarding — no projects at all yet */}
+                {!loading && !error && projects.length === 0 && (
+                // {!loading && !error && true && (
+                    <OnboardingEmptyState onNewProject={() => setShowModal(true)} />
+                )}
+
+                {/* Filtered empty — has projects but none match filters */}
+                {!loading && !error && projects.length > 0 && filtered.length === 0 && (
                     <div className="flex flex-col items-center justify-center h-48 text-zinc-300 gap-3">
                         <span className="text-4xl">◎</span>
                         <span className="text-[14px] font-primary">
-                            {search || filter !== 'All'
-                                ? 'No projects match your filters'
-                                : 'No projects yet'
-                            }
+                            No projects match your filters
                         </span>
-                        {!search && filter === 'All' && (
-                            <button
-                                onClick={() => setShowModal(true)}
-                                className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-zinc-900 text-white text-[13px] font-primary cursor-pointer hover:bg-zinc-700 transition-colors"
-                            >
-                                <Plus size={14} />
-                                New Project
-                            </button>
-                        )}
                     </div>
                 )}
 
