@@ -15,7 +15,7 @@ import { Avatar } from '@/components/projects/Avatar';
 import Ring from '@/components/projects/Ring';
 import Pill from '@/components/projects/Pill';
 import TaskPanel from '@/components/projects/TaskPanel';
-import ConfirmModal from '@/components/ui/ConfirmModal';
+import ConfirmModal from '@/components/ConfirmModal';
 import type { HeaderData, Tab, Task } from '@/lib/projects/definitions';
 import { useProject } from '@/hooks/projects/useProject';
 import { AvatarStack } from '@/components/projects/AvatarStack';
