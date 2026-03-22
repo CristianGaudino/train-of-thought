@@ -8,6 +8,10 @@ import ProjectCard from '@/components/projects/ProjectCard';
 import NewProjectModal from '@/components/projects/NewProjectModal';
 import OnboardingEmptyState from '@/components/projects/OnboardingState';
 import { useProjects } from '@/hooks/projects/useProjects';
+import { Input } from '@/components/ui/inputs';
+import { Button } from '@/components/ui/buttons';
+import { CardSkeleton } from '@/components/ui/skeletons';
+import EmptyState from '@/components/EmptyState';
 
 export default function ProjectsPage() {
     const { projects, loading, error, refetch, addProject, updateProject, notifySuccess, notifyError } = useProjects();
@@ -63,20 +67,16 @@ export default function ProjectsPage() {
                 <div className="flex items-center gap-2.5">
                     <div className="relative">
                         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
-                        <input
+                        <Input
                             value={search}
                             onChange={e => setSearch(e.target.value)}
                             placeholder="Search…"
-                            className="pl-8 pr-3.5 py-2 rounded-xl border border-zinc-200 bg-white text-[13px] font-primary text-zinc-800 outline-none focus:border-zinc-400 transition-colors w-44"
+                            className="pl-8 py-2 w-44 text-[13px]"
                         />
                     </div>
-                    <button
-                        onClick={() => setShowModal(true)}
-                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-zinc-900 text-white text-[13px] font-semibold font-primary cursor-pointer hover:bg-zinc-700 transition-colors"
-                    >
-                        <Plus size={15} />
+                    <Button onClick={() => setShowModal(true)} icon={<Plus size={15} />}>
                         New Project
-                    </button>
+                    </Button>
                 </div>
             </div>
 
@@ -122,13 +122,7 @@ export default function ProjectsPage() {
 
                 {loading && (
                     <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
-                        {[1, 2, 3].map(i => (
-                            <div key={i} className="bg-white border border-zinc-100 rounded-2xl p-6 h-48 animate-pulse">
-                                <div className="h-4 bg-zinc-100 rounded-lg w-3/4 mb-3" />
-                                <div className="h-3 bg-zinc-100 rounded-lg w-full mb-1.5" />
-                                <div className="h-3 bg-zinc-100 rounded-lg w-2/3" />
-                            </div>
-                        ))}
+                        {[1, 2, 3].map(i => <CardSkeleton key={i} />)}
                     </div>
                 )}
 
@@ -140,12 +134,7 @@ export default function ProjectsPage() {
 
                 {/* Filtered empty — has projects but none match filters */}
                 {!loading && !error && projects.length > 0 && filtered.length === 0 && (
-                    <div className="flex flex-col items-center justify-center h-48 text-zinc-300 gap-3">
-                        <span className="text-4xl">◎</span>
-                        <span className="text-[14px] font-primary">
-                            No projects match your filters
-                        </span>
-                    </div>
+                    <EmptyState title="No projects match your filters" />
                 )}
 
                 {!loading && filtered.length > 0 && (
