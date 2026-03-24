@@ -110,7 +110,7 @@ export function useTasks(): UseTasksReturn {
 
     // ── Update task ──
 
-    const updateTask = async (taskId: string, data: Partial<import('@/lib/projects/definitions').Task>) => {
+    const updateTask = async (taskId: string, data: Partial<import('@/lib/projects/definitions').Task>, options?: { silent?: boolean }) => {
         // Optimistic — update in local projects state
         setProjects(ps => ps.map(p => ({
             ...p,
@@ -127,7 +127,9 @@ export function useTasks(): UseTasksReturn {
                 body:    JSON.stringify(data),
             });
             if (!res.ok) throw new Error('Failed');
-            success('Task updated');
+            if (!options?.silent) {
+                success('Task updated');
+            };
         } catch {
             toastError('Failed to update task', 'Your changes could not be saved.');
             fetchProjects();

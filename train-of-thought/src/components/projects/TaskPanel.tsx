@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useToast } from '@/components/ui/Toast';
 import {
@@ -60,6 +60,11 @@ export default function TaskPanel({
         setShowDue(false);
         setShowAssignees(false);
     };
+
+    useEffect(() => {
+        setComments(task.comments ?? []);
+        setSubtasks(task.subtasks ?? []);
+    }, [task]);
 
     // ── Save helper ──
 
@@ -137,35 +142,54 @@ export default function TaskPanel({
     // ── Sub-tasks ──
 
     const toggleSub = async (id: string) => {
-        const updated = subtasks.map(st => st.id === id ? { ...st, done: !st.done } : st);
+        const updated = subtasks.map(st =>
+            st.id === id ? { ...st, done: !st.done } : st
+        );
+
         setSubtasks(updated);
+        await onUpdate?.(task.id, { subtasks: updated }, { silent: true });
+
         try {
             await fetch(`/api/tasks/${task.id}`, {
-                method:  'PATCH',
+                method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ subtasks: updated }),
+                body: JSON.stringify({ subtasks: updated }),
             });
         } catch {
             toastError('Failed to update sub-task');
+
             setSubtasks(subtasks);
+            await onUpdate?.(task.id, { subtasks });
         }
     };
 
     const addSub = async () => {
         if (!newSub.trim()) return;
-        const newSubtask: Subtask = { id: generateId('st'), label: newSub.trim(), done: false };
+
+        const newSubtask: Subtask = {
+            id: generateId('st'),
+            label: newSub.trim(),
+            done: false,
+        };
+
         const updated = [...subtasks, newSubtask];
+
         setSubtasks(updated);
         setNewSub('');
+
+        await onUpdate?.(task.id, { subtasks: updated }, { silent: true });
+
         try {
             await fetch(`/api/tasks/${task.id}`, {
-                method:  'PATCH',
+                method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ subtasks: updated }),
+                body: JSON.stringify({ subtasks: updated }),
             });
         } catch {
             toastError('Failed to add sub-task');
+
             setSubtasks(subtasks);
+            await onUpdate?.(task.id, { subtasks });
         }
     };
 
@@ -173,28 +197,44 @@ export default function TaskPanel({
 
     const addComment = async () => {
         if (!comment.trim() || submitting) return;
-        const tempComment: Comment = {
-            id:     generateId('c'),
-            author: user?.id ?? 'unknown',
-            text:   comment.trim(),
-            time:   'just now',
-        };
-        setComments(c => [...c, tempComment]);
-        setComment('');
+
         setSubmitting(true);
+
+        const tempComment: Comment = {
+            id: generateId('c'),
+            author: user?.id ?? 'unknown',
+            text: comment.trim(),
+            time: 'just now',
+        };
+
+        const optimisticComments = [...comments, tempComment];
+
+        setComments(optimisticComments);
+        setComment('');
+
         try {
             const res = await fetch(`/api/tasks/${task.id}/comments`, {
-                method:  'POST',
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ text: tempComment.text }),
+                body: JSON.stringify({ text: tempComment.text }),
             });
-            if (!res.ok) throw new Error('Failed');
+
+            if (!res.ok) throw new Error();
+
             const saved: Comment = await res.json();
-            setComments(c => c.map(cm => cm.id === tempComment.id ? saved : cm));
+
+            const finalComments = optimisticComments.map(c =>
+                c.id === tempComment.id ? saved : c
+            );
+
+            setComments(finalComments);
+            await onUpdate?.(task.id, { comments: finalComments }, { silent: true });
             success('Comment posted');
         } catch {
             toastError('Failed to post comment');
-            setComments(c => c.filter(cm => cm.id !== tempComment.id));
+
+            setComments(comments);
+            await onUpdate?.(task.id, { comments });
         } finally {
             setSubmitting(false);
         }

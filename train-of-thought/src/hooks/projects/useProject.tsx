@@ -74,7 +74,7 @@ export function useProject(id: string): UseProjectReturn {
 
     // ── Update task fields ──
 
-    const updateTask = async (taskId: string, data: Partial<Task>) => {
+    const updateTask = async (taskId: string, data: Partial<Task>, options?: { silent?: boolean }) => {
         // Optimistic
         setSections(ss => ss.map(s => ({
             ...s,
@@ -93,7 +93,9 @@ export function useProject(id: string): UseProjectReturn {
                 body:    JSON.stringify(payload),
             });
             if (!res.ok) throw new Error('Failed');
-            success('Task updated');
+            if (!options?.silent) {
+                success('Task updated');
+            };
         } catch {
             toastError('Failed to update task', 'Your changes could not be saved.');
             // Rollback by refetching

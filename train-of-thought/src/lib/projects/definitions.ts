@@ -232,7 +232,7 @@ export interface TaskPanelProps {
     accent:       string;
     projectColor: string;
     onClose:      () => void;
-    onUpdate?:    (taskId: string, data: Partial<Task>) => Promise<void>;
+    onUpdate?:    (taskId: string, data: Partial<Task>, options?: { silent?: boolean }) => Promise<void>;
     onDelete?:    (taskId: string) => Promise<void>;
 }
 

@@ -7,7 +7,6 @@ import {
 } from 'lucide-react';
 import { PRIORITY_CONFIG } from '@/lib/projects/config';
 import { getDeadlineInfo } from '@/lib/projects/utils';
-import type { FlatTask } from '@/lib/projects/definitions';
 import Pill from '@/components/projects/Pill';
 import TaskPanel from '@/components/projects/TaskPanel';
 import { useTasks } from '@/hooks/projects/useTasks';
@@ -26,8 +25,11 @@ export default function TasksPage() {
         uniqueProjects,
         markDone, addQuickTask, updateTask, deleteTask,
     } = useTasks();
-
-    const [activeTask, setActiveTask]       = useState<FlatTask | null>(null);
+    
+    const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
+    const activeTask = activeTaskId
+        ? groups.flatMap(s => s.tasks).find(t => t.id === activeTaskId) ?? null
+        : null;
     const [collapsed, setCollapsed]         = useState<Record<string, boolean>>({});
     const [showQuick, setShowQuick]         = useState(false);
     const [quickTitle, setQuickTitle]       = useState('');
@@ -255,7 +257,7 @@ export default function TasksPage() {
                                                         {/* Content */}
                                                         <div
                                                             className="flex-1 min-w-0 cursor-pointer"
-                                                            onClick={() => setActiveTask(task)}
+                                                            onClick={() => setActiveTaskId(task.id)}
                                                         >
                                                             <div className="text-sm font-medium font-primary text-zinc-900 truncate">
                                                                 {task.title}
@@ -290,7 +292,7 @@ export default function TasksPage() {
                                                                 </span>
                                                             )}
                                                             <button
-                                                                onClick={() => setActiveTask(task)}
+                                                                onClick={() => setActiveTaskId(task.id)}
                                                                 className="text-zinc-200 hover:text-zinc-400 transition-colors cursor-pointer"
                                                             >
                                                                 <ChevronRight size={15} />
@@ -315,9 +317,9 @@ export default function TasksPage() {
                     task={activeTask}
                     accent={activeTask.projectAccent}
                     projectColor={activeTask.projectColor}
-                    onClose={() => setActiveTask(null)}
+                    onClose={() => setActiveTaskId(null)}
                     onUpdate={updateTask}
-                    onDelete={async (taskId) => { await deleteTask(taskId); setActiveTask(null); }}
+                    onDelete={async (taskId) => { await deleteTask(taskId); setActiveTaskId(null); }}
                 />
             )}
         </div>
