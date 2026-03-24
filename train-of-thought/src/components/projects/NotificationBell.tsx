@@ -101,11 +101,11 @@ export default function NotificationBell() {
                     {/* Header */}
                     <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100">
                         <div className="flex items-center gap-2">
-                            <span className="text-[15px] font-bold font-secondary text-zinc-900">
+                            <span className="font-bold font-secondary text-zinc-900">
                                 Notifications
                             </span>
                             {unreadCount > 0 && (
-                                <span className="text-[11px] font-semibold bg-zinc-900 text-white rounded-full px-2 py-0.5 font-primary">
+                                <span className="text-xs font-semibold bg-zinc-900 text-white rounded-full px-2 py-0.5 font-primary">
                                     {unreadCount} new
                                 </span>
                             )}
@@ -113,7 +113,7 @@ export default function NotificationBell() {
                         {unreadCount > 0 && (
                             <button
                                 onClick={markAll}
-                                className="flex items-center gap-1 text-[12px] text-zinc-400 hover:text-zinc-600 font-primary transition-colors cursor-pointer"
+                                className="flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-600 font-primary transition-colors cursor-pointer"
                             >
                                 <CheckCheck size={13} />
                                 Mark all read
@@ -126,7 +126,7 @@ export default function NotificationBell() {
                         {notifications.length === 0 ? (
                             <div className="py-10 text-center text-zinc-300 font-primary">
                                 <Bell size={28} className="mx-auto mb-2 text-zinc-200" />
-                                <p className="text-[13px] m-0">All caught up!</p>
+                                <p className="text-sm m-0">All caught up!</p>
                             </div>
                         ) : (
                             notifications.slice(0, 5).map(n => (
@@ -140,7 +140,7 @@ export default function NotificationBell() {
                         <Link
                             href="/notifications"
                             onClick={() => setOpen(false)}
-                            className="block w-full text-center py-2 rounded-xl border border-zinc-200 text-[13px] font-medium text-zinc-600 hover:bg-zinc-50 transition-colors font-primary"
+                            className="block w-full text-center py-2 rounded-xl border border-zinc-200 text-sm font-medium text-zinc-600 hover:bg-zinc-50 transition-colors font-primary"
                         >
                             View all notifications →
                         </Link>

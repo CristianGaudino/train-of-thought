@@ -17,7 +17,7 @@ export function ChatNav() {
             <div className="flex items-center gap-3">
                 <Link href="/" className="flex items-center gap-2 group">
                     <Logo size={24} />
-                    <span className="text-[14px] font-secondary text-zinc-800 tracking-tight group-hover:text-zinc-600 transition-colors">
+                    <span className="text-sm font-secondary text-zinc-800 tracking-tight group-hover:text-zinc-600 transition-colors">
                         Train of Thought
                     </span>
                 </Link>
@@ -25,10 +25,10 @@ export function ChatNav() {
                 {/* Back to projects if signed in */}
                 {isSignedIn && (
                     <>
-                        <span className="text-zinc-200 text-[14px]">/</span>
+                        <span className="text-zinc-200 text-sm">/</span>
                         <Link
                             href="/projects"
-                            className="flex items-center gap-1.5 text-[12px] font-primary text-zinc-400 hover:text-zinc-700 transition-colors"
+                            className="flex items-center gap-1.5 text-xs font-primary text-zinc-400 hover:text-zinc-700 transition-colors"
                         >
                             <ArrowLeft size={12} />
                             Projects
@@ -50,13 +50,13 @@ export function ChatNav() {
                         <>
                             <Link
                                 href="/sign-in"
-                                className="px-3 py-1.5 text-[12px] font-primary font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
+                                className="px-3 py-1.5 text-xs font-primary font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
                             >
                                 Sign in
                             </Link>
                             <Link
                                 href="/sign-up"
-                                className="px-3 py-1.5 rounded-lg bg-zinc-900 text-white text-[12px] font-semibold font-primary hover:bg-zinc-700 transition-colors"
+                                className="px-3 py-1.5 rounded-lg bg-zinc-900 text-white text-xs font-semibold font-primary hover:bg-zinc-700 transition-colors"
                             >
                                 Get started
                             </Link>

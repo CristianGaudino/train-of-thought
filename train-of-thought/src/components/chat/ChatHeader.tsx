@@ -8,7 +8,7 @@ export function ChatHeader({ title, depth, setDepth, left, children }: ChatHeade
         <header className="shrink-0 flex items-center justify-between px-6 py-3 border-b border-zinc-100 bg-white">
             <div className="flex items-center gap-3">
                 {left}
-                <h1 className="text-[14px] font-semibold font-primary text-zinc-800 tracking-tight">
+                <h1 className="text-sm font-semibold font-primary text-zinc-800 tracking-tight">
                     {title}
                 </h1>
                 <div className="w-px h-4 bg-zinc-100" />

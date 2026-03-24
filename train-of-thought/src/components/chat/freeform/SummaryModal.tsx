@@ -48,7 +48,7 @@ export function SummaryModal({
                             <Sparkles size={15} className="text-zinc-400" />
                             <span className="text-sm font-semibold text-zinc-800">Idea Summary</span>
                             {isStale && (
-                                <span className="text-[10px] text-amber-500 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-full">
+                                <span className="text-xs text-amber-500 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-full">
                                     Conversation has moved on
                                 </span>
                             )}
@@ -140,7 +140,7 @@ export function SummaryModal({
 
                         {/* Generation error */}
                         {error && (
-                            <div className="px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-[12px] text-red-600 font-primary">
+                            <div className="px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-xs text-red-600 font-primary">
                                 {error} — please try again.
                             </div>
                         )}

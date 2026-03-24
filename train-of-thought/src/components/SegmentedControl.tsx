@@ -14,7 +14,7 @@ export default function SegmentedControl<T extends string>({
                     key={seg.value}
                     onClick={() => onChange(seg.value)}
                     className={`
-                        px-3 py-1 rounded-lg text-[12px] font-primary
+                        px-3 py-1 rounded-lg text-xs font-primary
                         transition-all duration-150 cursor-pointer
                         ${value === seg.value
                             ? 'bg-white text-zinc-900 font-semibold shadow-sm'

@@ -32,7 +32,7 @@ export function BriefPanel({
                                 : "border-zinc-100"
                         }`}
                     >
-                        <p className="text-[10px] font-medium uppercase tracking-widest text-zinc-400 mb-1.5">
+                        <p className="text-xs font-medium uppercase tracking-widest text-zinc-400 mb-1.5">
                             {section.label}
                         </p>
                         {section.content ? (
@@ -76,7 +76,7 @@ export function BriefPanel({
                 )}
 
                 {!hasContent && (
-                    <p className="text-[10px] text-zinc-300 text-center font-primary leading-relaxed">
+                    <p className="text-xs text-zinc-300 text-center font-primary leading-relaxed">
                         Keep exploring to fill in the brief
                     </p>
                 )}

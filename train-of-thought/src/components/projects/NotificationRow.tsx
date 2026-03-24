@@ -37,7 +37,7 @@ export function NotificationRow({ notification, onRead, compact = false }: Notif
 
             {/* Content */}
             <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-primary text-zinc-800 leading-snug m-0">
+                <p className="text-sm font-primary text-zinc-800 leading-snug m-0">
                     <span className="font-semibold">
                         {actor?.name ?? 'Someone'}
                     </span>
@@ -47,14 +47,14 @@ export function NotificationRow({ notification, onRead, compact = false }: Notif
                     </span>
                 </p>
                 <div className="flex items-center gap-2 mt-1 flex-wrap">
-                    <span className="text-[11px] text-zinc-400 font-primary">{notification.time}</span>
+                    <span className="text-xs text-zinc-400 font-primary">{notification.time}</span>
                     <span className="w-1 h-1 rounded-full bg-zinc-300 inline-block" />
                     <span className="flex items-center gap-1">
                         <span
                             className="w-1.5 h-1.5 rounded-full inline-block"
                             style={{ background: notification.projectAccent }}
                         />
-                        <span className="text-[11px] text-zinc-500 font-primary">
+                        <span className="text-xs text-zinc-500 font-primary">
                             {notification.projectTitle}
                         </span>
                     </span>

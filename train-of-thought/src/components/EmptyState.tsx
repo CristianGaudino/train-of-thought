@@ -12,9 +12,9 @@ export default function EmptyState({
         <div className={`flex flex-col items-center justify-center h-48 text-center gap-3 ${className}`}>
             {Icon && <Icon size={36} className="text-zinc-200" />}
             <div className="flex flex-col gap-1">
-                <p className="text-[14px] font-primary text-zinc-400">{title}</p>
+                <p className="text-sm font-primary text-zinc-400">{title}</p>
                 {description && (
-                    <p className="text-[12px] font-primary text-zinc-300">{description}</p>
+                    <p className="text-xs font-primary text-zinc-300">{description}</p>
                 )}
             </div>
             {action && (

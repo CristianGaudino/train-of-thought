@@ -10,12 +10,12 @@ export function ChatEvent({ label, loading = false, action }: ChatEventProps) {
             <div className="flex items-center gap-1.5">
                 {loading && <Loader2 size={10} className="text-zinc-300 animate-spin" />}
                 {!action && (
-                    <span className="text-[10px] text-zinc-300 uppercase tracking-widest">{label}</span>
+                    <span className="text-xs text-zinc-300 uppercase tracking-widest">{label}</span>
                 )}
                 {action && (
                     <button
                         onClick={action.onClick}
-                        className="text-[10px] text-zinc-300 hover:text-zinc-500 underline underline-offset-2 transition uppercase tracking-widest"
+                        className="text-xs text-zinc-300 hover:text-zinc-500 underline underline-offset-2 transition uppercase tracking-widest"
                     >
                         {action.label}
                     </button>

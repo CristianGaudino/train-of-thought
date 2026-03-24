@@ -113,11 +113,11 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string)
             <div className="flex items-start gap-3 px-4 py-3.5">
                 <Icon size={18} className={`${cfg.iconClass} flex-shrink-0 mt-0.5`} />
                 <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-semibold text-zinc-900 font-primary leading-snug">
+                    <p className="text-sm font-semibold text-zinc-900 font-primary leading-snug">
                         {toast.title}
                     </p>
                     {toast.message && (
-                        <p className="text-[12px] text-zinc-400 font-primary mt-0.5 leading-relaxed">
+                        <p className="text-xs text-zinc-400 font-primary mt-0.5 leading-relaxed">
                             {toast.message}
                         </p>
                     )}

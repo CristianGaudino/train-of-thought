@@ -41,7 +41,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
                 ref={ref}
                 className={`
                     w-full px-3.5 py-2.5 rounded-xl border bg-zinc-50
-                    text-[14px] font-primary text-zinc-800
+                    text-sm font-primary text-zinc-800
                     outline-none transition-colors duration-150 resize-none leading-relaxed
                     placeholder:text-zinc-400
                     focus:bg-white
@@ -55,7 +55,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
                 {...props}
             />
             {error && (
-                <p className="text-[12px] text-red-400 font-primary mt-1">{error}</p>
+                <p className="text-xs text-red-400 font-primary mt-1">{error}</p>
             )}
         </div>
     );

@@ -9,9 +9,9 @@ export const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
 };
 
 export const BUTTON_SIZES: Record<ButtonSize, string> = {
-    sm:  'px-3 py-1.5 text-[12px] rounded-lg',
-    md:  'px-4 py-2 text-[13px] rounded-xl',
-    lg:  'px-5 py-2.5 text-[13px] rounded-xl',
+    sm:  'px-3 py-1.5 text-xs rounded-lg',
+    md:  'px-4 py-2 text-sm rounded-xl',
+    lg:  'px-5 py-2.5 text-sm rounded-xl',
 };
 
 export const INPUT_VARIANTS: Record<InputVariant, string> = {
@@ -30,8 +30,8 @@ export const INPUT_VARIANTS: Record<InputVariant, string> = {
 };
 
 export const SELECT_VARIANTS: Record<SelectVariant, string> = {
-    default: 'px-3.5 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-[14px] focus:border-zinc-400 focus:bg-white',
-    pill:    'px-3 py-1.5 rounded-full border border-zinc-200 bg-white text-[12px] hover:border-zinc-300',
+    default: 'px-3.5 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm focus:border-zinc-400 focus:bg-white',
+    pill:    'px-3 py-1.5 rounded-full border border-zinc-200 bg-white text-xs hover:border-zinc-300',
 };
 
 // Types

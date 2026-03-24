@@ -10,20 +10,20 @@ export default function SignInPage() {
                 <div className="flex items-center gap-3">
                     <Logo size={36} />
                     <div>
-                        <div className="text-[16px] font-secondary text-zinc-900 tracking-tight leading-none">
+                        <div className="font-secondary text-zinc-900 tracking-tight leading-none">
                             Train of Thought
                         </div>
-                        <div className="text-[11px] text-zinc-400 font-primary mt-0.5">
+                        <div className="text-xs text-zinc-400 font-primary mt-0.5">
                             a thinking space
                         </div>
                     </div>
                 </div>
 
                 <div>
-                    <blockquote className="text-[22px] font-secondary text-zinc-800 leading-snug tracking-tight">
+                    <blockquote className="text-xl font-secondary text-zinc-800 leading-snug tracking-tight">
                         "The best projects start with a single clear thought."
                     </blockquote>
-                    <p className="text-[13px] text-zinc-400 font-primary mt-4">
+                    <p className="text-sm text-zinc-400 font-primary mt-4">
                         Capture it. Break it down. Ship it.
                     </p>
                 </div>
@@ -45,7 +45,7 @@ export default function SignInPage() {
                                 style={{ background: card.accent }}
                             />
                             <div className="flex-1 min-w-0">
-                                <div className="text-[13px] font-semibold text-zinc-800 font-primary truncate">
+                                <div className="text-sm font-semibold text-zinc-800 font-primary truncate">
                                     {card.title}
                                 </div>
                                 <div className="h-1 rounded-full bg-zinc-200 mt-1.5 overflow-hidden">
@@ -56,7 +56,7 @@ export default function SignInPage() {
                                 </div>
                             </div>
                             <div
-                                className="text-[11px] font-semibold font-primary flex-shrink-0"
+                                className="text-xs font-semibold font-primary flex-shrink-0"
                                 style={{ color: card.accent }}
                             >
                                 {card.pct}%
@@ -73,17 +73,17 @@ export default function SignInPage() {
                     {/* Mobile logo */}
                     <div className="lg:hidden flex flex-col items-center mb-8">
                         <Logo size={48} />
-                        <div className="text-[18px] font-secondary text-zinc-900 tracking-tight mt-3">
+                        <div className="text-lg font-secondary text-zinc-900 tracking-tight mt-3">
                             Train of Thought
                         </div>
-                        <div className="text-[12px] text-zinc-400 font-primary mt-1">a thinking space</div>
+                        <div className="text-xs text-zinc-400 font-primary">a thinking space</div>
                     </div>
 
                     <div className="mb-8 text-center lg:text-left">
-                        <h1 className="text-[26px] font-secondary text-zinc-900 tracking-tight">
+                        <h1 className="text-2xl font-secondary text-zinc-900 tracking-tight">
                             Welcome back
                         </h1>
-                        <p className="text-[14px] text-zinc-400 font-primary mt-1">
+                        <p className="text-sm text-zinc-400 font-primary mt-1">
                             Sign in to your workspace
                         </p>
                     </div>
@@ -96,28 +96,28 @@ export default function SignInPage() {
                                 headerTitle:      'hidden',
                                 headerSubtitle:   'hidden',
                                 socialButtonsBlockButton: `
-                                    border border-zinc-200 rounded-xl font-primary text-[13px]
+                                    border border-zinc-200 rounded-xl font-primary text-sm
                                     text-zinc-700 hover:bg-zinc-50 transition-colors h-11
                                 `,
                                 socialButtonsBlockButtonText: 'font-primary font-medium',
                                 dividerLine:      'bg-zinc-200',
-                                dividerText:      'text-zinc-400 font-primary text-[12px]',
-                                formFieldLabel:   'font-primary text-[12px] font-semibold text-zinc-600',
+                                dividerText:      'text-zinc-400 font-primary text-xs',
+                                formFieldLabel:   'font-primary text-xs font-semibold text-zinc-600',
                                 formFieldInput:   `
-                                    border border-zinc-200 rounded-xl font-primary text-[14px]
+                                    border border-zinc-200 rounded-xl font-primary text-sm
                                     text-zinc-800 bg-zinc-50 focus:border-zinc-400
                                     focus:ring-0 h-11 px-3.5
                                 `,
                                 formButtonPrimary: `
                                     bg-zinc-900 hover:bg-zinc-700 rounded-xl font-primary
-                                    font-semibold text-[13px] h-11 transition-colors
+                                    font-semibold text-sm h-11 transition-colors
                                 `,
                                 footerActionLink:  'text-zinc-900 font-semibold font-primary hover:text-zinc-600',
-                                footerActionText:  'text-zinc-400 font-primary text-[13px]',
-                                identityPreviewText: 'font-primary text-[13px]',
+                                footerActionText:  'text-zinc-400 font-primary text-sm',
+                                identityPreviewText: 'font-primary text-sm',
                                 identityPreviewEditButtonIcon: 'text-zinc-500',
                                 formFieldInputShowPasswordButton: 'text-zinc-400 hover:text-zinc-600',
-                                alertText:        'font-primary text-[13px]',
+                                alertText:        'font-primary text-sm',
                                 formResendCodeLink: 'text-zinc-900 font-primary font-semibold',
                             },
                             variables: {

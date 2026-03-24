@@ -35,10 +35,10 @@ export default function ProjectCard({ project }: ProjectCardProps) {
             {/* Title + ring */}
             <div className="flex justify-between items-start mt-1">
                 <div className="flex-1 pr-3">
-                    <h3 className="text-[16px] font-semibold font-primary text-zinc-900 leading-snug m-0">
+                    <h3 className="font-semibold font-primary text-zinc-900 leading-snug m-0">
                         {project.title}
                     </h3>
-                    <p className="mt-1.5 text-[13px] text-zinc-400 font-primary leading-relaxed m-0 line-clamp-2">
+                    <p className="mt-1.5 text-sm text-zinc-400 font-primary leading-relaxed m-0 line-clamp-2">
                         {project.description || (
                             <span className="italic text-zinc-300">No description yet</span>
                         )}
@@ -53,7 +53,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
                     {project.tags.map(tag => (
                         <span
                             key={tag}
-                            className="text-[11px] font-medium px-2.5 py-0.5 rounded-full font-primary"
+                            className="text-xs font-medium px-2.5 py-0.5 rounded-full font-primary"
                             style={{ background: project.color, color: project.accent }}
                         >
                             {tag}
@@ -76,7 +76,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
                 </div>
                 {dl && (
                     <span
-                        className="text-[12px] font-primary flex items-center gap-1"
+                        className="text-xs font-primary flex items-center gap-1"
                         style={{
                             color: dl.urgent ? '#D44444' : '#AAAAAA',
                             fontWeight: dl.urgent ? 600 : 400,

@@ -45,7 +45,7 @@ export default function ConfirmModal({
                                     <AlertTriangle size={16} className="text-red-500" />
                                 </div>
                             )}
-                            <h2 className="text-[16px] font-semibold text-zinc-900 font-primary">
+                            <h2 className="font-semibold text-zinc-900 font-primary">
                                 {title}
                             </h2>
                         </div>
@@ -58,7 +58,7 @@ export default function ConfirmModal({
                     </div>
 
                     {/* Message */}
-                    <p className="text-[13px] text-zinc-500 font-primary leading-relaxed">
+                    <p className="text-sm text-zinc-500 font-primary leading-relaxed">
                         {message}
                     </p>
                 </div>
@@ -68,7 +68,7 @@ export default function ConfirmModal({
                     <button
                         onClick={onCancel}
                         disabled={loading}
-                        className="flex-1 px-4 py-2.5 rounded-xl border border-zinc-200 bg-white text-zinc-600 text-[13px] font-medium font-primary cursor-pointer hover:bg-zinc-50 transition-colors disabled:opacity-50"
+                        className="flex-1 px-4 py-2.5 rounded-xl border border-zinc-200 bg-white text-zinc-600 text-sm font-medium font-primary cursor-pointer hover:bg-zinc-50 transition-colors disabled:opacity-50"
                     >
                         {cancelLabel}
                     </button>
@@ -77,7 +77,7 @@ export default function ConfirmModal({
                         onClick={onConfirm}
                         disabled={loading}
                         className={`
-                            flex-1 px-4 py-2.5 rounded-xl text-white text-[13px] font-semibold
+                            flex-1 px-4 py-2.5 rounded-xl text-white text-sm font-semibold
                             font-primary cursor-pointer transition-colors disabled:opacity-50
                             disabled:cursor-not-allowed
                             ${destructive

@@ -54,10 +54,10 @@ export default function ProjectsPage() {
             {/* Header */}
             <div className="flex items-start justify-between px-8 pt-6 flex-shrink-0">
                 <div>
-                    <h1 className="text-[26px] font-secondary text-zinc-900 tracking-tight m-0">
+                    <h1 className="text-2xl font-secondary text-zinc-900 tracking-tight m-0">
                         Project Space
                     </h1>
-                    <p className="text-[13px] text-zinc-400 font-primary mt-1 m-0">
+                    <p className="text-sm text-zinc-400 font-primary mt-1 m-0">
                         {loading
                             ? 'Loading…'
                             : `${projects.length} projects · ${projects.filter(p => p.status === 'In Progress').length} active`
@@ -71,7 +71,7 @@ export default function ProjectsPage() {
                             value={search}
                             onChange={e => setSearch(e.target.value)}
                             placeholder="Search…"
-                            className="pl-8 py-2 w-44 text-[13px]"
+                            className="pl-8 py-2 w-44 text-sm"
                         />
                     </div>
                     <Button onClick={() => setShowModal(true)} icon={<Plus size={15} />}>
@@ -91,7 +91,7 @@ export default function ProjectsPage() {
                             onClick={() => setFilter(s)}
                             className={`
                                 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full
-                                text-[12px] font-primary border transition-all duration-150 cursor-pointer
+                                text-xs font-primary border transition-all duration-150 cursor-pointer
                                 ${active
                                     ? 'bg-zinc-900 text-white border-zinc-900 font-semibold'
                                     : 'bg-white text-zinc-500 border-zinc-200 hover:border-zinc-300 hover:text-zinc-700'
@@ -114,7 +114,7 @@ export default function ProjectsPage() {
             <div className="flex-1 overflow-y-auto px-8 py-5">
 
                 {error && (
-                    <div className="mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-[13px] text-red-600 font-primary flex items-center justify-between">
+                    <div className="mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-600 font-primary flex items-center justify-between">
                         {error}
                         <button onClick={refetch} className="underline cursor-pointer">Retry</button>
                     </div>
@@ -147,7 +147,7 @@ export default function ProjectsPage() {
                             <div className="w-9 h-9 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400">
                                 <Plus size={18} />
                             </div>
-                            <span className="text-[13px] text-zinc-400 font-primary">New project</span>
+                            <span className="text-sm text-zinc-400 font-primary">New project</span>
                         </button>
                     </div>
                 )}

@@ -10,17 +10,17 @@ export default function SignUpPage() {
                 <div className="flex items-center gap-3">
                     <Logo size={36} />
                     <div>
-                        <div className="text-[16px] font-secondary text-zinc-900 tracking-tight leading-none">
+                        <div className="font-secondary text-zinc-900 tracking-tight leading-none">
                             Train of Thought
                         </div>
-                        <div className="text-[11px] text-zinc-400 font-primary mt-0.5">
+                        <div className="text-xs text-zinc-400 font-primary mt-0.5">
                             a thinking space
                         </div>
                     </div>
                 </div>
 
                 <div>
-                    <h2 className="text-[24px] font-secondary text-zinc-900 tracking-tight leading-snug">
+                    <h2 className="text-2xl font-secondary text-zinc-900 tracking-tight leading-snug">
                         Everything you need to manage projects — personal or professional.
                     </h2>
                     <div className="flex flex-col gap-4 mt-8">
@@ -46,10 +46,10 @@ export default function SignUpPage() {
                                     {f.icon}
                                 </div>
                                 <div>
-                                    <div className="text-[13px] font-semibold text-zinc-800 font-primary">
+                                    <div className="text-sm font-semibold text-zinc-800 font-primary">
                                         {f.label}
                                     </div>
-                                    <div className="text-[12px] text-zinc-400 font-primary mt-0.5 leading-relaxed">
+                                    <div className="text-xs text-zinc-400 font-primary mt-0.5 leading-relaxed">
                                         {f.desc}
                                     </div>
                                 </div>
@@ -58,7 +58,7 @@ export default function SignUpPage() {
                     </div>
                 </div>
 
-                <p className="text-[12px] text-zinc-300 font-primary">
+                <p className="text-xs text-zinc-300 font-primary">
                     Free to get started. No credit card required.
                 </p>
             </div>
@@ -70,17 +70,17 @@ export default function SignUpPage() {
                     {/* Mobile logo */}
                     <div className="lg:hidden flex flex-col items-center mb-8">
                         <Logo size={48} />
-                        <div className="text-[18px] font-secondary text-zinc-900 tracking-tight mt-3">
+                        <div className="text-lg font-secondary text-zinc-900 tracking-tight mt-3">
                             Train of Thought
                         </div>
-                        <div className="text-[12px] text-zinc-400 font-primary mt-1">a thinking space</div>
+                        <div className="text-xs text-zinc-400 font-primary">a thinking space</div>
                     </div>
 
                     <div className="mb-8 text-center lg:text-left">
-                        <h1 className="text-[26px] font-secondary text-zinc-900 tracking-tight">
+                        <h1 className="text-2xl font-secondary text-zinc-900 tracking-tight">
                             Create your account
                         </h1>
-                        <p className="text-[14px] text-zinc-400 font-primary mt-1">
+                        <p className="text-sm text-zinc-400 font-primary mt-1">
                             Start organising your work today
                         </p>
                     </div>
@@ -93,28 +93,28 @@ export default function SignUpPage() {
                                 headerTitle:      'hidden',
                                 headerSubtitle:   'hidden',
                                 socialButtonsBlockButton: `
-                                    border border-zinc-200 rounded-xl font-primary text-[13px]
+                                    border border-zinc-200 rounded-xl font-primary text-sm
                                     text-zinc-700 hover:bg-zinc-50 transition-colors h-11
                                 `,
                                 socialButtonsBlockButtonText: 'font-primary font-medium',
                                 dividerLine:      'bg-zinc-200',
-                                dividerText:      'text-zinc-400 font-primary text-[12px]',
-                                formFieldLabel:   'font-primary text-[12px] font-semibold text-zinc-600',
+                                dividerText:      'text-zinc-400 font-primary text-xs',
+                                formFieldLabel:   'font-primary text-xs font-semibold text-zinc-600',
                                 formFieldInput:   `
-                                    border border-zinc-200 rounded-xl font-primary text-[14px]
+                                    border border-zinc-200 rounded-xl font-primary text-sm
                                     text-zinc-800 bg-zinc-50 focus:border-zinc-400
                                     focus:ring-0 h-11 px-3.5
                                 `,
                                 formButtonPrimary: `
                                     bg-zinc-900 hover:bg-zinc-700 rounded-xl font-primary
-                                    font-semibold text-[13px] h-11 transition-colors
+                                    font-semibold text-sm h-11 transition-colors
                                 `,
                                 footerActionLink:  'text-zinc-900 font-semibold font-primary hover:text-zinc-600',
-                                footerActionText:  'text-zinc-400 font-primary text-[13px]',
-                                identityPreviewText: 'font-primary text-[13px]',
+                                footerActionText:  'text-zinc-400 font-primary text-sm',
+                                identityPreviewText: 'font-primary text-sm',
                                 identityPreviewEditButtonIcon: 'text-zinc-500',
                                 formFieldInputShowPasswordButton: 'text-zinc-400 hover:text-zinc-600',
-                                alertText:        'font-primary text-[13px]',
+                                alertText:        'font-primary text-sm',
                                 formResendCodeLink: 'text-zinc-900 font-primary font-semibold',
                             },
                             variables: {

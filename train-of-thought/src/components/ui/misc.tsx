@@ -11,13 +11,13 @@ export function StageIndicator({ state, index }: { state: "active" | "done" | "e
     if (state === "active") {
         return (
             <div className="w-5 h-5 rounded-full bg-zinc-900 flex items-center justify-center shrink-0 mt-0.5">
-                <span className="text-[10px] font-medium text-white">{index}</span>
+                <span className="text-xs font-medium text-white">{index}</span>
             </div>
         );
     }
     return (
         <div className="w-5 h-5 rounded-full border border-zinc-200 flex items-center justify-center shrink-0 mt-0.5 opacity-50">
-            <span className="text-[10px] text-zinc-400">{index}</span>
+            <span className="text-xs text-zinc-400">{index}</span>
         </div>
     );
 }

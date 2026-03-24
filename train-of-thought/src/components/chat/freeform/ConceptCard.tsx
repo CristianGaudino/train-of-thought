@@ -125,7 +125,7 @@ export function ConceptCard({
             {card.source === "summary" && (
                 <div className="mt-2 flex items-center gap-1">
                     <Sparkles size={9} className="text-zinc-300" />
-                    <span className="text-[10px] text-zinc-300">From summary</span>
+                    <span className="text-xs text-zinc-300">From summary</span>
                 </div>
             )}
         </div>

@@ -25,10 +25,10 @@ export default function NotificationsPage() {
             <div className="px-8 pt-6 flex-shrink-0">
                 <div className="flex items-start justify-between mb-5">
                     <div>
-                        <h1 className="text-[26px] font-secondary text-zinc-900 tracking-tight m-0">
+                        <h1 className="text-2xl font-secondary text-zinc-900 tracking-tight m-0">
                             Notifications
                         </h1>
-                        <p className="text-[13px] text-zinc-400 font-primary mt-1 m-0">
+                        <p className="text-sm text-zinc-400 font-primary mt-1 m-0">
                             {loading ? 'Loading…' : unreadCount > 0 ? (
                                 <>
                                     <span className="text-zinc-900 font-semibold">{unreadCount} unread</span>
@@ -55,7 +55,7 @@ export default function NotificationsPage() {
                                     key={value}
                                     onClick={() => setTypeFilter(value)}
                                     className={`
-                                        flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px]
+                                        flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs
                                         font-primary border transition-all duration-150 cursor-pointer
                                         ${active
                                             ? 'bg-zinc-900 text-white border-zinc-900 font-semibold'
@@ -100,7 +100,7 @@ export default function NotificationsPage() {
                     <div className="flex flex-col gap-7">
                         {grouped.map(group => (
                             <div key={group.label}>
-                                <div className="text-[11px] font-semibold tracking-widest uppercase text-zinc-300 font-primary mb-3">
+                                <div className="text-xs font-semibold tracking-widest uppercase text-zinc-300 font-primary mb-3">
                                     {group.label}
                                 </div>
                                 <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden">

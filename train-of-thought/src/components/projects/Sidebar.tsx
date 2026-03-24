@@ -41,7 +41,7 @@ export default function Sidebar() {
                     <div className="text-xl font-secondary text-zinc-900 tracking-tight">
                         Train of Thought
                     </div>
-                    <div className="text-[11px] text-zinc-400 mt-0.5 font-primary">
+                    <div className="text-xs text-zinc-400 mt-0.5 font-primary">
                         a thinking space
                     </div>
                 </div>
@@ -62,7 +62,7 @@ export default function Sidebar() {
                                 href={item.href}
                                 className={`
                                     flex items-center gap-2.5 px-2.5 py-2 rounded-xl mb-0.5
-                                    text-[13.5px] font-primary transition-colors duration-150
+                                    text-sm font-primary transition-colors duration-150
                                     ${active
                                         ? 'bg-zinc-100 text-zinc-900 font-semibold'
                                         : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700'
@@ -79,7 +79,7 @@ export default function Sidebar() {
                 {/* Explore section — AI chat tools */}
                 <div className="pt-4 border-t border-zinc-100">
                     <div className="px-2.5 mb-1.5">
-                        <span className="text-[10px] font-semibold uppercase tracking-widest text-zinc-300 font-primary">
+                        <span className="text-xs font-semibold uppercase tracking-widest text-zinc-300 font-primary">
                             Explore
                         </span>
                     </div>
@@ -92,7 +92,7 @@ export default function Sidebar() {
                                 href={item.href}
                                 className={`
                                     flex items-center gap-2.5 px-2.5 py-2 rounded-xl mb-0.5
-                                    text-[13.5px] font-primary transition-colors duration-150
+                                    text-sm font-primary transition-colors duration-150
                                     ${active
                                         ? 'bg-zinc-100 text-zinc-900 font-semibold'
                                         : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700'
@@ -115,11 +115,11 @@ export default function Sidebar() {
                     }}
                 />
                 <div className="min-w-0">
-                    <div className="text-[13px] font-semibold text-zinc-900 font-primary truncate">
+                    <div className="text-sm font-semibold text-zinc-900 font-primary truncate">
                         {displayName}
                     </div>
                     {user?.emailAddresses?.[0]?.emailAddress && (
-                        <div className="text-[11px] text-zinc-400 font-primary truncate">
+                        <div className="text-xs text-zinc-400 font-primary truncate">
                             {user.emailAddresses[0].emailAddress}
                         </div>
                     )}

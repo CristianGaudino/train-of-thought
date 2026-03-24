@@ -38,10 +38,10 @@ export default function OnboardingEmptyState({ onNewProject }: OnboardingEmptySt
             </div>
 
             {/* Heading */}
-            <h2 className="text-[26px] font-secondary text-zinc-900 tracking-tight mb-2">
+            <h2 className="text-2xl font-secondary text-zinc-900 tracking-tight mb-2">
                 Your project space is empty
             </h2>
-            <p className="text-[14px] text-zinc-400 font-primary leading-relaxed mb-10 max-w-sm">
+            <p className="text-sm text-zinc-400 font-primary leading-relaxed mb-10 max-w-sm">
                 Start by exploring an idea in the AI chat, or jump straight in and create a project manually.
             </p>
 
@@ -50,7 +50,7 @@ export default function OnboardingEmptyState({ onNewProject }: OnboardingEmptySt
 
                 {/* Explore with AI */}
                 <div className="flex-1 flex flex-col gap-2">
-                    <p className="text-[11px] font-semibold uppercase tracking-widest text-zinc-300 font-primary text-center">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-zinc-300 font-primary text-center">
                         Start with AI
                     </p>
                     <Link
@@ -61,10 +61,10 @@ export default function OnboardingEmptyState({ onNewProject }: OnboardingEmptySt
                             <Sparkles size={15} className="text-zinc-600" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <div className="text-[13px] font-semibold text-zinc-900 font-primary">
+                            <div className="text-sm font-semibold text-zinc-900 font-primary">
                                 Freeform
                             </div>
-                            <div className="text-[11px] text-zinc-400 font-primary mt-0.5">
+                            <div className="text-xs text-zinc-400 font-primary mt-0.5">
                                 Explore an idea first
                             </div>
                         </div>
@@ -78,10 +78,10 @@ export default function OnboardingEmptyState({ onNewProject }: OnboardingEmptySt
                             <FlaskConical size={15} className="text-zinc-600" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <div className="text-[13px] font-semibold text-zinc-900 font-primary">
+                            <div className="text-sm font-semibold text-zinc-900 font-primary">
                                 Structured
                             </div>
-                            <div className="text-[11px] text-zinc-400 font-primary mt-0.5">
+                            <div className="text-xs text-zinc-400 font-primary mt-0.5">
                                 Shape a specific idea
                             </div>
                         </div>
@@ -92,18 +92,18 @@ export default function OnboardingEmptyState({ onNewProject }: OnboardingEmptySt
                 {/* Divider */}
                 <div className="hidden sm:flex flex-col items-center gap-2 py-4">
                     <div className="flex-1 w-px bg-zinc-100" />
-                    <span className="text-[11px] text-zinc-300 font-primary">or</span>
+                    <span className="text-xs text-zinc-300 font-primary">or</span>
                     <div className="flex-1 w-px bg-zinc-100" />
                 </div>
                 <div className="sm:hidden flex items-center gap-3">
                     <div className="flex-1 h-px bg-zinc-100" />
-                    <span className="text-[11px] text-zinc-300 font-primary">or</span>
+                    <span className="text-xs text-zinc-300 font-primary">or</span>
                     <div className="flex-1 h-px bg-zinc-100" />
                 </div>
 
                 {/* Create manually */}
                 <div className="flex-1 flex flex-col gap-2">
-                    <p className="text-[11px] font-semibold uppercase tracking-widest text-zinc-300 font-primary text-center">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-zinc-300 font-primary text-center">
                         Start manually
                     </p>
                     <button
@@ -114,10 +114,10 @@ export default function OnboardingEmptyState({ onNewProject }: OnboardingEmptySt
                             <Plus size={15} className="text-zinc-600 group-hover:text-white transition-colors" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <div className="text-[13px] font-semibold text-zinc-900 font-primary">
+                            <div className="text-sm font-semibold text-zinc-900 font-primary">
                                 New project
                             </div>
-                            <div className="text-[11px] text-zinc-400 font-primary mt-0.5">
+                            <div className="text-xs text-zinc-400 font-primary mt-0.5">
                                 Start from scratch
                             </div>
                         </div>
