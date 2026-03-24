@@ -147,19 +147,12 @@ export default function TaskPanel({
         );
 
         setSubtasks(updated);
-        await onUpdate?.(task.id, { subtasks: updated }, { silent: true });
 
         try {
-            await fetch(`/api/tasks/${task.id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ subtasks: updated }),
-            });
+            await onUpdate?.(task.id, { subtasks: updated }, { silent: true });
         } catch {
             toastError('Failed to update sub-task');
-
             setSubtasks(subtasks);
-            await onUpdate?.(task.id, { subtasks });
         }
     };
 
@@ -177,19 +170,11 @@ export default function TaskPanel({
         setSubtasks(updated);
         setNewSub('');
 
-        await onUpdate?.(task.id, { subtasks: updated }, { silent: true });
-
         try {
-            await fetch(`/api/tasks/${task.id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ subtasks: updated }),
-            });
+            await onUpdate?.(task.id, { subtasks: updated }, { silent: true });
         } catch {
             toastError('Failed to add sub-task');
-
             setSubtasks(subtasks);
-            await onUpdate?.(task.id, { subtasks });
         }
     };
 
@@ -232,9 +217,7 @@ export default function TaskPanel({
             success('Comment posted');
         } catch {
             toastError('Failed to post comment');
-
             setComments(comments);
-            await onUpdate?.(task.id, { comments });
         } finally {
             setSubmitting(false);
         }

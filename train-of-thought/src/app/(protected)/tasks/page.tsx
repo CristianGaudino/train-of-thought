@@ -27,9 +27,9 @@ export default function TasksPage() {
     } = useTasks();
     
     const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
-    const activeTask = activeTaskId
-        ? groups.flatMap(s => s.tasks).find(t => t.id === activeTaskId) ?? null
-        : null;
+    const activeTask = groups
+        .flatMap(g => g.tasks)
+        .find(t => t.id === activeTaskId) ?? null;
     const [collapsed, setCollapsed]         = useState<Record<string, boolean>>({});
     const [showQuick, setShowQuick]         = useState(false);
     const [quickTitle, setQuickTitle]       = useState('');

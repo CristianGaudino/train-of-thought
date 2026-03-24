@@ -116,7 +116,17 @@ export function useTasks(): UseTasksReturn {
             ...p,
             sections: p.sections.map(s => ({
                 ...s,
-                tasks: s.tasks.map(t => t.id === taskId ? { ...t, ...data } : t),
+                tasks: s.tasks.map(t => {
+                    if (t.id !== taskId) return t;
+
+                    return {
+                        ...t,
+                        ...data,
+                        // ensure arrays are replaced, not merged weirdly
+                        ...(data.comments && { comments: data.comments }),
+                        ...(data.subtasks && { subtasks: data.subtasks }),
+                    };
+                }),
             })),
         })));
 
