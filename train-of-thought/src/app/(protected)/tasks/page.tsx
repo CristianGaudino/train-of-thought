@@ -22,21 +22,20 @@ export default function TasksPage() {
         groups, loading,
         totalOpen, todayCount, overdueCount,
         filterProject, filterPriority, groupBy,
-        setFilterProject, setGroupBy,
+        setFilterProject, setFilterPriority, setGroupBy,
         uniqueProjects,
         markDone, addQuickTask, updateTask, deleteTask,
     } = useTasks();
 
-    const [activeTask, setActiveTask]   = useState<FlatTask | null>(null);
-    const [collapsed, setCollapsed]     = useState<Record<string, boolean>>({});
-    const [showQuick, setShowQuick]     = useState(false);
-    const [quickTitle, setQuickTitle]   = useState('');
-    const [quickProject, setQuickProject] = useState('');
+    const [activeTask, setActiveTask]       = useState<FlatTask | null>(null);
+    const [collapsed, setCollapsed]         = useState<Record<string, boolean>>({});
+    const [showQuick, setShowQuick]         = useState(false);
+    const [quickTitle, setQuickTitle]       = useState('');
+    const [quickProject, setQuickProject]   = useState('');
 
     const toggleCollapse = (id: string) => setCollapsed(c => ({ ...c, [id]: !c[id] }));
     const totalFiltered  = groups.reduce((sum, g) => sum + g.tasks.length, 0);
 
-    // Default quickProject to first available project when quick-add opens
     const handleOpenQuick = () => {
         if (!quickProject && uniqueProjects.length > 0) {
             setQuickProject(uniqueProjects[0].id);
@@ -58,10 +57,10 @@ export default function TasksPage() {
             <div className="px-8 pt-6 flex-shrink-0">
                 <div className="flex items-start justify-between mb-5">
                     <div>
-                        <h1 className="text-[26px] font-secondary text-zinc-900 tracking-tight m-0">
+                        <h1 className="text-2xl font-secondary text-zinc-900 tracking-tight m-0">
                             My Tasks
                         </h1>
-                        <p className="text-[13px] text-zinc-400 font-primary mt-1 m-0">
+                        <p className="text-sm text-zinc-400 font-primary mt-1 m-0">
                             {loading ? 'Loading…' : (
                                 <>
                                     {totalOpen} open
@@ -75,64 +74,76 @@ export default function TasksPage() {
                             )}
                         </p>
                     </div>
-                    <Button onClick={handleOpenQuick} icon={<Plus size={15} />}>Add Task</Button>
+                    <Button onClick={handleOpenQuick} icon={<Plus size={15} />}>
+                        Add Task
+                    </Button>
                 </div>
 
                 {/* Quick add */}
                 {showQuick && (
                     <div className="bg-white border border-zinc-200 rounded-2xl p-4 mb-4 flex gap-2.5 flex-wrap items-end shadow-sm">
-                        {/* Task title */}
                         <div className="flex-1 min-w-48">
-                            <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-widest font-primary mb-1.5">
+                            <div className="text-xs font-semibold text-zinc-400 uppercase tracking-widest font-primary mb-1.5">
                                 Task
                             </div>
                             <Input
                                 autoFocus
                                 value={quickTitle}
                                 onChange={e => setQuickTitle(e.target.value)}
-                                onKeyDown={e => { if (e.key === 'Enter' && quickTitle.trim()) { setShowQuick(false); setQuickTitle(''); }}}
+                                onKeyDown={e => { if (e.key === 'Enter') handleQuickAdd(); }}
                                 placeholder="What needs to be done?"
-                                className="text-[13.5px]"
                             />
                         </div>
-
-                        {/* Project selector */}
                         <div className="flex-shrink-0">
-                            <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-widest font-primary mb-1.5">
+                            <div className="text-xs font-semibold text-zinc-400 uppercase tracking-widest font-primary mb-1.5">
                                 Project
                             </div>
-                            <select
+                            <Select
                                 value={quickProject}
                                 onChange={e => setQuickProject(e.target.value)}
-                                className="px-3 py-2 rounded-xl border border-zinc-200 bg-zinc-50 text-[13px] font-primary text-zinc-700 outline-none focus:border-zinc-400 transition-colors cursor-pointer"
+                                className="min-w-36"
                             >
-                                {uniqueProjects.length === 0 && (
-                                    <option value="">No projects</option>
-                                )}
+                                {uniqueProjects.length === 0 && <option value="">No projects</option>}
                                 {uniqueProjects.map(p => (
                                     <option key={p.id} value={p.id}>{p.title}</option>
                                 ))}
-                            </select>
+                            </Select>
                         </div>
-
-                        {/* Actions */}
                         <div className="flex gap-2 flex-shrink-0">
-                            <Button variant="secondary" onClick={() => { setShowQuick(false); setQuickTitle(''); }}>Cancel</Button>
-                            <Button disabled={!quickTitle.trim() || !quickProject} onClick={handleQuickAdd}>Add</Button>
+                            <Button
+                                variant="secondary"
+                                onClick={() => { setShowQuick(false); setQuickTitle(''); }}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                disabled={!quickTitle.trim() || !quickProject}
+                                onClick={handleQuickAdd}
+                            >
+                                Add
+                            </Button>
                         </div>
                     </div>
                 )}
 
                 {/* Filters + group by */}
                 <div className="flex items-center gap-2.5 pb-4 border-b border-zinc-100 flex-wrap">
-                    <Select variant="pill" value={filterProject} onChange={e => setFilterProject(e.target.value)}>
+                    <Select
+                        variant="pill"
+                        value={filterProject}
+                        onChange={e => setFilterProject(e.target.value)}
+                    >
                         <option value="all">All projects</option>
                         {uniqueProjects.map(p => (
                             <option key={p.id} value={p.id}>{p.title}</option>
                         ))}
                     </Select>
 
-                    <Select variant="pill" value={filterProject} onChange={e => setFilterProject(e.target.value)}>
+                    <Select
+                        variant="pill"
+                        value={filterPriority}
+                        onChange={e => setFilterPriority(e.target.value)}
+                    >
                         <option value="all">All priorities</option>
                         {['Critical', 'High', 'Medium', 'Low'].map(p => (
                             <option key={p}>{p}</option>
@@ -142,7 +153,7 @@ export default function TasksPage() {
                     <div className="flex-1" />
 
                     <div className="flex items-center gap-2">
-                        <span className="text-[12px] text-zinc-400 font-primary flex items-center gap-1">
+                        <span className="text-xs text-zinc-400 font-primary flex items-center gap-1">
                             <SlidersHorizontal size={12} />
                             Group by
                         </span>
@@ -171,7 +182,11 @@ export default function TasksPage() {
                 {!loading && totalFiltered === 0 && (
                     <EmptyState
                         icon={Check}
-                        title={filterProject !== 'all' || filterPriority !== 'all' ? 'No tasks match your filters' : "You're all caught up!"}
+                        title={
+                            filterProject !== 'all' || filterPriority !== 'all'
+                                ? 'No tasks match your filters'
+                                : "You're all caught up!"
+                        }
                     />
                 )}
 
@@ -181,13 +196,14 @@ export default function TasksPage() {
                             const isC = collapsed[group.id];
                             return (
                                 <div key={group.id}>
+                                    {/* Group heading */}
                                     <button
                                         onClick={() => toggleCollapse(group.id)}
                                         className="flex items-center gap-2.5 mb-2.5 w-full cursor-pointer"
                                     >
                                         <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: group.accent }} />
-                                        <span className="text-[13px] font-bold text-zinc-900 font-primary">{group.label}</span>
-                                        <span className="text-[11px] text-zinc-300 font-primary">{group.tasks.length}</span>
+                                        <span className="text-sm font-bold text-zinc-900 font-primary">{group.label}</span>
+                                        <span className="text-xs text-zinc-300 font-primary">{group.tasks.length}</span>
                                         <div className="flex-1 h-px bg-zinc-100" />
                                         {isC
                                             ? <ChevronRight size={13} className="text-zinc-300" />
@@ -195,6 +211,7 @@ export default function TasksPage() {
                                         }
                                     </button>
 
+                                    {/* Task rows */}
                                     {!isC && (
                                         <div className="flex flex-col gap-1.5">
                                             {group.tasks.map(task => {
@@ -236,8 +253,11 @@ export default function TasksPage() {
                                                         />
 
                                                         {/* Content */}
-                                                        <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setActiveTask(task)}>
-                                                            <div className="text-[14px] font-medium font-primary text-zinc-900 truncate">
+                                                        <div
+                                                            className="flex-1 min-w-0 cursor-pointer"
+                                                            onClick={() => setActiveTask(task)}
+                                                        >
+                                                            <div className="text-sm font-medium font-primary text-zinc-900 truncate">
                                                                 {task.title}
                                                             </div>
                                                             <div className="flex items-center gap-1.5 mt-0.5">
@@ -245,7 +265,7 @@ export default function TasksPage() {
                                                                     className="w-1.5 h-1.5 rounded-full inline-block flex-shrink-0"
                                                                     style={{ background: task.projectAccent }}
                                                                 />
-                                                                <span className="text-[11px] text-zinc-400 font-primary">
+                                                                <span className="text-xs text-zinc-400 font-primary">
                                                                     {task.projectTitle}
                                                                     {task.sectionTitle && ` · ${task.sectionTitle}`}
                                                                 </span>
@@ -255,14 +275,14 @@ export default function TasksPage() {
                                                         {/* Meta */}
                                                         <div className="flex items-center gap-2.5 flex-shrink-0">
                                                             {task.subtasks.length > 0 && (
-                                                                <span className="text-[11px] text-zinc-300 font-primary">
+                                                                <span className="text-xs text-zinc-300 font-primary">
                                                                     {task.subtasks.filter(s => s.done).length}/{task.subtasks.length} sub
                                                                 </span>
                                                             )}
                                                             {pr && <Pill bg={pr.bg} color={pr.color}>{task.priority}</Pill>}
                                                             {tdl && (
                                                                 <span
-                                                                    className="text-[12px] font-primary flex items-center gap-1"
+                                                                    className="text-xs font-primary flex items-center gap-1"
                                                                     style={{ color: tdl.urgent ? '#D44444' : '#A1A1AA', fontWeight: tdl.urgent ? 600 : 400 }}
                                                                 >
                                                                     {tdl.urgent && <AlertTriangle size={11} />}
@@ -288,6 +308,7 @@ export default function TasksPage() {
                 )}
             </div>
 
+            {/* Task panel */}
             {activeTask && (
                 <TaskPanel
                     key={activeTask.id}

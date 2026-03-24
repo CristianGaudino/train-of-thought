@@ -36,14 +36,15 @@ export default function TaskPanel({
     const [priority, setPriority]         = useState<Priority>(task.priority);
     const [due, setDue]                   = useState(task.due ?? '');
     const [assignees, setAssignees]       = useState<string[]>(task.assignees ?? []);
-    const [editingTitle, setEditingTitle] = useState(false);
-    const [editingDesc, setEditingDesc]   = useState(false);
-    const [showPriority, setShowPriority] = useState(false);
-    const [showDue, setShowDue]           = useState(false);
-    const [showAssignees, setShowAssignees] = useState(false);
-    const [saving, setSaving]             = useState(false);
-    const [deleting, setDeleting]         = useState(false);
-    const [confirmDelete, setConfirmDelete] = useState(false);
+
+    const [editingTitle, setEditingTitle]     = useState(false);
+    const [editingDesc, setEditingDesc]       = useState(false);
+    const [showPriority, setShowPriority]     = useState(false);
+    const [showDue, setShowDue]               = useState(false);
+    const [showAssignees, setShowAssignees]   = useState(false);
+    const [saving, setSaving]                 = useState(false);
+    const [deleting, setDeleting]             = useState(false);
+    const [confirmDelete, setConfirmDelete]   = useState(false);
 
     // ── Sub-tasks + comments ──
     const [comments, setComments]     = useState<Comment[]>(task.comments ?? []);
@@ -53,6 +54,12 @@ export default function TaskPanel({
     const [submitting, setSubmitting] = useState(false);
 
     const pr = PRIORITY_CONFIG[priority];
+
+    const closeAllDropdowns = () => {
+        setShowPriority(false);
+        setShowDue(false);
+        setShowAssignees(false);
+    };
 
     // ── Save helper ──
 
@@ -86,19 +93,19 @@ export default function TaskPanel({
 
     const commitPriority = async (p: Priority) => {
         setPriority(p);
-        setShowPriority(false);
+        closeAllDropdowns();
         if (p !== task.priority) await saveField({ priority: p });
     };
 
     const commitDue = async (val: string) => {
         setDue(val);
-        setShowDue(false);
+        closeAllDropdowns();
         await saveField({ due: val || null });
     };
 
     const clearDue = async () => {
         setDue('');
-        setShowDue(false);
+        closeAllDropdowns();
         await saveField({ due: null });
     };
 
@@ -214,10 +221,7 @@ export default function TaskPanel({
             <div className="fixed right-0 top-0 bottom-0 w-[min(480px,92vw)] bg-white z-[201] flex flex-col shadow-2xl animate-in slide-in-from-right duration-200">
 
                 {/* ── Header ── */}
-                <div
-                    className="px-6 py-5 border-b border-zinc-100 flex-shrink-0"
-                    style={{ background: projectColor }}
-                >
+                <div className="px-6 py-5 border-b border-zinc-100 flex-shrink-0" style={{ background: projectColor }}>
                     <div className="flex justify-between items-start gap-3">
                         <div className="flex-1 min-w-0">
 
@@ -229,17 +233,17 @@ export default function TaskPanel({
                                     onChange={e => setTitle(e.target.value)}
                                     onBlur={commitTitle}
                                     onKeyDown={e => {
-                                        if (e.key === 'Enter') commitTitle();
+                                        if (e.key === 'Enter')  commitTitle();
                                         if (e.key === 'Escape') { setTitle(task.title); setEditingTitle(false); }
                                     }}
-                                    className="w-full text-[19px] font-bold font-secondary text-zinc-900 bg-white/70 rounded-lg px-2 py-1 outline-none border border-zinc-300 focus:border-zinc-500"
+                                    className="w-full text-xl font-bold font-secondary text-zinc-900 bg-white/70 rounded-lg px-2 py-1 outline-none border border-zinc-300 focus:border-zinc-500"
                                 />
                             ) : (
                                 <button
                                     onClick={() => setEditingTitle(true)}
                                     className="group flex items-start gap-1.5 text-left w-full"
                                 >
-                                    <h3 className="text-[19px] font-bold font-secondary text-zinc-900 leading-snug flex-1">
+                                    <h3 className="text-xl font-bold font-secondary text-zinc-900 leading-snug flex-1">
                                         {title}
                                     </h3>
                                     <Pencil size={13} className="text-zinc-300 group-hover:text-zinc-500 mt-1.5 flex-shrink-0 transition-colors" />
@@ -248,7 +252,7 @@ export default function TaskPanel({
 
                             {/* Breadcrumb */}
                             {task.projectTitle && (
-                                <div className="mt-1.5 text-[12px] text-zinc-500 font-primary flex items-center gap-1">
+                                <div className="mt-1.5 text-xs text-zinc-500 font-primary flex items-center gap-1">
                                     <span className="inline-block w-2 h-2 rounded-full flex-shrink-0" style={{ background: accent }} />
                                     {task.projectTitle}
                                     {task.sectionTitle && (
@@ -259,7 +263,6 @@ export default function TaskPanel({
                         </div>
 
                         <div className="flex items-center gap-1 flex-shrink-0">
-                            {/* Delete button */}
                             {onDelete && !confirmDelete && (
                                 <button
                                     onClick={() => setConfirmDelete(true)}
@@ -278,44 +281,44 @@ export default function TaskPanel({
                         </div>
                     </div>
 
-                    {/* Delete confirm inline */}
+                    {/* Delete confirm */}
                     {confirmDelete && (
                         <div className="mt-3 flex items-center gap-2 px-3 py-2.5 rounded-xl bg-red-50 border border-red-200">
-                            <span className="text-[12px] text-red-700 font-primary flex-1">
+                            <span className="text-xs text-red-700 font-primary flex-1">
                                 Delete this task permanently?
                             </span>
                             <button
                                 onClick={() => setConfirmDelete(false)}
-                                className="text-[12px] text-zinc-500 font-primary hover:text-zinc-700 transition-colors cursor-pointer px-2"
+                                className="text-xs text-zinc-500 font-primary hover:text-zinc-700 transition-colors cursor-pointer px-2"
                             >
                                 Cancel
                             </button>
-                            <button
+                            <Button
+                                variant="destructive"
+                                size="sm"
+                                loading={deleting}
                                 onClick={handleDelete}
-                                disabled={deleting}
-                                className="text-[12px] font-semibold text-white bg-red-500 hover:bg-red-600 font-primary px-3 py-1 rounded-lg transition-colors cursor-pointer disabled:opacity-60"
                             >
-                                {deleting ? 'Deleting…' : 'Delete'}
-                            </button>
+                                Delete
+                            </Button>
                         </div>
                     )}
 
-                    {/* ── Meta pills ── */}
+                    {/* Meta pills */}
                     <div className="flex items-center gap-2 mt-3 flex-wrap">
 
                         {/* Priority */}
                         <div className="relative">
                             <button
-                                onClick={() => { setShowPriority(v => !v); setShowDue(false); setShowAssignees(false); }}
+                                onClick={() => { closeAllDropdowns(); setShowPriority(v => !v); }}
                                 className="flex items-center gap-1 cursor-pointer"
                             >
                                 {pr ? (
                                     <Pill bg={pr.bg} color={pr.color}>
-                                        <Flag size={10} />
-                                        {priority}
+                                        <Flag size={10} /> {priority}
                                     </Pill>
                                 ) : (
-                                    <span className="text-[12px] text-zinc-400 font-primary flex items-center gap-1 hover:text-zinc-600 transition-colors">
+                                    <span className="text-xs text-zinc-400 font-primary flex items-center gap-1 hover:text-zinc-600 transition-colors">
                                         <Flag size={12} /> Priority
                                     </span>
                                 )}
@@ -328,7 +331,7 @@ export default function TaskPanel({
                                             <button
                                                 key={p}
                                                 onClick={() => commitPriority(p)}
-                                                className="flex items-center gap-2 w-full px-3 py-2 text-[12px] font-primary hover:bg-zinc-50 transition-colors cursor-pointer"
+                                                className="flex items-center gap-2 w-full px-3 py-2 text-xs font-primary hover:bg-zinc-50 transition-colors cursor-pointer"
                                                 style={{ color: cfg.color }}
                                             >
                                                 <Flag size={11} />
@@ -344,33 +347,33 @@ export default function TaskPanel({
                         {/* Due date */}
                         <div className="relative">
                             <button
-                                onClick={() => { setShowDue(v => !v); setShowPriority(false); setShowAssignees(false); }}
+                                onClick={() => { closeAllDropdowns(); setShowDue(v => !v); }}
                                 className="flex items-center gap-1 cursor-pointer"
                             >
                                 {due ? (
-                                    <span className="text-[12px] font-primary text-zinc-600 flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/60 hover:bg-white/80 transition-colors">
+                                    <span className="text-xs font-primary text-zinc-600 flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/60 hover:bg-white/80 transition-colors">
                                         <Calendar size={11} />
                                         {formatDate(due)}
                                     </span>
                                 ) : (
-                                    <span className="text-[12px] text-zinc-400 font-primary flex items-center gap-1 hover:text-zinc-600 transition-colors">
+                                    <span className="text-xs text-zinc-400 font-primary flex items-center gap-1 hover:text-zinc-600 transition-colors">
                                         <Calendar size={12} /> Due date
                                     </span>
                                 )}
                             </button>
                             {showDue && (
                                 <div className="absolute top-full left-0 mt-1 bg-white rounded-xl border border-zinc-200 shadow-lg z-10 p-3 flex flex-col gap-2">
-                                    <input
+                                    <Input
                                         autoFocus
                                         type="date"
                                         value={due}
                                         onChange={e => commitDue(e.target.value)}
-                                        className="px-3 py-2 rounded-lg border border-zinc-200 text-[13px] font-primary text-zinc-800 outline-none focus:border-zinc-400 bg-zinc-50"
+                                        className="text-xs"
                                     />
                                     {due && (
                                         <button
                                             onClick={clearDue}
-                                            className="text-[12px] text-zinc-400 hover:text-zinc-600 font-primary transition-colors cursor-pointer flex items-center gap-1"
+                                            className="text-xs text-zinc-400 hover:text-zinc-600 font-primary transition-colors cursor-pointer flex items-center gap-1"
                                         >
                                             <X size={11} /> Clear date
                                         </button>
@@ -379,18 +382,13 @@ export default function TaskPanel({
                             )}
                         </div>
 
-                        {saving && (
-                            <span className="text-[11px] text-zinc-400 font-primary ml-auto">
-                                Saving…
-                            </span>
-                        )}
+                        {saving && <span className="text-xs text-zinc-400 font-primary ml-auto">Saving…</span>}
                     </div>
 
-                    {/* ── Assignees ── */}
+                    {/* Assignees */}
                     <div className="flex items-center gap-2 mt-3 flex-wrap">
-                        <span className="text-[12px] text-zinc-400 font-primary">Assigned to</span>
+                        <span className="text-xs text-zinc-400 font-primary">Assigned to</span>
 
-                        {/* Current assignees */}
                         {assignees.length > 0 && (
                             <div className="flex">
                                 {assignees.map((id, i) => {
@@ -404,27 +402,19 @@ export default function TaskPanel({
                             </div>
                         )}
 
-                        {/* Assignee picker toggle */}
+                        {/* Assignee picker */}
                         <div className="relative">
                             <button
-                                onClick={() => { setShowAssignees(v => !v); setShowPriority(false); setShowDue(false); }}
-                                className={`
-                                    flex items-center gap-1 text-[11px] font-primary px-2 py-1 rounded-full
-                                    transition-colors cursor-pointer
-                                    ${showAssignees
-                                        ? 'bg-zinc-200 text-zinc-700'
-                                        : 'text-zinc-400 hover:text-zinc-600 hover:bg-white/60'
-                                    }
-                                `}
+                                onClick={() => { closeAllDropdowns(); setShowAssignees(v => !v); }}
+                                className={`flex items-center gap-1 text-xs font-primary px-2 py-1 rounded-full transition-colors cursor-pointer ${showAssignees ? 'bg-zinc-200 text-zinc-700' : 'text-zinc-400 hover:text-zinc-600 hover:bg-white/60'}`}
                             >
                                 <UserPlus size={11} />
                                 {assignees.length === 0 ? 'Assign' : 'Edit'}
                             </button>
-
                             {showAssignees && (
                                 <div className="absolute top-full left-0 mt-1 bg-white rounded-xl border border-zinc-200 shadow-lg z-10 overflow-hidden min-w-44">
                                     <div className="px-3 py-2 border-b border-zinc-100">
-                                        <span className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 font-primary">
+                                        <span className="text-xs font-semibold uppercase tracking-widest text-zinc-400 font-primary">
                                             Assignees
                                         </span>
                                     </div>
@@ -437,12 +427,8 @@ export default function TaskPanel({
                                                 className="flex items-center gap-2.5 w-full px-3 py-2.5 hover:bg-zinc-50 transition-colors cursor-pointer"
                                             >
                                                 <Avatar member={member} size={22} />
-                                                <span className="text-[12px] font-primary text-zinc-700 flex-1 text-left">
-                                                    {member.name}
-                                                </span>
-                                                {assigned && (
-                                                    <Check size={13} className="text-zinc-500 flex-shrink-0" />
-                                                )}
+                                                <span className="text-xs font-primary text-zinc-700 flex-1 text-left">{member.name}</span>
+                                                {assigned && <Check size={13} className="text-zinc-500 flex-shrink-0" />}
                                             </button>
                                         );
                                     })}
@@ -451,7 +437,7 @@ export default function TaskPanel({
                         </div>
 
                         {assignees.length > 0 && (
-                            <span className="text-[12px] text-zinc-500 font-primary">
+                            <span className="text-xs text-zinc-500 font-primary">
                                 {assignees.map(id => getMember(id)?.name).filter(Boolean).join(', ')}
                             </span>
                         )}
@@ -466,10 +452,28 @@ export default function TaskPanel({
                         <SectionLabel>Description</SectionLabel>
                         {editingDesc ? (
                             <div className="flex flex-col gap-2">
-                                <Textarea value={description} onChange={e => setDescription(e.target.value)} rows={4} placeholder="Add a description…" className="text-[13px]" />
+                                <Textarea
+                                    autoFocus
+                                    value={description}
+                                    onChange={e => setDescription(e.target.value)}
+                                    rows={4}
+                                    placeholder="Add a description…"
+                                />
                                 <div className="flex gap-2">
-                                    <Button size="sm" onClick={commitDesc} icon={<Check size={12} />} style={{ background: accent }}>Save</Button>
-                                    <Button size="sm" variant="secondary" onClick={() => { setDescription(task.description); setEditingDesc(false); }}>
+                                    <Button
+                                        size="sm"
+                                        onClick={commitDesc}
+                                        icon={<Check size={12} />}
+                                        style={{ background: accent }}
+                                        className="border-0"
+                                    >
+                                        Save
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="secondary"
+                                        onClick={() => { setDescription(task.description); setEditingDesc(false); }}
+                                    >
                                         Cancel
                                     </Button>
                                 </div>
@@ -477,11 +481,11 @@ export default function TaskPanel({
                         ) : (
                             <button onClick={() => setEditingDesc(true)} className="group w-full text-left">
                                 {description ? (
-                                    <p className="text-[13px] text-zinc-600 font-primary leading-relaxed group-hover:text-zinc-800 transition-colors">
+                                    <p className="text-sm text-zinc-600 font-primary leading-relaxed group-hover:text-zinc-800 transition-colors">
                                         {description}
                                     </p>
                                 ) : (
-                                    <p className="text-[13px] text-zinc-300 font-primary italic group-hover:text-zinc-400 transition-colors">
+                                    <p className="text-sm text-zinc-300 font-primary italic group-hover:text-zinc-400 transition-colors">
                                         Add a description…
                                     </p>
                                 )}
@@ -499,7 +503,7 @@ export default function TaskPanel({
                         </SectionLabel>
                         <div className="flex flex-col gap-1.5 mb-2">
                             {subtasks.length === 0 && (
-                                <p className="text-[13px] text-zinc-300 font-primary m-0">No sub-tasks yet.</p>
+                                <p className="text-sm text-zinc-300 font-primary m-0">No sub-tasks yet.</p>
                             )}
                             {subtasks.map(st => (
                                 <div
@@ -514,10 +518,10 @@ export default function TaskPanel({
                                             background: st.done ? accent : 'transparent',
                                         }}
                                     >
-                                        {st.done && <span className="text-white text-[9px] leading-none">✓</span>}
+                                        {st.done && <span className="text-white text-xs leading-none">✓</span>}
                                     </div>
                                     <span
-                                        className="text-[13px] font-primary transition-colors flex-1"
+                                        className="text-sm font-primary transition-colors flex-1"
                                         style={{
                                             color:          st.done ? '#BBBBBB' : '#374151',
                                             textDecoration: st.done ? 'line-through' : 'none',
@@ -534,9 +538,14 @@ export default function TaskPanel({
                                 onChange={e => setNewSub(e.target.value)}
                                 onKeyDown={e => e.key === 'Enter' && addSub()}
                                 placeholder="Add sub-task…"
-                                className="text-[13px] py-2"
+                                className="text-sm py-2"
                             />
-                            <Button onClick={addSub} icon={<Plus size={16} />} style={{ background: accent }} className="border-0 flex-shrink-0" />
+                            <Button
+                                onClick={addSub}
+                                icon={<Plus size={16} />}
+                                style={{ background: accent }}
+                                className="border-0 flex-shrink-0"
+                            />
                         </div>
                     </div>
 
@@ -547,7 +556,7 @@ export default function TaskPanel({
                             <span className="text-zinc-300 font-normal">({comments.length})</span>
                         </SectionLabel>
                         {comments.length === 0 && (
-                            <p className="text-[13px] text-zinc-300 font-primary mb-2.5 m-0">No comments yet.</p>
+                            <p className="text-sm text-zinc-300 font-primary mb-2.5 m-0">No comments yet.</p>
                         )}
                         <div className="flex flex-col gap-2.5 mb-3">
                             {comments.map(c => {
@@ -560,8 +569,8 @@ export default function TaskPanel({
                                                 <img src={author.imageUrl} alt={author.name ?? ''} className="w-7 h-7 rounded-full object-cover flex-shrink-0 border-2 border-white" />
                                             ) : (
                                                 <div
-                                                    className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-white font-bold text-white font-primary"
-                                                    style={{ background: 'color' in author ? author.color : '#888', fontSize: 10 }}
+                                                    className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-white font-bold text-white font-primary text-xs"
+                                                    style={{ background: 'color' in author ? author.color : '#888' }}
                                                 >
                                                     {'initials' in author ? author.initials : '?'}
                                                 </div>
@@ -569,35 +578,43 @@ export default function TaskPanel({
                                         )}
                                         <div className="flex-1 bg-zinc-50 rounded-xl px-3.5 py-2.5">
                                             <div className="flex justify-between mb-1">
-                                                <span className="text-[12px] font-semibold text-zinc-800 font-primary">
+                                                <span className="text-xs font-semibold text-zinc-800 font-primary">
                                                     {author?.name ?? 'Unknown'}
                                                 </span>
-                                                <span className="text-[11px] text-zinc-400 font-primary">{c.time}</span>
+                                                <span className="text-xs text-zinc-400 font-primary">{c.time}</span>
                                             </div>
-                                            <p className="text-[13px] text-zinc-600 font-primary leading-relaxed m-0">{c.text}</p>
+                                            <p className="text-sm text-zinc-600 font-primary leading-relaxed m-0">{c.text}</p>
                                         </div>
                                     </div>
                                 );
                             })}
                         </div>
+
+                        {/* Comment input */}
                         <div className="flex gap-2 items-center">
                             {user?.imageUrl ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img src={user.imageUrl} alt={user.firstName ?? 'You'} className="w-7 h-7 rounded-full object-cover flex-shrink-0 border-2 border-white" />
                             ) : (
-                                <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-white font-bold text-white font-primary text-[10px] bg-zinc-400">
+                                <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-white font-bold text-white font-primary text-xs bg-zinc-400">
                                     {user?.firstName?.[0] ?? '?'}
                                 </div>
                             )}
-                            <input
+                            <Input
                                 value={comment}
                                 onChange={e => setComment(e.target.value)}
                                 onKeyDown={e => e.key === 'Enter' && addComment()}
                                 placeholder="Add a comment…"
                                 disabled={submitting}
-                                className="flex-1 px-3 py-2 rounded-lg border border-zinc-200 text-[13px] font-primary text-zinc-800 bg-zinc-50 outline-none focus:border-zinc-400 transition-colors disabled:opacity-60"
+                                className="text-sm py-2"
                             />
-                            <Button onClick={addComment} disabled={submitting || !comment.trim()} icon={<ArrowUp size={16} />} style={{ background: accent }} className="border-0 flex-shrink-0" />
+                            <Button
+                                onClick={addComment}
+                                disabled={submitting || !comment.trim()}
+                                icon={<ArrowUp size={16} />}
+                                style={{ background: accent }}
+                                className="border-0 flex-shrink-0"
+                            />
                         </div>
                     </div>
                 </div>
