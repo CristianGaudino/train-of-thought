@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { PRIORITY_CONFIG } from '@/lib/projects/config';
 import { getDeadlineInfo } from '@/lib/projects/utils';
-import Pill from '@/components/projects/Pill';
+import Pill from '@/components/ui/Pill';
 import TaskPanel from '@/components/projects/TaskPanel';
 import { useTasks } from '@/hooks/projects/useTasks';
 import { Button } from '@/components/ui/buttons';

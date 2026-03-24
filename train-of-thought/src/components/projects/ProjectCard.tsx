@@ -6,7 +6,7 @@ import type { ProjectCardProps } from '@/lib/projects/definitions';
 import { STATUS_CONFIG } from '@/lib/projects/config';
 import { countTasks, getDeadlineInfo } from '@/lib/projects/utils';
 import Ring from './Ring';
-import Pill from './Pill';
+import Pill from '../ui/Pill';
 import { AvatarStack } from './AvatarStack';
 
 export default function ProjectCard({ project }: ProjectCardProps) {

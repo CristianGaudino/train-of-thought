@@ -284,6 +284,14 @@ export interface SectionLabelProps {
     className?: string;
 }
 
+export interface TaskProps {
+    task: Task;
+    hf: any;
+    toggleTask: (id: string) => void;
+    setActiveTaskId: (id: string) => void;
+    deleteTask: (id: string) => void;
+};
+
 // Hook Interfaces
 
 export interface UseProjectsReturn {

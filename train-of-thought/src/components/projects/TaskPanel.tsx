@@ -12,7 +12,7 @@ import {
 import { type Task, type Subtask, type Comment, type Priority, type TaskPanelProps, PRIORITIES } from '@/lib/projects/definitions';
 import { MOCK_MEMBERS, PRIORITY_CONFIG } from '@/lib/projects/config';
 import { getMember, generateId } from '@/lib/projects/utils';
-import Pill from './Pill';
+import Pill from '../ui/Pill';
 import { Avatar } from './Avatar';
 import { formatDate } from '@/lib/utils';
 import { Button } from '../ui/buttons';

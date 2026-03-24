@@ -14,7 +14,7 @@ import {
 import { getDeadlineInfo, getMember } from '@/lib/projects/utils';
 import { Avatar } from '@/components/projects/Avatar';
 import Ring from '@/components/projects/Ring';
-import Pill from '@/components/projects/Pill';
+import Pill from '@/components/ui/Pill';
 import TaskPanel from '@/components/projects/TaskPanel';
 import ConfirmModal from '@/components/ConfirmModal';
 import type { HeaderData, Tab } from '@/lib/projects/definitions';
@@ -24,6 +24,7 @@ import { PageSkeleton } from '@/components/ui/skeletons';
 import { Button } from '@/components/ui/buttons';
 import SectionLabel from '@/components/projects/SectionLabel';
 import { Input } from '@/components/ui/inputs';
+import { Task } from '@/components/projects/Task';
 
 export default function ProjectPage() {
     const params = useParams();
@@ -333,99 +334,16 @@ export default function ProjectPage() {
                                     {/* Task rows */}
                                     {!isC && (
                                         <div className="flex flex-col gap-1.5 pl-1">
-                                            {section.tasks.map(task => {
-                                                const pr  = PRIORITY_CONFIG[task.priority];
-                                                const tdl = getDeadlineInfo(task.due);
-                                                return (
-                                                    <div
-                                                        key={task.id}
-                                                        className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white border border-zinc-100 transition-all duration-150 group"
-                                                        onMouseEnter={e => {
-                                                            (e.currentTarget as HTMLDivElement).style.borderColor = hf.accent + '35';
-                                                            (e.currentTarget as HTMLDivElement).style.background  = '#FAFAFA';
-                                                        }}
-                                                        onMouseLeave={e => {
-                                                            (e.currentTarget as HTMLDivElement).style.borderColor = '';
-                                                            (e.currentTarget as HTMLDivElement).style.background  = '';
-                                                        }}
-                                                    >
-                                                        {/* Checkbox */}
-                                                        <button
-                                                            onClick={() => toggleTask(task.id)}
-                                                            className="w-[18px] h-[18px] rounded-full flex-shrink-0 border-2 flex items-center justify-center transition-all duration-200 cursor-pointer"
-                                                            style={{
-                                                                borderColor: task.done ? hf.accent : '#D1D5DB',
-                                                                background:  task.done ? hf.accent : 'transparent',
-                                                            }}
-                                                            onMouseEnter={e => {
-                                                                if (!task.done) {
-                                                                    (e.currentTarget as HTMLButtonElement).style.borderColor = hf.accent;
-                                                                    (e.currentTarget as HTMLButtonElement).style.background  = hf.accent + '20';
-                                                                }
-                                                            }}
-                                                            onMouseLeave={e => {
-                                                                if (!task.done) {
-                                                                    (e.currentTarget as HTMLButtonElement).style.borderColor = '#D1D5DB';
-                                                                    (e.currentTarget as HTMLButtonElement).style.background  = 'transparent';
-                                                                }
-                                                            }}
-                                                        >
-                                                            {task.done && <Check size={10} color="#fff" strokeWidth={3} />}
-                                                        </button>
-
-                                                        {/* Title */}
-                                                        <span
-                                                            onClick={() => setActiveTaskId(task.id)}
-                                                            className="flex-1 text-sm font-primary cursor-pointer transition-colors"
-                                                            style={{
-                                                                color:          task.done ? '#BBBBBB' : '#18181B',
-                                                                textDecoration: task.done ? 'line-through' : 'none',
-                                                            }}
-                                                        >
-                                                            {task.title}
-                                                        </span>
-
-                                                        {/* Meta */}
-                                                        <div className="flex items-center gap-2.5 flex-shrink-0">
-                                                            {task.subtasks.length > 0 && (
-                                                                <span className="text-xs text-zinc-300 font-primary">
-                                                                    {task.subtasks.filter(s => s.done).length}/{task.subtasks.length} sub
-                                                                </span>
-                                                            )}
-                                                            {task.assignees.length > 0 && <AvatarStack ids={task.assignees} size={22} />}
-                                                            {tdl && (
-                                                                <span
-                                                                    className="text-xs font-primary flex items-center gap-1"
-                                                                    style={{ color: tdl.urgent ? '#D44444' : '#A1A1AA', fontWeight: tdl.urgent ? 600 : 400 }}
-                                                                >
-                                                                    {tdl.urgent && <AlertTriangle size={11} />}
-                                                                    {tdl.label}
-                                                                </span>
-                                                            )}
-                                                            {pr && <Pill bg={pr.bg} color={pr.color}>{task.priority}</Pill>}
-                                                            {task.comments.length > 0 && (
-                                                                <span className="flex items-center gap-1 text-xs text-zinc-300 font-primary">
-                                                                    <MessageSquare size={12} />
-                                                                    {task.comments.length}
-                                                                </span>
-                                                            )}
-                                                            <button
-                                                                onClick={() => setActiveTaskId(task.id)}
-                                                                className="text-zinc-200 hover:text-zinc-400 transition-colors cursor-pointer"
-                                                            >
-                                                                <ChevronRight size={16} />
-                                                            </button>
-                                                            <button
-                                                                onClick={e => { e.stopPropagation(); deleteTask(task.id); }}
-                                                                className="text-zinc-200 hover:text-red-400 transition-colors cursor-pointer opacity-0 group-hover:opacity-100"
-                                                                title="Delete task"
-                                                            >
-                                                                <Trash2 size={13} />
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
+                                            {section.tasks.map(task => (
+                                                <Task
+                                                    key={task.id}
+                                                    task={task}
+                                                    hf={hf}
+                                                    toggleTask={toggleTask}
+                                                    setActiveTaskId={setActiveTaskId}
+                                                    deleteTask={deleteTask}
+                                                />
+                                            ))}
 
                                             {/* Add task */}
                                             {newTaskSec === section.id ? (

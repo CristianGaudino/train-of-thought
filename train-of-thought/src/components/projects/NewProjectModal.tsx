@@ -6,7 +6,7 @@ import { EMPTY_FORM, STEPS, type FormState, type NewProjectModalProps, type Proj
 import { ACCENT_PALETTE, STATUS_CONFIG, STATUS_OPTIONS } from '@/lib/projects/config';
 import { MOCK_MEMBERS, ME_ID } from '@/lib/projects/config';
 import { generateId } from '@/lib/projects/utils';
-import Pill from './Pill';
+import Pill from '../ui/Pill';
 import { Avatar } from './Avatar';
 import { formatDate } from '@/lib/utils';
 import { Input, Textarea } from '../ui/inputs';
