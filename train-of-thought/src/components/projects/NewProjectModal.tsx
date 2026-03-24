@@ -9,6 +9,8 @@ import { generateId } from '@/lib/projects/utils';
 import Pill from './Pill';
 import { Avatar } from './Avatar';
 import { formatDate } from '@/lib/utils';
+import { Input, Textarea } from '../ui/inputs';
+import Button from '../ui/buttons';
 
 export default function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
     const [form, setForm]         = useState<FormState>(EMPTY_FORM);
@@ -73,39 +75,25 @@ export default function NewProjectModal({ onClose, onCreate }: NewProjectModalPr
 
     const sc = STATUS_CONFIG[form.status] ?? STATUS_CONFIG['Planning'];
 
-    const inputCls = (err?: string) => `
-        w-full px-3.5 py-2.5 rounded-xl border text-[14px] font-primary text-zinc-800
-        outline-none transition-colors bg-zinc-50
-        ${err ? 'border-red-300 focus:border-red-400' : 'border-zinc-200 focus:border-zinc-400'}
-    `;
-
     return (
-        /* Backdrop */
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-5 bg-black/40 backdrop-blur-sm">
-
-            {/* Modal */}
             <div className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
 
                 {/* Live preview header */}
-                <div
-                    className="px-8 py-7 border-b border-black/5 flex-shrink-0"
-                    style={{ background: form.color }}
-                >
+                <div className="px-8 py-7 border-b border-black/5 flex-shrink-0" style={{ background: form.color }}>
                     <div className="flex justify-between items-start">
                         <div className="flex-1">
                             <div
-                                className="text-[11px] font-semibold tracking-widest uppercase font-primary mb-1.5"
+                                className="text-xs font-semibold tracking-widest uppercase font-primary mb-1.5"
                                 style={{ color: form.accent }}
                             >
                                 New Project
                             </div>
-                            <h2 className="text-[22px] font-secondary text-zinc-900 tracking-tight m-0 min-h-8">
-                                {form.title || (
-                                    <span className="text-zinc-300">Untitled project</span>
-                                )}
+                            <h2 className="text-2xl font-secondary text-zinc-900 tracking-tight m-0 min-h-8">
+                                {form.title || <span className="text-zinc-300">Untitled project</span>}
                             </h2>
                             {form.description && (
-                                <p className="text-[13px] text-zinc-500 font-primary mt-1.5 m-0 line-clamp-2">
+                                <p className="text-sm text-zinc-500 font-primary mt-1.5 m-0 line-clamp-2">
                                     {form.description}
                                 </p>
                             )}
@@ -117,27 +105,22 @@ export default function NewProjectModal({ onClose, onCreate }: NewProjectModalPr
                             <X size={15} />
                         </button>
                     </div>
-
-                    {/* Preview pills */}
                     <div className="flex items-center gap-1.5 flex-wrap mt-3">
                         <Pill bg={sc.bg} color={sc.text}>
-                            <span
-                                className="w-1.5 h-1.5 rounded-full inline-block"
-                                style={{ background: sc.dot }}
-                            />
+                            <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: sc.dot }} />
                             {form.status}
                         </Pill>
                         {tags.map(t => (
                             <span
                                 key={t}
-                                className="text-[11px] font-medium px-2.5 py-0.5 rounded-full font-primary"
+                                className="text-xs font-medium px-2.5 py-0.5 rounded-full font-primary"
                                 style={{ background: 'rgba(255,255,255,0.6)', color: form.accent }}
                             >
                                 {t}
                             </span>
                         ))}
                         {form.deadline && (
-                            <span className="text-[12px] text-zinc-400 font-primary">
+                            <span className="text-xs text-zinc-400 font-primary">
                                 Due {formatDate(form.deadline)}
                             </span>
                         )}
@@ -150,26 +133,23 @@ export default function NewProjectModal({ onClose, onCreate }: NewProjectModalPr
                         const done   = step > i + 1;
                         const active = step === i + 1;
                         return (
-                            <div
-                                key={s}
-                                className={`flex items-center ${i < STEPS.length - 1 ? 'flex-1' : ''}`}
-                            >
+                            <div key={s} className={`flex items-center ${i < STEPS.length - 1 ? 'flex-1' : ''}`}>
                                 <button
                                     onClick={() => done && setStep(i + 1)}
                                     className={`flex items-center gap-2 ${done ? 'cursor-pointer' : 'cursor-default'}`}
                                 >
                                     <div
-                                        className="w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-bold font-primary transition-all duration-200 border-2"
+                                        className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-primary transition-all duration-200 border-2"
                                         style={{
-                                            background: done ? form.accent : active ? form.accent + '22' : '#F4F4F5',
-                                            color:      done ? '#fff'       : active ? form.accent       : '#A1A1AA',
+                                            background:  done ? form.accent : active ? form.accent + '22' : '#F4F4F5',
+                                            color:       done ? '#fff'       : active ? form.accent       : '#A1A1AA',
                                             borderColor: active ? form.accent : 'transparent',
                                         }}
                                     >
                                         {done ? '✓' : i + 1}
                                     </div>
                                     <span
-                                        className="text-[13px] font-primary"
+                                        className="text-sm font-primary"
                                         style={{
                                             fontWeight: active ? 600 : 400,
                                             color:      active ? '#18181B' : done ? '#52525B' : '#A1A1AA',
@@ -192,43 +172,37 @@ export default function NewProjectModal({ onClose, onCreate }: NewProjectModalPr
                 {/* Step content */}
                 <div className="flex-1 overflow-y-auto px-8 py-6">
 
-                    {/* ── Step 1: Basics ── */}
+                    {/* Step 1 — Basics */}
                     {step === 1 && (
                         <div className="flex flex-col gap-5">
-                            {/* Name */}
                             <div>
-                                <label className="text-[12px] font-semibold text-zinc-600 font-primary mb-1.5 block">
+                                <label className="text-xs font-semibold text-zinc-600 font-primary mb-1.5 block">
                                     Project name <span className="text-red-400">*</span>
                                 </label>
-                                <input
+                                <Input
                                     ref={titleRef}
                                     value={form.title}
                                     onChange={e => { set('title', e.target.value); setErrors(er => ({ ...er, title: undefined })); }}
                                     placeholder="e.g. Website Redesign, Novel Draft…"
-                                    className={inputCls(errors.title) + ' text-[15px]'}
+                                    error={errors.title}
+                                    className="text-base"
                                 />
-                                {errors.title && (
-                                    <p className="text-[12px] text-red-400 font-primary mt-1">{errors.title}</p>
-                                )}
                             </div>
 
-                            {/* Description */}
                             <div>
-                                <label className="text-[12px] font-semibold text-zinc-600 font-primary mb-1.5 block">
+                                <label className="text-xs font-semibold text-zinc-600 font-primary mb-1.5 block">
                                     Description <span className="text-zinc-300 font-normal">optional</span>
                                 </label>
-                                <textarea
+                                <Textarea
                                     value={form.description}
                                     onChange={e => set('description', e.target.value)}
                                     placeholder="What is this project about?"
                                     rows={3}
-                                    className={inputCls() + ' resize-none leading-relaxed'}
                                 />
                             </div>
 
-                            {/* Colour */}
                             <div>
-                                <label className="text-[12px] font-semibold text-zinc-600 font-primary mb-2 block">
+                                <label className="text-xs font-semibold text-zinc-600 font-primary mb-2 block">
                                     Project colour
                                 </label>
                                 <div className="flex gap-2 flex-wrap">
@@ -238,20 +212,17 @@ export default function NewProjectModal({ onClose, onCreate }: NewProjectModalPr
                                             onClick={() => setForm(f => ({ ...f, accent: pair.accent, color: pair.color }))}
                                             className="w-8 h-8 rounded-full cursor-pointer transition-all duration-150 flex-shrink-0"
                                             style={{
-                                                background:  pair.accent,
-                                                boxShadow:   form.accent === pair.accent
-                                                    ? `0 0 0 3px #fff, 0 0 0 5px ${pair.accent}`
-                                                    : 'none',
-                                                transform:   form.accent === pair.accent ? 'scale(1.15)' : 'scale(1)',
+                                                background: pair.accent,
+                                                boxShadow:  form.accent === pair.accent ? `0 0 0 3px #fff, 0 0 0 5px ${pair.accent}` : 'none',
+                                                transform:  form.accent === pair.accent ? 'scale(1.15)' : 'scale(1)',
                                             }}
                                         />
                                     ))}
                                 </div>
                             </div>
 
-                            {/* Tags */}
                             <div>
-                                <label className="text-[12px] font-semibold text-zinc-600 font-primary mb-1.5 block">
+                                <label className="text-xs font-semibold text-zinc-600 font-primary mb-1.5 block">
                                     Tags <span className="text-zinc-300 font-normal">optional</span>
                                 </label>
                                 {tags.length > 0 && (
@@ -259,14 +230,11 @@ export default function NewProjectModal({ onClose, onCreate }: NewProjectModalPr
                                         {tags.map(t => (
                                             <span
                                                 key={t}
-                                                className="flex items-center gap-1 text-[12px] font-medium px-2.5 py-0.5 rounded-full font-primary"
+                                                className="flex items-center gap-1 text-xs font-medium px-2.5 py-0.5 rounded-full font-primary"
                                                 style={{ background: form.color, color: form.accent }}
                                             >
                                                 {t}
-                                                <button
-                                                    onClick={() => setTags(ts => ts.filter(x => x !== t))}
-                                                    className="opacity-60 hover:opacity-100 cursor-pointer"
-                                                >
+                                                <button onClick={() => setTags(ts => ts.filter(x => x !== t))} className="cursor-pointer opacity-60 hover:opacity-100">
                                                     <X size={10} />
                                                 </button>
                                             </span>
@@ -274,38 +242,29 @@ export default function NewProjectModal({ onClose, onCreate }: NewProjectModalPr
                                     </div>
                                 )}
                                 <div className="flex gap-1.5">
-                                    <input
+                                    <Input
                                         value={tagInput}
                                         onChange={e => setTagInput(e.target.value)}
-                                        onKeyDown={e => {
-                                            if (e.key === 'Enter' || e.key === ',') {
-                                                e.preventDefault();
-                                                addTag();
-                                            }
-                                        }}
+                                        onKeyDown={e => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag(); } }}
                                         placeholder="Type a tag and press Enter…"
-                                        className={inputCls() + ' flex-1'}
+                                        className="flex-1"
                                     />
-                                    <button
+                                    <Button
                                         onClick={addTag}
-                                        className="px-3 py-2 rounded-xl text-white cursor-pointer transition-opacity hover:opacity-80 flex items-center justify-center flex-shrink-0"
+                                        icon={<Plus size={16} />}
                                         style={{ background: form.accent }}
-                                    >
-                                        <Plus size={16} />
-                                    </button>
+                                        className="flex-shrink-0 border-0"
+                                    />
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    {/* ── Step 2: Details ── */}
+                    {/* Step 2 — Details */}
                     {step === 2 && (
                         <div className="flex flex-col gap-5">
-                            {/* Status */}
                             <div>
-                                <label className="text-[12px] font-semibold text-zinc-600 font-primary mb-2 block">
-                                    Status
-                                </label>
+                                <label className="text-xs font-semibold text-zinc-600 font-primary mb-2 block">Status</label>
                                 <div className="flex gap-2 flex-wrap">
                                     {STATUS_OPTIONS.map(s => {
                                         const cfg    = STATUS_CONFIG[s];
@@ -314,7 +273,7 @@ export default function NewProjectModal({ onClose, onCreate }: NewProjectModalPr
                                             <button
                                                 key={s}
                                                 onClick={() => set('status', s as ProjectStatus)}
-                                                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border text-[13px] font-primary cursor-pointer transition-all duration-150"
+                                                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border text-sm font-primary cursor-pointer transition-all duration-150"
                                                 style={{
                                                     border:     `1.5px solid ${active ? form.accent : '#E4E4E7'}`,
                                                     background: active ? form.color : '#fff',
@@ -322,10 +281,7 @@ export default function NewProjectModal({ onClose, onCreate }: NewProjectModalPr
                                                     fontWeight: active ? 600 : 400,
                                                 }}
                                             >
-                                                <span
-                                                    className="w-2 h-2 rounded-full inline-block"
-                                                    style={{ background: cfg.dot }}
-                                                />
+                                                <span className="w-2 h-2 rounded-full inline-block" style={{ background: cfg.dot }} />
                                                 {s}
                                             </button>
                                         );
@@ -333,23 +289,21 @@ export default function NewProjectModal({ onClose, onCreate }: NewProjectModalPr
                                 </div>
                             </div>
 
-                            {/* Deadline */}
                             <div>
-                                <label className="text-[12px] font-semibold text-zinc-600 font-primary mb-1.5 block">
-                                    Deadline{' '}
-                                    <span className="text-zinc-300 font-normal">optional — skip for personal projects</span>
+                                <label className="text-xs font-semibold text-zinc-600 font-primary mb-1.5 block">
+                                    Deadline <span className="text-zinc-300 font-normal">optional</span>
                                 </label>
                                 <div className="flex items-center gap-2">
-                                    <input
+                                    <Input
                                         type="date"
                                         value={form.deadline}
                                         onChange={e => set('deadline', e.target.value)}
-                                        className={inputCls() + ' w-auto min-w-44'}
+                                        className="w-auto min-w-44"
                                     />
                                     {form.deadline && (
                                         <button
                                             onClick={() => set('deadline', '')}
-                                            className="text-[12px] text-zinc-400 hover:text-zinc-600 font-primary transition-colors cursor-pointer flex items-center gap-1"
+                                            className="text-xs text-zinc-400 hover:text-zinc-600 font-primary transition-colors cursor-pointer flex items-center gap-1"
                                         >
                                             <X size={12} /> Clear
                                         </button>
@@ -357,22 +311,21 @@ export default function NewProjectModal({ onClose, onCreate }: NewProjectModalPr
                                 </div>
                             </div>
 
-                            {/* Info box */}
                             <div className="bg-zinc-50 rounded-xl px-4 py-3.5">
-                                <p className="text-[13px] font-semibold text-zinc-700 font-primary m-0 mb-1">
+                                <p className="text-sm font-semibold text-zinc-700 font-primary m-0 mb-1">
                                     Starting with one section
                                 </p>
-                                <p className="text-[13px] text-zinc-400 font-primary m-0 leading-relaxed">
-                                    Your project starts with a single "Tasks" section. Once created, you can add more sections in the Full view.
+                                <p className="text-sm text-zinc-400 font-primary m-0 leading-relaxed">
+                                    Your project starts with a single "Tasks" section. Once created, you can add more sections in the full view.
                                 </p>
                             </div>
                         </div>
                     )}
 
-                    {/* ── Step 3: Team ── */}
+                    {/* Step 3 — Team */}
                     {step === 3 && (
                         <div className="flex flex-col gap-4">
-                            <p className="text-[13px] text-zinc-400 font-primary m-0 leading-relaxed">
+                            <p className="text-sm text-zinc-400 font-primary m-0 leading-relaxed">
                                 Choose who has access to this project. You're included by default.
                             </p>
                             {MOCK_MEMBERS.map(member => {
@@ -391,13 +344,11 @@ export default function NewProjectModal({ onClose, onCreate }: NewProjectModalPr
                                     >
                                         <Avatar member={member} size={36} />
                                         <div className="flex-1">
-                                            <div className="text-[14px] font-semibold text-zinc-900 font-primary">
+                                            <div className="text-sm font-semibold text-zinc-900 font-primary">
                                                 {member.name}
-                                                {isMe && (
-                                                    <span className="text-[11px] font-normal text-zinc-400 ml-1.5">you</span>
-                                                )}
+                                                {isMe && <span className="text-xs font-normal text-zinc-400 ml-1.5">you</span>}
                                             </div>
-                                            <div className="text-[12px] text-zinc-400 font-primary mt-0.5">Member</div>
+                                            <div className="text-xs text-zinc-400 font-primary mt-0.5">Member</div>
                                         </div>
                                         <div
                                             className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all duration-200"
@@ -406,9 +357,7 @@ export default function NewProjectModal({ onClose, onCreate }: NewProjectModalPr
                                                 background:  selected ? form.accent : 'transparent',
                                             }}
                                         >
-                                            {selected && (
-                                                <span className="text-white text-[11px] leading-none">✓</span>
-                                            )}
+                                            {selected && <span className="text-white text-xs leading-none">✓</span>}
                                         </div>
                                     </button>
                                 );
@@ -419,12 +368,12 @@ export default function NewProjectModal({ onClose, onCreate }: NewProjectModalPr
 
                 {/* Footer */}
                 <div className="flex items-center justify-between px-8 py-4 border-t border-zinc-100 flex-shrink-0">
-                    <button
+                    <Button
+                        variant="secondary"
                         onClick={step === 1 ? onClose : () => setStep(s => s - 1)}
-                        className="px-5 py-2.5 rounded-xl border border-zinc-200 bg-white text-zinc-600 text-[13px] font-primary cursor-pointer hover:bg-zinc-50 transition-colors"
                     >
                         {step === 1 ? 'Cancel' : '← Back'}
-                    </button>
+                    </Button>
 
                     <div className="flex items-center gap-3">
                         {/* Step dots */}
@@ -442,22 +391,22 @@ export default function NewProjectModal({ onClose, onCreate }: NewProjectModalPr
                         </div>
 
                         {step < 3 ? (
-                            <button
+                            <Button
                                 onClick={handleNext}
-                                className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-white text-[13px] font-semibold font-primary cursor-pointer transition-opacity hover:opacity-85"
+                                iconRight={<ChevronRight size={15} />}
                                 style={{ background: form.accent }}
+                                className="border-0"
                             >
                                 Next
-                                <ChevronRight size={15} />
-                            </button>
+                            </Button>
                         ) : (
-                            <button
+                            <Button
                                 onClick={handleCreate}
-                                className="flex items-center gap-1.5 px-6 py-2.5 rounded-xl text-white text-[13px] font-semibold font-primary cursor-pointer transition-opacity hover:opacity-85"
                                 style={{ background: form.accent }}
+                                className="border-0"
                             >
                                 Create project
-                            </button>
+                            </Button>
                         )}
                     </div>
                 </div>

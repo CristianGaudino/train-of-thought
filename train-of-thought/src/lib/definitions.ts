@@ -8,10 +8,25 @@ export const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
     ghost:       'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100 disabled:opacity-40',
 };
 
-export const SIZES: Record<Size, string> = {
+export const BUTTON_SIZES: Record<ButtonSize, string> = {
     sm:  'px-3 py-1.5 text-[12px] rounded-lg',
     md:  'px-4 py-2 text-[13px] rounded-xl',
     lg:  'px-5 py-2.5 text-[13px] rounded-xl',
+};
+
+export const INPUT_VARIANTS: Record<InputVariant, string> = {
+    // Standard bordered input — used in forms, modals
+    default: `
+        w-full px-3.5 py-2.5 rounded-xl border bg-zinc-50
+        border-zinc-200 focus:border-zinc-400 focus:bg-white
+        placeholder:text-zinc-400
+    `,
+    // Transparent inline input — used inside tables, section headings etc.
+    ghost: `
+        w-full bg-transparent border-b border-transparent
+        focus:border-zinc-300 px-0 py-0.5
+        placeholder:text-zinc-300
+    `,
 };
 
 export const SELECT_VARIANTS: Record<SelectVariant, string> = {
@@ -24,7 +39,9 @@ export type Mode = 'idle' | 'explore';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'destructive' | 'ghost';
 
-export type Size = 'sm' | 'md' | 'lg';
+export type InputVariant = 'default' | 'ghost';
+
+export type ButtonSize = 'sm' | 'md' | 'lg';
 
 export type SelectVariant = 'default' | 'pill';
 
@@ -39,7 +56,7 @@ export interface Segment<T extends string> {
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     variant?:  ButtonVariant;
-    size?:     Size;
+    size?:     ButtonSize;
     loading?:  boolean;
     icon?:     React.ReactNode;
     iconRight?: React.ReactNode;
@@ -47,6 +64,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     error?: string;
+    variant?: InputVariant;
 }
 
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {

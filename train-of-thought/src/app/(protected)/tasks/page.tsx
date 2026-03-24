@@ -11,13 +11,18 @@ import type { FlatTask } from '@/lib/projects/definitions';
 import Pill from '@/components/projects/Pill';
 import TaskPanel from '@/components/projects/TaskPanel';
 import { useTasks } from '@/hooks/projects/useTasks';
+import { Button } from '@/components/ui/buttons';
+import { Input, Select } from '@/components/ui/inputs';
+import SegmentedControl from '@/components/SegmentedControl';
+import { RowSkeleton } from '@/components/ui/skeletons';
+import EmptyState from '@/components/EmptyState';
 
 export default function TasksPage() {
     const {
         groups, loading,
         totalOpen, todayCount, overdueCount,
         filterProject, filterPriority, groupBy,
-        setFilterProject, setFilterPriority, setGroupBy,
+        setFilterProject, setGroupBy,
         uniqueProjects,
         markDone, addQuickTask, updateTask, deleteTask,
     } = useTasks();
@@ -70,13 +75,7 @@ export default function TasksPage() {
                             )}
                         </p>
                     </div>
-                    <button
-                        onClick={handleOpenQuick}
-                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-zinc-900 text-white text-[13px] font-semibold font-primary cursor-pointer hover:bg-zinc-700 transition-colors"
-                    >
-                        <Plus size={15} />
-                        Add Task
-                    </button>
+                    <Button onClick={handleOpenQuick} icon={<Plus size={15} />}>Add Task</Button>
                 </div>
 
                 {/* Quick add */}
@@ -87,13 +86,13 @@ export default function TasksPage() {
                             <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-widest font-primary mb-1.5">
                                 Task
                             </div>
-                            <input
+                            <Input
                                 autoFocus
                                 value={quickTitle}
                                 onChange={e => setQuickTitle(e.target.value)}
-                                onKeyDown={e => { if (e.key === 'Enter') handleQuickAdd(); }}
+                                onKeyDown={e => { if (e.key === 'Enter' && quickTitle.trim()) { setShowQuick(false); setQuickTitle(''); }}}
                                 placeholder="What needs to be done?"
-                                className="w-full px-3 py-2 rounded-xl border border-zinc-200 text-[13.5px] font-primary text-zinc-800 bg-zinc-50 outline-none focus:border-zinc-400 transition-colors"
+                                className="text-[13.5px]"
                             />
                         </div>
 
@@ -118,46 +117,27 @@ export default function TasksPage() {
 
                         {/* Actions */}
                         <div className="flex gap-2 flex-shrink-0">
-                            <button
-                                onClick={() => { setShowQuick(false); setQuickTitle(''); }}
-                                className="px-3.5 py-2 rounded-xl border border-zinc-200 bg-white text-zinc-500 text-[13px] font-primary cursor-pointer hover:bg-zinc-50 transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleQuickAdd}
-                                disabled={!quickTitle.trim() || !quickProject}
-                                className="px-4 py-2 rounded-xl bg-zinc-900 text-white text-[13px] font-semibold font-primary cursor-pointer hover:bg-zinc-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                            >
-                                Add
-                            </button>
+                            <Button variant="secondary" onClick={() => { setShowQuick(false); setQuickTitle(''); }}>Cancel</Button>
+                            <Button disabled={!quickTitle.trim() || !quickProject} onClick={handleQuickAdd}>Add</Button>
                         </div>
                     </div>
                 )}
 
                 {/* Filters + group by */}
                 <div className="flex items-center gap-2.5 pb-4 border-b border-zinc-100 flex-wrap">
-                    <select
-                        value={filterProject}
-                        onChange={e => setFilterProject(e.target.value)}
-                        className="px-3 py-1.5 rounded-full border border-zinc-200 bg-white text-[12px] font-primary text-zinc-600 outline-none cursor-pointer hover:border-zinc-300 transition-colors"
-                    >
+                    <Select variant="pill" value={filterProject} onChange={e => setFilterProject(e.target.value)}>
                         <option value="all">All projects</option>
                         {uniqueProjects.map(p => (
                             <option key={p.id} value={p.id}>{p.title}</option>
                         ))}
-                    </select>
+                    </Select>
 
-                    <select
-                        value={filterPriority}
-                        onChange={e => setFilterPriority(e.target.value)}
-                        className="px-3 py-1.5 rounded-full border border-zinc-200 bg-white text-[12px] font-primary text-zinc-600 outline-none cursor-pointer hover:border-zinc-300 transition-colors"
-                    >
+                    <Select variant="pill" value={filterProject} onChange={e => setFilterProject(e.target.value)}>
                         <option value="all">All priorities</option>
                         {['Critical', 'High', 'Medium', 'Low'].map(p => (
                             <option key={p}>{p}</option>
                         ))}
-                    </select>
+                    </Select>
 
                     <div className="flex-1" />
 
@@ -166,24 +146,15 @@ export default function TasksPage() {
                             <SlidersHorizontal size={12} />
                             Group by
                         </span>
-                        <div className="flex bg-zinc-100 rounded-xl p-0.5">
-                            {(['time', 'project', 'priority'] as const).map(v => (
-                                <button
-                                    key={v}
-                                    onClick={() => setGroupBy(v)}
-                                    className={`
-                                        px-3 py-1 rounded-lg text-[12px] font-primary
-                                        transition-all duration-150 cursor-pointer
-                                        ${groupBy === v
-                                            ? 'bg-white text-zinc-900 font-semibold shadow-sm'
-                                            : 'text-zinc-500 hover:text-zinc-700'
-                                        }
-                                    `}
-                                >
-                                    {v === 'time' ? 'Date' : v.charAt(0).toUpperCase() + v.slice(1)}
-                                </button>
-                            ))}
-                        </div>
+                        <SegmentedControl
+                            segments={[
+                                { value: 'time',     label: 'Date'     },
+                                { value: 'project',  label: 'Project'  },
+                                { value: 'priority', label: 'Priority' },
+                            ]}
+                            value={groupBy}
+                            onChange={setGroupBy}
+                        />
                     </div>
                 </div>
             </div>
@@ -193,22 +164,15 @@ export default function TasksPage() {
 
                 {loading && (
                     <div className="flex flex-col gap-2">
-                        {[1, 2, 3, 4, 5].map(i => (
-                            <div key={i} className="h-14 bg-white border border-zinc-100 rounded-xl animate-pulse" />
-                        ))}
+                        {[1, 2, 3, 4, 5].map(i => <RowSkeleton key={i} />)}
                     </div>
                 )}
 
                 {!loading && totalFiltered === 0 && (
-                    <div className="flex flex-col items-center justify-center h-48 text-zinc-300 gap-3">
-                        <Check size={36} className="text-zinc-200" />
-                        <span className="text-[14px] font-primary">
-                            {filterProject !== 'all' || filterPriority !== 'all'
-                                ? 'No tasks match your filters'
-                                : "You're all caught up!"
-                            }
-                        </span>
-                    </div>
+                    <EmptyState
+                        icon={Check}
+                        title={filterProject !== 'all' || filterPriority !== 'all' ? 'No tasks match your filters' : "You're all caught up!"}
+                    />
                 )}
 
                 {!loading && totalFiltered > 0 && (

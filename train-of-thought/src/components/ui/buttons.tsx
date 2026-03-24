@@ -2,7 +2,7 @@
 
 import { forwardRef } from 'react';
 import { Loader2 } from 'lucide-react';
-import { ButtonProps, SIZES, BUTTON_VARIANTS } from '@/lib/definitions';
+import { ButtonProps, BUTTON_SIZES, BUTTON_VARIANTS } from '@/lib/definitions';
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
     variant  = 'primary',
@@ -24,7 +24,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
                 font-semibold font-primary transition-colors duration-150
                 cursor-pointer disabled:cursor-not-allowed
                 ${BUTTON_VARIANTS[variant]}
-                ${SIZES[size]}
+                ${BUTTON_SIZES[size]}
                 ${className}
             `}
             {...props}

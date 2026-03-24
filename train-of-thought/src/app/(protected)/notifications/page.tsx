@@ -5,6 +5,10 @@ import { NOTIFICATION_CONFIG } from '@/lib/projects/config';
 import { useNotifications } from '@/hooks/projects/useNotifications';
 import { NotificationRow } from '@/components/projects/NotificationRow';
 import { ReadFilter, TYPE_FILTERS } from '@/lib/projects/definitions';
+import Button from '@/components/ui/buttons';
+import SegmentedControl from '@/components/SegmentedControl';
+import { RowSkeleton } from '@/components/ui/skeletons';
+import EmptyState from '@/components/EmptyState';
 
 export default function NotificationsPage() {
     const {
@@ -34,13 +38,9 @@ export default function NotificationsPage() {
                         </p>
                     </div>
                     {unreadCount > 0 && (
-                        <button
-                            onClick={markAll}
-                            className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-zinc-200 bg-white text-zinc-600 text-[13px] font-medium font-primary cursor-pointer hover:bg-zinc-50 transition-colors"
-                        >
-                            <CheckCheck size={14} />
+                        <Button variant="secondary" onClick={markAll} icon={<CheckCheck size={14} />}>
                             Mark all as read
-                        </button>
+                        </Button>
                     )}
                 </div>
 
@@ -76,24 +76,15 @@ export default function NotificationsPage() {
 
                     <div className="flex-1" />
 
-                    <div className="flex bg-zinc-100 rounded-xl p-0.5">
-                        {(['all', 'unread', 'read'] as ReadFilter[]).map(v => (
-                            <button
-                                key={v}
-                                onClick={() => setReadFilter(v)}
-                                className={`
-                                    px-3 py-1 rounded-lg text-[12px] font-primary capitalize
-                                    transition-all duration-150 cursor-pointer
-                                    ${readFilter === v
-                                        ? 'bg-white text-zinc-900 font-semibold shadow-sm'
-                                        : 'text-zinc-500 hover:text-zinc-700'
-                                    }
-                                `}
-                            >
-                                {v.charAt(0).toUpperCase() + v.slice(1)}
-                            </button>
-                        ))}
-                    </div>
+                    <SegmentedControl
+                        segments={[
+                            { value: 'all',    label: 'All'    },
+                            { value: 'unread', label: 'Unread' },
+                            { value: 'read',   label: 'Read'   },
+                        ]}
+                        value={readFilter}
+                        onChange={setReadFilter}
+                    />
                 </div>
             </div>
 
@@ -101,15 +92,10 @@ export default function NotificationsPage() {
             <div className="flex-1 overflow-y-auto px-8 py-5">
                 {loading ? (
                     <div className="flex flex-col gap-3">
-                        {[1, 2, 3, 4].map(i => (
-                            <div key={i} className="h-16 bg-white border border-zinc-100 rounded-2xl animate-pulse" />
-                        ))}
+                        {[1, 2, 3, 4].map(i => <RowSkeleton key={i} height="h-16" />)}
                     </div>
                 ) : grouped.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-48 text-zinc-300 gap-3">
-                        <Bell size={36} className="text-zinc-200" />
-                        <span className="text-[14px] font-primary">No notifications here</span>
-                    </div>
+                    <EmptyState icon={Bell} title="No notifications here" />
                 ) : (
                     <div className="flex flex-col gap-7">
                         {grouped.map(group => (

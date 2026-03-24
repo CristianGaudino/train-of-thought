@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Shapes } from 'lucide-react';
 import { STATUS_FILTERS, type Project, type ProjectStatus } from '@/lib/projects/definitions';
 import { STATUS_CONFIG } from '@/lib/projects/config';
 import ProjectCard from '@/components/projects/ProjectCard';
@@ -134,7 +134,7 @@ export default function ProjectsPage() {
 
                 {/* Filtered empty — has projects but none match filters */}
                 {!loading && !error && projects.length > 0 && filtered.length === 0 && (
-                    <EmptyState title="No projects match your filters" />
+                    <EmptyState title="No projects match your filters" icon={Shapes} />
                 )}
 
                 {!loading && filtered.length > 0 && (

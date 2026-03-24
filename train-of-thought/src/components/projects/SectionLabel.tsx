@@ -1,6 +1,8 @@
-export function SectionLabel({ children }: { children: React.ReactNode }) {
+import { SectionLabelProps } from "@/lib/projects/definitions";
+
+export default function SectionLabel({ children, className = '' }: SectionLabelProps) {
     return (
-        <div className="text-[11px] font-semibold tracking-widest uppercase text-zinc-300 font-primary mb-2.5">
+        <div className={`text-[11px] font-semibold tracking-widest uppercase text-zinc-400 font-primary mb-2.5 ${className}`}>
             {children}
         </div>
     );

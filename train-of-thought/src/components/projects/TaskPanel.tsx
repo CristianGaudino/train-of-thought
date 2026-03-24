@@ -14,8 +14,10 @@ import { MOCK_MEMBERS, PRIORITY_CONFIG } from '@/lib/projects/config';
 import { getMember, generateId } from '@/lib/projects/utils';
 import Pill from './Pill';
 import { Avatar } from './Avatar';
-import { SectionLabel } from './SectionLabel';
 import { formatDate } from '@/lib/utils';
+import { Button } from '../ui/buttons';
+import { Input, Textarea } from '../ui/inputs';
+import SectionLabel from './SectionLabel';
 
 export default function TaskPanel({
     task,
@@ -464,28 +466,12 @@ export default function TaskPanel({
                         <SectionLabel>Description</SectionLabel>
                         {editingDesc ? (
                             <div className="flex flex-col gap-2">
-                                <textarea
-                                    autoFocus
-                                    value={description}
-                                    onChange={e => setDescription(e.target.value)}
-                                    rows={4}
-                                    className="w-full px-3 py-2 rounded-lg border border-zinc-200 text-[13px] font-primary text-zinc-800 bg-zinc-50 outline-none focus:border-zinc-400 transition-colors resize-none leading-relaxed"
-                                    placeholder="Add a description…"
-                                />
+                                <Textarea value={description} onChange={e => setDescription(e.target.value)} rows={4} placeholder="Add a description…" className="text-[13px]" />
                                 <div className="flex gap-2">
-                                    <button
-                                        onClick={commitDesc}
-                                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-white text-[12px] font-semibold font-primary cursor-pointer transition-opacity hover:opacity-85"
-                                        style={{ background: accent }}
-                                    >
-                                        <Check size={12} /> Save
-                                    </button>
-                                    <button
-                                        onClick={() => { setDescription(task.description); setEditingDesc(false); }}
-                                        className="px-3 py-1.5 rounded-lg border border-zinc-200 bg-white text-zinc-500 text-[12px] font-primary cursor-pointer hover:bg-zinc-50 transition-colors"
-                                    >
+                                    <Button size="sm" onClick={commitDesc} icon={<Check size={12} />} style={{ background: accent }}>Save</Button>
+                                    <Button size="sm" variant="secondary" onClick={() => { setDescription(task.description); setEditingDesc(false); }}>
                                         Cancel
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                         ) : (
@@ -543,20 +529,14 @@ export default function TaskPanel({
                             ))}
                         </div>
                         <div className="flex gap-1.5">
-                            <input
+                            <Input
                                 value={newSub}
                                 onChange={e => setNewSub(e.target.value)}
                                 onKeyDown={e => e.key === 'Enter' && addSub()}
                                 placeholder="Add sub-task…"
-                                className="flex-1 px-3 py-2 rounded-lg border border-zinc-200 text-[13px] font-primary text-zinc-800 bg-zinc-50 outline-none focus:border-zinc-400 transition-colors"
+                                className="text-[13px] py-2"
                             />
-                            <button
-                                onClick={addSub}
-                                className="px-3 py-2 rounded-lg text-white cursor-pointer transition-opacity hover:opacity-80 flex items-center justify-center"
-                                style={{ background: accent }}
-                            >
-                                <Plus size={16} />
-                            </button>
+                            <Button onClick={addSub} icon={<Plus size={16} />} style={{ background: accent }} className="border-0 flex-shrink-0" />
                         </div>
                     </div>
 
@@ -617,14 +597,7 @@ export default function TaskPanel({
                                 disabled={submitting}
                                 className="flex-1 px-3 py-2 rounded-lg border border-zinc-200 text-[13px] font-primary text-zinc-800 bg-zinc-50 outline-none focus:border-zinc-400 transition-colors disabled:opacity-60"
                             />
-                            <button
-                                onClick={addComment}
-                                disabled={submitting || !comment.trim()}
-                                className="px-3 py-2 rounded-lg text-white cursor-pointer transition-opacity hover:opacity-80 flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
-                                style={{ background: accent }}
-                            >
-                                <ArrowUp size={16} />
-                            </button>
+                            <Button onClick={addComment} disabled={submitting || !comment.trim()} icon={<ArrowUp size={16} />} style={{ background: accent }} className="border-0 flex-shrink-0" />
                         </div>
                     </div>
                 </div>

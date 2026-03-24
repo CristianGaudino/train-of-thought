@@ -279,6 +279,11 @@ export interface OnboardingEmptyStateProps {
     onNewProject: () => void;
 }
 
+export interface SectionLabelProps {
+    children:  React.ReactNode;
+    className?: string;
+}
+
 // Hook Interfaces
 
 export interface UseProjectsReturn {
