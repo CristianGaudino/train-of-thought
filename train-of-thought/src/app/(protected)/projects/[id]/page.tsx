@@ -4,12 +4,11 @@ import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
     ArrowLeft, Pencil, Plus, ChevronDown, ChevronRight,
-    AlertTriangle, MessageSquare, X, Check, Trash2,
+    AlertTriangle, X, Trash2,
 } from 'lucide-react';
 import {
     STATUS_CONFIG, ACCENT_PALETTE, STATUS_OPTIONS,
-    PRIORITY_CONFIG, NOTIFICATION_CONFIG, ACTIVITY_DATA,
-    MOCK_MEMBERS,
+    NOTIFICATION_CONFIG, ACTIVITY_DATA, MOCK_MEMBERS,
 } from '@/lib/projects/config';
 import { getDeadlineInfo, getMember } from '@/lib/projects/utils';
 import { Avatar } from '@/components/projects/Avatar';
@@ -52,11 +51,11 @@ export default function ProjectPage() {
     const [newTaskVal, setNewTaskVal]             = useState('');
     const [newSecMode, setNewSecMode]             = useState(false);
     const [newSecVal, setNewSecVal]               = useState('');
-    const [hf, setHf]                            = useState<HeaderData | null>(null);
+    const [header, setHeader]                            = useState<HeaderData | null>(null);
 
     // Sync header form when project first loads
-    if (project && !hf) {
-        setHf({
+    if (project && !header) {
+        setHeader({
             title:       project.title,
             description: project.description,
             status:      project.status,
@@ -69,7 +68,7 @@ export default function ProjectPage() {
 
     // ── Loading / error ──
 
-    if (loading || !hf || !project) {
+    if (loading || !header || !project) {
         if (error === 'not_found') { router.push('/projects'); return null; }
         return (
             <div className="flex-1 flex items-center justify-center">
@@ -83,8 +82,8 @@ export default function ProjectPage() {
 
     // ── Derived ──
 
-    const sc       = STATUS_CONFIG[hf.status] ?? STATUS_CONFIG['Planning'];
-    const dl       = getDeadlineInfo(hf.deadline || null);
+    const sc       = STATUS_CONFIG[header.status] ?? STATUS_CONFIG['Planning'];
+    const dl       = getDeadlineInfo(header.deadline || null);
     const allTasks = sections.flatMap(s => s.tasks);
     const done     = allTasks.filter(t => t.done).length;
     const pct      = allTasks.length ? Math.round((done / allTasks.length) * 100) : 0;
@@ -92,7 +91,7 @@ export default function ProjectPage() {
     // ── Handlers ──
 
     const handleSaveHeader = async () => {
-        await saveHeader(hf);
+        await saveHeader(header);
         setEditingHeader(false);
     };
 
@@ -121,7 +120,7 @@ export default function ProjectPage() {
         <div className="flex flex-col h-full overflow-hidden">
 
             {/* ── Page header ── */}
-            <div className="flex-shrink-0 border-b border-black/7" style={{ background: hf.color }}>
+            <div className="flex-shrink-0 border-b border-black/7" style={{ background: header.color }}>
 
                 {/* Top bar */}
                 <div className="flex items-center gap-3 px-8 pt-4">
@@ -133,7 +132,7 @@ export default function ProjectPage() {
                         Projects
                     </button>
                     <div className="w-px h-4 bg-black/12" />
-                    <span className="text-sm text-zinc-500 font-primary flex-1 truncate">{hf.title}</span>
+                    <span className="text-sm text-zinc-500 font-primary flex-1 truncate">{header.title}</span>
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setEditingHeader(v => !v)}
@@ -160,15 +159,15 @@ export default function ProjectPage() {
                                 <div className="flex-1 min-w-52">
                                     <SectionLabel className="mb-1.5">Name</SectionLabel>
                                     <Input
-                                        value={hf.title}
-                                        onChange={e => setHf(f => f ? { ...f, title: e.target.value } : f)}
+                                        value={header.title}
+                                        onChange={e => setHeader(f => f ? { ...f, title: e.target.value } : f)}
                                     />
                                 </div>
                                 <div className="flex-1 min-w-52">
                                     <SectionLabel className="mb-1.5">Description</SectionLabel>
                                     <Input
-                                        value={hf.description}
-                                        onChange={e => setHf(f => f ? { ...f, description: e.target.value } : f)}
+                                        value={header.description}
+                                        onChange={e => setHeader(f => f ? { ...f, description: e.target.value } : f)}
                                     />
                                 </div>
                             </div>
@@ -176,8 +175,8 @@ export default function ProjectPage() {
                                 <div>
                                     <SectionLabel className="mb-1.5">Status</SectionLabel>
                                     <select
-                                        value={hf.status}
-                                        onChange={e => setHf(f => f ? { ...f, status: e.target.value } : f)}
+                                        value={header.status}
+                                        onChange={e => setHeader(f => f ? { ...f, status: e.target.value } : f)}
                                         className="px-3 py-2 rounded-xl border border-zinc-200 bg-white text-sm font-primary text-zinc-800 outline-none focus:border-zinc-400 transition-colors cursor-pointer"
                                     >
                                         {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
@@ -187,8 +186,8 @@ export default function ProjectPage() {
                                     <SectionLabel className="mb-1.5">Deadline</SectionLabel>
                                     <Input
                                         type="date"
-                                        value={hf.deadline}
-                                        onChange={e => setHf(f => f ? { ...f, deadline: e.target.value } : f)}
+                                        value={header.deadline}
+                                        onChange={e => setHeader(f => f ? { ...f, deadline: e.target.value } : f)}
                                         className="w-auto"
                                     />
                                 </div>
@@ -198,12 +197,12 @@ export default function ProjectPage() {
                                         {ACCENT_PALETTE.map(pair => (
                                             <button
                                                 key={pair.accent}
-                                                onClick={() => setHf(f => f ? { ...f, accent: pair.accent, color: pair.color } : f)}
+                                                onClick={() => setHeader(f => f ? { ...f, accent: pair.accent, color: pair.color } : f)}
                                                 className="w-6 h-6 rounded-full cursor-pointer transition-all duration-150 flex-shrink-0"
                                                 style={{
                                                     background: pair.accent,
-                                                    boxShadow:  hf.accent === pair.accent ? `0 0 0 2px #fff, 0 0 0 4px ${pair.accent}` : 'none',
-                                                    transform:  hf.accent === pair.accent ? 'scale(1.2)' : 'scale(1)',
+                                                    boxShadow:  header.accent === pair.accent ? `0 0 0 2px #fff, 0 0 0 4px ${pair.accent}` : 'none',
+                                                    transform:  header.accent === pair.accent ? 'scale(1.2)' : 'scale(1)',
                                                 }}
                                             />
                                         ))}
@@ -216,7 +215,7 @@ export default function ProjectPage() {
                                     <Button
                                         loading={savingHeader}
                                         onClick={handleSaveHeader}
-                                        style={{ background: hf.accent }}
+                                        style={{ background: header.accent }}
                                         className="border-0"
                                     >
                                         Save
@@ -229,17 +228,17 @@ export default function ProjectPage() {
                             <div className="flex items-start gap-4 flex-wrap">
                                 <div className="flex-1 min-w-48">
                                     <h1 className="text-3xl font-secondary text-zinc-900 tracking-tight m-0 leading-tight">
-                                        {hf.title}
+                                        {header.title}
                                     </h1>
-                                    {hf.description && (
+                                    {header.description && (
                                         <p className="text-sm text-zinc-500 font-primary mt-1.5 m-0 leading-relaxed max-w-lg">
-                                            {hf.description}
+                                            {header.description}
                                         </p>
                                     )}
                                     <div className="flex items-center gap-2.5 mt-3 flex-wrap">
                                         <Pill bg={sc.bg} color={sc.text}>
                                             <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: sc.dot }} />
-                                            {hf.status}
+                                            {header.status}
                                         </Pill>
                                         {dl && (
                                             <span
@@ -250,7 +249,7 @@ export default function ProjectPage() {
                                                 {dl.label}
                                             </span>
                                         )}
-                                        <AvatarStack ids={hf.members} size={24} />
+                                        <AvatarStack ids={header.members} size={24} />
                                     </div>
                                 </div>
 
@@ -261,7 +260,7 @@ export default function ProjectPage() {
                                 >
                                     <SectionLabel className="mb-2">Progress</SectionLabel>
                                     <div className="flex items-center gap-3">
-                                        <Ring done={done} total={allTasks.length} accent={hf.accent} size={48} />
+                                        <Ring done={done} total={allTasks.length} accent={header.accent} size={48} />
                                         <div>
                                             <div className="text-2xl font-bold text-zinc-900 font-primary leading-none">{pct}%</div>
                                             <div className="text-xs text-zinc-400 font-primary mt-1">{done}/{allTasks.length} tasks</div>
@@ -270,7 +269,7 @@ export default function ProjectPage() {
                                     <div className="h-1.5 rounded-full bg-black/8 overflow-hidden mt-3">
                                         <div
                                             className="h-full rounded-full transition-all duration-500"
-                                            style={{ width: `${pct}%`, background: hf.accent }}
+                                            style={{ width: `${pct}%`, background: header.accent }}
                                         />
                                     </div>
                                 </div>
@@ -287,9 +286,9 @@ export default function ProjectPage() {
                             onClick={() => setActiveTab(t)}
                             className="px-4 py-2.5 text-sm font-primary border-b-2 transition-all duration-150 cursor-pointer capitalize"
                             style={{
-                                color:       activeTab === t ? hf.accent : '#A1A1AA',
+                                color:       activeTab === t ? header.accent : '#A1A1AA',
                                 fontWeight:  activeTab === t ? 600 : 400,
-                                borderColor: activeTab === t ? hf.accent : 'transparent',
+                                borderColor: activeTab === t ? header.accent : 'transparent',
                             }}
                         >
                             {t}
@@ -325,7 +324,7 @@ export default function ProjectPage() {
                                                 className="h-full rounded-full transition-all duration-500"
                                                 style={{
                                                     width:      `${section.tasks.length ? (secDone / section.tasks.length) * 100 : 0}%`,
-                                                    background: hf.accent,
+                                                    background: header.accent,
                                                 }}
                                             />
                                         </div>
@@ -338,7 +337,7 @@ export default function ProjectPage() {
                                                 <Task
                                                     key={task.id}
                                                     task={task}
-                                                    hf={hf}
+                                                    accent={header.accent}
                                                     toggleTask={toggleTask}
                                                     setActiveTaskId={setActiveTaskId}
                                                     deleteTask={deleteTask}
@@ -358,12 +357,12 @@ export default function ProjectPage() {
                                                         }}
                                                         placeholder="Task name…"
                                                         className="flex-1 px-3.5 py-2 rounded-xl border text-sm font-primary text-zinc-800 bg-white outline-none"
-                                                        style={{ borderColor: hf.accent }}
+                                                        style={{ borderColor: header.accent }}
                                                     />
                                                     <Button
                                                         size="md"
                                                         onClick={() => handleAddTask(section.id)}
-                                                        style={{ background: hf.accent }}
+                                                        style={{ background: header.accent }}
                                                         className="border-0"
                                                     >
                                                         Add
@@ -380,8 +379,8 @@ export default function ProjectPage() {
                                                     onClick={() => setNewTaskSec(section.id)}
                                                     className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border-2 border-dashed border-zinc-200 text-sm text-zinc-300 font-primary w-fit mt-1 transition-all duration-150 cursor-pointer"
                                                     onMouseEnter={e => {
-                                                        (e.currentTarget as HTMLButtonElement).style.borderColor = hf.accent;
-                                                        (e.currentTarget as HTMLButtonElement).style.color       = hf.accent;
+                                                        (e.currentTarget as HTMLButtonElement).style.borderColor = header.accent;
+                                                        (e.currentTarget as HTMLButtonElement).style.color       = header.accent;
                                                         (e.currentTarget as HTMLButtonElement).style.borderStyle = 'solid';
                                                     }}
                                                     onMouseLeave={e => {
@@ -412,12 +411,12 @@ export default function ProjectPage() {
                                     }}
                                     placeholder="Section name…"
                                     className="flex-1 px-3.5 py-2.5 rounded-xl border text-sm font-semibold font-primary text-zinc-800 bg-white outline-none"
-                                    style={{ borderColor: hf.accent }}
+                                    style={{ borderColor: header.accent }}
                                 />
                                 <Button
                                     size="md"
                                     onClick={handleAddSection}
-                                    style={{ background: hf.accent }}
+                                    style={{ background: header.accent }}
                                     className="border-0"
                                 >
                                     Add
@@ -434,8 +433,8 @@ export default function ProjectPage() {
                                 onClick={() => setNewSecMode(true)}
                                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-zinc-200 text-sm text-zinc-300 font-primary w-fit transition-all duration-150 cursor-pointer"
                                 onMouseEnter={e => {
-                                    (e.currentTarget as HTMLButtonElement).style.borderColor = hf.accent;
-                                    (e.currentTarget as HTMLButtonElement).style.color       = hf.accent;
+                                    (e.currentTarget as HTMLButtonElement).style.borderColor = header.accent;
+                                    (e.currentTarget as HTMLButtonElement).style.color       = header.accent;
                                     (e.currentTarget as HTMLButtonElement).style.borderStyle = 'solid';
                                 }}
                                 onMouseLeave={e => {
@@ -472,7 +471,7 @@ export default function ProjectPage() {
                                             <p className="text-sm font-primary text-zinc-700 leading-snug m-0">
                                                 <span className="font-semibold">{actor?.name ?? 'Someone'}</span>
                                                 {' '}{a.text}{' '}
-                                                <span className="font-semibold" style={{ color: hf.accent }}>{a.subject}</span>
+                                                <span className="font-semibold" style={{ color: header.accent }}>{a.subject}</span>
                                             </p>
                                             <p className="text-xs text-zinc-400 font-primary mt-1 m-0">{a.time}</p>
                                         </div>
@@ -488,14 +487,14 @@ export default function ProjectPage() {
                     <div className="px-8 py-7 max-w-lg">
                         <div className="flex flex-col gap-2 mb-6">
                             {MOCK_MEMBERS.map(member => {
-                                const isMember = hf.members.includes(member.id);
+                                const isMember = header.members.includes(member.id);
                                 const isMe     = member.id === '1';
                                 return (
                                     <div
                                         key={member.id}
                                         className="flex items-center gap-3.5 p-3.5 rounded-xl border transition-all duration-150"
                                         style={{
-                                            borderColor: isMember ? hf.accent + '40' : '#E4E4E7',
+                                            borderColor: isMember ? header.accent + '40' : '#E4E4E7',
                                             background:  isMember ? '#fff' : '#FAFAFA',
                                         }}
                                     >
@@ -511,7 +510,7 @@ export default function ProjectPage() {
                                         </div>
                                         {!isMe && (
                                             <button
-                                                onClick={() => setHf(f => f ? {
+                                                onClick={() => setHeader(f => f ? {
                                                     ...f,
                                                     members: isMember
                                                         ? f.members.filter(id => id !== member.id)
@@ -519,9 +518,9 @@ export default function ProjectPage() {
                                                 } : f)}
                                                 className="px-3.5 py-1.5 rounded-lg border text-xs font-medium font-primary cursor-pointer transition-all duration-150"
                                                 style={{
-                                                    borderColor: isMember ? '#E4E4E7' : hf.accent,
-                                                    background:  isMember ? '#fff'    : hf.color,
-                                                    color:       isMember ? '#71717A' : hf.accent,
+                                                    borderColor: isMember ? '#E4E4E7' : header.accent,
+                                                    background:  isMember ? '#fff'    : header.color,
+                                                    color:       isMember ? '#71717A' : header.accent,
                                                 }}
                                             >
                                                 {isMember ? 'Remove' : 'Add'}
@@ -533,7 +532,7 @@ export default function ProjectPage() {
                         </div>
                         <Button
                             onClick={handleSaveHeader}
-                            style={{ background: hf.accent }}
+                            style={{ background: header.accent }}
                             className="border-0"
                         >
                             Save changes
@@ -547,8 +546,8 @@ export default function ProjectPage() {
                 <TaskPanel
                     key={activeTask.id}
                     task={activeTask}
-                    accent={hf.accent}
-                    projectColor={hf.color}
+                    accent={header.accent}
+                    projectColor={header.color}
                     onClose={() => setActiveTaskId(null)}
                     onUpdate={updateTask}
                     onDelete={async (taskId) => { await deleteTask(taskId); setActiveTaskId(null); }}

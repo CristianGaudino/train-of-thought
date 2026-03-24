@@ -286,11 +286,13 @@ export interface SectionLabelProps {
 
 export interface TaskProps {
     task: Task;
-    hf: any;
-    toggleTask: (id: string) => void;
+    accent: string;
+    toggleTask?: (id: string) => void;
+    markDone?: (id: string) => void;
     setActiveTaskId: (id: string) => void;
-    deleteTask: (id: string) => void;
-};
+    deleteTask?: (id: string) => void;
+    variant?: 'project' | 'tasks';
+}
 
 // Hook Interfaces
 

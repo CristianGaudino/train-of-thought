@@ -1,93 +1,123 @@
-import { PRIORITY_CONFIG } from "@/lib/projects/config";
-import { TaskProps } from "@/lib/projects/definitions";
-import { getDeadlineInfo } from "@/lib/projects/utils";
-import { AlertTriangle, Check, ChevronRight, MessageSquare, Trash2 } from "lucide-react";
-import { AvatarStack } from "./AvatarStack";
-import Pill from "../ui/Pill";
+import { PRIORITY_CONFIG } from '@/lib/projects/config';
+import { TaskProps } from '@/lib/projects/definitions';
+import { getDeadlineInfo } from '@/lib/projects/utils';
+import { Check, AlertTriangle, MessageSquare, ChevronRight, Trash2 } from 'lucide-react';
+import { AvatarStack } from './AvatarStack';
+import Pill from '../ui/Pill';
 
 export const Task = ({
     task,
-    hf,
+    accent,
     toggleTask,
+    markDone,
     setActiveTaskId,
     deleteTask,
+    variant = 'project',
 }: TaskProps) => {
     const pr = PRIORITY_CONFIG[task.priority];
-    const tdl = getDeadlineInfo(task.due);
+    const deadline = getDeadlineInfo(task.due);
 
     return (
         <div
-            className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white border border-zinc-100 transition-all duration-150 group"
-            onMouseEnter={e => {
-                e.currentTarget.style.borderColor = hf.accent + '35';
-                e.currentTarget.style.background = '#FAFAFA';
-            }}
-            onMouseLeave={e => {
-                e.currentTarget.style.borderColor = '';
-                e.currentTarget.style.background = '';
-            }}
+            onClick={() => setActiveTaskId(task.id)}
+            style={{ ['--accent' as any]: accent }}
+            className={`
+                flex items-center gap-3 px-4 rounded-xl
+                bg-white border border-zinc-100
+                transition-all duration-150 group cursor-pointer
+                hover:bg-zinc-50
+                hover:border-[color:var(--accent)]
+                active:scale-[0.995]
+                ${variant === 'project' ? 'py-2.5' : 'py-3 relative overflow-hidden'}
+                ${variant === 'tasks' ? 'hover:translate-x-[2px]' : ''}
+            `}
         >
-            {/* Checkbox */}
+            {variant === 'tasks' && (
+                <div
+                    className="absolute left-0 top-0 bottom-0 w-0.5"
+                    style={{ background: task.projectAccent }}
+                />
+            )}
+
             <button
-                onClick={() => toggleTask(task.id)}
-                className="w-[18px] h-[18px] rounded-full flex-shrink-0 border-2 flex items-center justify-center transition-all duration-200 cursor-pointer"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    if (variant === 'tasks') {
+                        markDone?.(task.id);
+                    } else {
+                        toggleTask?.(task.id);
+                    }
+                }}
+                className={`
+                    w-[18px] h-[18px] rounded-full flex-shrink-0 border-2
+                    flex items-center justify-center transition-all duration-200 cursor-pointer
+                    border-zinc-300
+                    group-hover:border-[color:var(--accent)]
+                    group-hover:bg-[color:color-mix(in srgb, var(--accent) 20%, transparent)]
+                    ${variant === 'tasks' ? 'ml-1.5' : ''}
+                `}
                 style={{
-                    borderColor: task.done ? hf.accent : '#D1D5DB',
-                    background: task.done ? hf.accent : 'transparent',
-                }}
-                onMouseEnter={e => {
-                    if (!task.done) {
-                        e.currentTarget.style.borderColor = hf.accent;
-                        e.currentTarget.style.background = hf.accent + '20';
-                    }
-                }}
-                onMouseLeave={e => {
-                    if (!task.done) {
-                        e.currentTarget.style.borderColor = '#D1D5DB';
-                        e.currentTarget.style.background = 'transparent';
-                    }
+                    borderColor: task.done ? accent : undefined,
+                    background: task.done ? accent : undefined,
                 }}
             >
                 {task.done && <Check size={10} color="#fff" strokeWidth={3} />}
             </button>
 
-            {/* Title */}
-            <span
-                onClick={() => setActiveTaskId(task.id)}
-                className="flex-1 text-sm font-primary cursor-pointer transition-colors"
-                style={{
-                    color: task.done ? '#BBBBBB' : '#18181B',
-                    textDecoration: task.done ? 'line-through' : 'none',
-                }}
-            >
-                {task.title}
-            </span>
+            {variant === 'tasks' ? (
+                <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium font-primary text-zinc-900 truncate">
+                        {task.title}
+                    </div>
 
-            {/* Meta */}
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                        <span
+                            className="w-1.5 h-1.5 rounded-full inline-block flex-shrink-0"
+                            style={{ background: task.projectAccent }}
+                        />
+                        <span className="text-xs text-zinc-400 font-primary">
+                            {task.projectTitle}
+                            {task.sectionTitle && ` · ${task.sectionTitle}`}
+                        </span>
+                    </div>
+                </div>
+            ) : (
+                <span
+                    className="flex-1 text-sm font-primary transition-colors"
+                    style={{
+                        color: task.done ? '#BBBBBB' : '#18181B',
+                        textDecoration: task.done ? 'line-through' : 'none',
+                    }}
+                >
+                    {task.title}
+                </span>
+            )}
+
             <div className="flex items-center gap-2.5 flex-shrink-0">
                 {task.subtasks.length > 0 && (
                     <span className="text-xs text-zinc-300 font-primary">
-                        {task.subtasks.filter(s => s.done).length}/{task.subtasks.length} sub
+                        {task.subtasks.filter((s) => s.done).length}/{task.subtasks.length} sub
                     </span>
                 )}
 
-                {task.assignees.length > 0 && (
+                {variant === 'project' && task.assignees.length > 0 && (
                     <AvatarStack ids={task.assignees} size={22} />
                 )}
 
-                {tdl && (
+                {deadline && (
                     <span
                         className="text-xs font-primary flex items-center gap-1"
                         style={{
-                            color: tdl.urgent ? '#D44444' : '#A1A1AA',
-                            fontWeight: tdl.urgent ? 600 : 400,
+                            color: deadline.urgent ? '#D44444' : '#A1A1AA',
+                            fontWeight: deadline.urgent ? 600 : 400,
                         }}
                     >
-                        {tdl.urgent && <AlertTriangle size={11} />}
-                        {tdl.label}
+                        {deadline.urgent && <AlertTriangle size={11} />}
+                        {deadline.label}
                     </span>
                 )}
 
+                {/* Priority */}
                 {pr && <Pill bg={pr.bg} color={pr.color}>{task.priority}</Pill>}
 
                 {task.comments.length > 0 && (
@@ -98,22 +128,27 @@ export const Task = ({
                 )}
 
                 <button
-                    onClick={() => setActiveTaskId(task.id)}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveTaskId(task.id);
+                    }}
                     className="text-zinc-200 hover:text-zinc-400 transition-colors cursor-pointer"
                 >
-                    <ChevronRight size={16} />
+                    <ChevronRight size={variant === 'tasks' ? 15 : 16} />
                 </button>
 
-                <button
-                    onClick={e => {
-                        e.stopPropagation();
-                        deleteTask(task.id);
-                    }}
-                    className="text-zinc-200 hover:text-red-400 transition-colors cursor-pointer opacity-0 group-hover:opacity-100"
-                    title="Delete task"
-                >
-                    <Trash2 size={13} />
-                </button>
+                {variant === 'project' && deleteTask && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            deleteTask(task.id);
+                        }}
+                        className="text-zinc-200 hover:text-red-400 transition-colors cursor-pointer opacity-0 group-hover:opacity-100"
+                        title="Delete task"
+                    >
+                        <Trash2 size={13} />
+                    </button>
+                )}
             </div>
         </div>
     );
