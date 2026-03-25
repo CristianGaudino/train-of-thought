@@ -96,9 +96,10 @@ export default function ProjectPage() {
 
     const handleAddTask = async (secId: string) => {
         if (!newTaskVal.trim()) { setNewTaskSec(null); return; }
-        await addTask(secId, newTaskVal);
+        const val = newTaskVal;
         setNewTaskVal('');
         setNewTaskSec(null);
+        await addTask(secId, val);
     };
 
     const handleAddSection = async () => {
