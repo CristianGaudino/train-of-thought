@@ -6,10 +6,43 @@ import { useToast } from '@/components/ui/Toast';
 import {
     X, Plus, ArrowUp, ChevronRight,
     Pencil, Check, Calendar, Flag,
-    UserPlus,
-    Trash2,
+    UserPlus, Trash2, GripVertical,
 } from 'lucide-react';
+import {
+    DndContext,
+    closestCenter,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+    SortableContext,
+    verticalListSortingStrategy,
+    arrayMove,
+    useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { type Task, type Subtask, type Comment, type Priority, type TaskPanelProps, PRIORITIES } from '@/lib/projects/definitions';
+
+function SortableSubtask({
+    id,
+    children,
+}: {
+    id: string;
+    children: (handleProps: React.HTMLAttributes<HTMLElement>) => React.ReactNode;
+}) {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+    return (
+        <div
+            ref={setNodeRef}
+            style={{ transform: CSS.Transform.toString(transform), transition }}
+            className={isDragging ? 'opacity-40' : ''}
+        >
+            {children({ ...attributes, ...listeners })}
+        </div>
+    );
+}
 import { MOCK_MEMBERS, PRIORITY_CONFIG } from '@/lib/projects/config';
 import { getMember, generateId } from '@/lib/projects/utils';
 import Pill from '../ui/Pill';
@@ -195,6 +228,22 @@ export default function TaskPanel({
             await onUpdate?.(task.id, { subtasks: updated }, { silent: true });
         } catch {
             toastError('Failed to delete sub-task');
+            setSubtasks(subtasks);
+        }
+    };
+
+    const reorderSubs = async (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+        const oldIdx = subtasks.findIndex(s => s.id === String(active.id));
+        const newIdx = subtasks.findIndex(s => s.id === String(over.id));
+        if (oldIdx === -1 || newIdx === -1) return;
+        const reordered = arrayMove(subtasks, oldIdx, newIdx);
+        setSubtasks(reordered);
+        try {
+            await onUpdate?.(task.id, { subtasks: reordered }, { silent: true });
+        } catch {
+            toastError('Failed to reorder sub-tasks');
             setSubtasks(subtasks);
         }
     };
@@ -568,34 +617,52 @@ export default function TaskPanel({
                             {subtasks.length === 0 && (
                                 <p className="text-sm text-zinc-300 font-primary m-0">No sub-tasks yet.</p>
                             )}
-                            {subtasks.map(st => (
-                                <div
-                                    key={st.id}
-                                    onClick={() => toggleSub(st.id)}
-                                    className="group flex items-center gap-2.5 p-2.5 rounded-lg border border-zinc-100 cursor-pointer hover:bg-zinc-50 transition-colors"
-                                >
-                                    <div
-                                        className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all duration-200"
-                                        style={{
-                                            border:     `2px solid ${st.done ? accent : '#D1D5DB'}`,
-                                            background: st.done ? accent : 'transparent',
-                                        }}
-                                    >
-                                        {st.done && <span className="text-white text-xs leading-none">✓</span>}
-                                    </div>
-                                    <span
-                                        className={`text-sm font-primary transition-colors flex-1 ${st.done ? 'text-muted line-through' : 'text-gray-700'}`}
-                                    >
-                                        {st.label}
-                                    </span>
-                                    <button
-                                        onClick={e => { e.stopPropagation(); deleteSub(st.id); }}
-                                        className="opacity-0 group-hover:opacity-100 text-zinc-300 hover:text-red-400 transition-colors cursor-pointer"
-                                    >
-                                        <Trash2 size={13} />
-                                    </button>
-                                </div>
-                            ))}
+                            <DndContext
+                                sensors={useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))}
+                                collisionDetection={closestCenter}
+                                onDragEnd={reorderSubs}
+                            >
+                                <SortableContext items={subtasks.map(s => s.id)} strategy={verticalListSortingStrategy}>
+                                    {subtasks.map(st => (
+                                        <SortableSubtask key={st.id} id={st.id}>
+                                            {handleProps => (
+                                                <div
+                                                    onClick={() => toggleSub(st.id)}
+                                                    className="group flex items-center gap-2.5 p-2.5 rounded-lg border border-zinc-100 cursor-pointer hover:bg-zinc-50 transition-colors"
+                                                >
+                                                    <span
+                                                        {...handleProps}
+                                                        onClick={e => e.stopPropagation()}
+                                                        className="text-zinc-200 hover:text-zinc-400 cursor-grab active:cursor-grabbing transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0"
+                                                    >
+                                                        <GripVertical size={12} />
+                                                    </span>
+                                                    <div
+                                                        className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all duration-200"
+                                                        style={{
+                                                            border:     `2px solid ${st.done ? accent : '#D1D5DB'}`,
+                                                            background: st.done ? accent : 'transparent',
+                                                        }}
+                                                    >
+                                                        {st.done && <span className="text-white text-xs leading-none">✓</span>}
+                                                    </div>
+                                                    <span
+                                                        className={`text-sm font-primary transition-colors flex-1 ${st.done ? 'text-muted line-through' : 'text-gray-700'}`}
+                                                    >
+                                                        {st.label}
+                                                    </span>
+                                                    <button
+                                                        onClick={e => { e.stopPropagation(); deleteSub(st.id); }}
+                                                        className="opacity-0 group-hover:opacity-100 text-zinc-300 hover:text-red-400 transition-colors cursor-pointer"
+                                                    >
+                                                        <Trash2 size={13} />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </SortableSubtask>
+                                    ))}
+                                </SortableContext>
+                            </DndContext>
                         </div>
                         <div className="flex gap-1.5">
                             <Input
