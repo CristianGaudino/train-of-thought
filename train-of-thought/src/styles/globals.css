@@ -17,8 +17,9 @@
 
 @theme {
     /* Custom Colours */
-    /* --color-gold-400: #FACC15; */
-    /* --color-gold-600: #E9A200; */
+    --color-danger:  #D44444;   /* urgent deadlines, critical priority */
+    --color-warning: #E07800;   /* high priority, today group */
+    --color-muted:   #BBBBBB;   /* completed/done text */
 
     /* Custom Breakpoints */
     --breakpoint-xs: 480px;

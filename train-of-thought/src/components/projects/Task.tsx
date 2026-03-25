@@ -83,11 +83,7 @@ export const Task = ({
                 </div>
             ) : (
                 <span
-                    className="flex-1 text-sm font-primary transition-colors"
-                    style={{
-                        color: task.done ? '#BBBBBB' : '#18181B',
-                        textDecoration: task.done ? 'line-through' : 'none',
-                    }}
+                    className={`flex-1 text-sm font-primary transition-colors ${task.done ? 'text-muted line-through' : 'text-zinc-900'}`}
                 >
                     {task.title}
                 </span>
@@ -106,11 +102,7 @@ export const Task = ({
 
                 {deadline && (
                     <span
-                        className="text-xs font-primary flex items-center gap-1"
-                        style={{
-                            color: deadline.urgent ? '#D44444' : '#A1A1AA',
-                            fontWeight: deadline.urgent ? 600 : 400,
-                        }}
+                        className={`text-xs font-primary flex items-center gap-1 ${deadline.urgent ? 'text-danger font-semibold' : 'text-zinc-400'}`}
                     >
                         {deadline.urgent && <AlertTriangle size={11} />}
                         {deadline.label}

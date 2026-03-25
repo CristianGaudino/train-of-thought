@@ -555,11 +555,7 @@ export default function TaskPanel({
                                         {st.done && <span className="text-white text-xs leading-none">✓</span>}
                                     </div>
                                     <span
-                                        className="text-sm font-primary transition-colors flex-1"
-                                        style={{
-                                            color:          st.done ? '#BBBBBB' : '#374151',
-                                            textDecoration: st.done ? 'line-through' : 'none',
-                                        }}
+                                        className={`text-sm font-primary transition-colors flex-1 ${st.done ? 'text-muted line-through' : 'text-gray-700'}`}
                                     >
                                         {st.label}
                                     </span>
@@ -609,8 +605,8 @@ export default function TaskPanel({
                                                 <img src={author.imageUrl} alt={author.name ?? ''} className="w-7 h-7 rounded-full object-cover flex-shrink-0 border-2 border-white" />
                                             ) : (
                                                 <div
-                                                    className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-white font-bold text-white font-primary text-xs"
-                                                    style={{ background: 'color' in author ? author.color : '#888' }}
+                                                    className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-white font-bold text-white font-primary text-xs bg-zinc-400"
+                                                    style={{ background: 'color' in author ? author.color : undefined }}
                                                 >
                                                     {'initials' in author ? author.initials : '?'}
                                                 </div>

@@ -76,11 +76,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
                 </div>
                 {dl && (
                     <span
-                        className="text-xs font-primary flex items-center gap-1"
-                        style={{
-                            color: dl.urgent ? '#D44444' : '#AAAAAA',
-                            fontWeight: dl.urgent ? 600 : 400,
-                        }}
+                        className={`text-xs font-primary flex items-center gap-1 ${dl.urgent ? 'text-danger font-semibold' : 'text-zinc-400'}`}
                     >
                         {dl.urgent && <AlertTriangle size={12} />}
                         {dl.label}

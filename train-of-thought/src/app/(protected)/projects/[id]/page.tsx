@@ -241,8 +241,7 @@ export default function ProjectPage() {
                                         </Pill>
                                         {dl && (
                                             <span
-                                                className="text-xs font-primary flex items-center gap-1"
-                                                style={{ color: dl.urgent ? '#D44444' : '#71717A', fontWeight: dl.urgent ? 600 : 400 }}
+                                                className={`text-xs font-primary flex items-center gap-1 ${dl.urgent ? 'text-danger font-semibold' : 'text-zinc-500'}`}
                                             >
                                                 {dl.urgent && <AlertTriangle size={12} />}
                                                 {dl.label}
