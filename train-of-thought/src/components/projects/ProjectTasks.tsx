@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, Plus, X, Pencil, Trash2, GripVertical } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import {
     DndContext,
     closestCenter,
@@ -17,6 +17,7 @@ import {
 } from '@dnd-kit/sortable';
 import { Task } from './Task';
 import { SortableSection } from './SortableSection';
+import { SectionHeader } from './SectionHeader';
 import { Button, DashedButton } from '@/components/ui/buttons';
 import ConfirmModal from '@/components/ConfirmModal';
 import type { ProjectTasksProps } from '@/lib/projects/definitions';
@@ -84,7 +85,6 @@ export function ProjectTasks({
             >
                 <SortableContext items={sections.map(s => s.id)} strategy={verticalListSortingStrategy}>
                     {sections.map(section => {
-                        const secDone     = section.tasks.filter(t => t.done).length;
                         const isCollapsed = collapsed[section.id];
                         const isRenaming  = renamingId === section.id;
 
@@ -96,68 +96,20 @@ export function ProjectTasks({
                             >
                                 {handleProps => (
                                     <div>
-                                        <div className="flex items-center gap-2.5 mb-2.5 group/section">
-                                            {/* Drag handle */}
-                                            <span
-                                                {...handleProps}
-                                                className="text-zinc-200 hover:text-zinc-400 cursor-grab active:cursor-grabbing transition-colors opacity-0 group-hover/section:opacity-100"
-                                            >
-                                                <GripVertical size={14} />
-                                            </span>
-
-                                            <button
-                                                onClick={() => toggleCollapse(section.id)}
-                                                className="text-zinc-300 hover:text-zinc-500 transition-colors cursor-pointer"
-                                            >
-                                                {isCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
-                                            </button>
-
-                                            {isRenaming ? (
-                                                <input
-                                                    autoFocus
-                                                    value={renameVal}
-                                                    onChange={e => setRenameVal(e.target.value)}
-                                                    onBlur={() => commitRename(section.id)}
-                                                    onKeyDown={e => {
-                                                        if (e.key === 'Enter')  commitRename(section.id);
-                                                        if (e.key === 'Escape') setRenamingId(null);
-                                                    }}
-                                                    className="text-sm font-bold text-zinc-900 font-primary bg-transparent border-b border-zinc-300 outline-none"
-                                                />
-                                            ) : (
-                                                <span className="text-sm font-bold text-zinc-900 font-primary">{section.title}</span>
-                                            )}
-
-                                            <span className="text-xs text-zinc-300 font-primary">{secDone}/{section.tasks.length}</span>
-
-                                            <div className="flex items-center gap-1 opacity-0 group-hover/section:opacity-100 transition-opacity">
-                                                <button
-                                                    onClick={() => startRename(section.id, section.title)}
-                                                    className="text-zinc-300 hover:text-zinc-500 transition-colors cursor-pointer"
-                                                    title="Rename section"
-                                                >
-                                                    <Pencil size={12} />
-                                                </button>
-                                                <button
-                                                    onClick={() => setConfirmDeleteId(section.id)}
-                                                    className="text-zinc-300 hover:text-red-400 transition-colors cursor-pointer"
-                                                    title="Delete section"
-                                                >
-                                                    <Trash2 size={12} />
-                                                </button>
-                                            </div>
-
-                                            <div className="flex-1 h-px bg-zinc-100" />
-                                            <div className="w-16 h-1 rounded-full bg-zinc-100 overflow-hidden">
-                                                <div
-                                                    className="h-full rounded-full transition-all duration-500"
-                                                    style={{
-                                                        width:      `${section.tasks.length ? (secDone / section.tasks.length) * 100 : 0}%`,
-                                                        background: header.accent,
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
+                                        <SectionHeader
+                                            section={section}
+                                            accent={header.accent}
+                                            isCollapsed={isCollapsed}
+                                            isRenaming={isRenaming}
+                                            renameVal={renameVal}
+                                            dragHandleProps={handleProps}
+                                            onToggleCollapse={() => toggleCollapse(section.id)}
+                                            onRenameChange={setRenameVal}
+                                            onRenameCommit={() => commitRename(section.id)}
+                                            onRenameCancel={() => setRenamingId(null)}
+                                            onStartRename={() => startRename(section.id, section.title)}
+                                            onDelete={() => setConfirmDeleteId(section.id)}
+                                        />
 
                                         {!isCollapsed && (
                                             <div className="flex flex-col gap-1.5 pl-1">
