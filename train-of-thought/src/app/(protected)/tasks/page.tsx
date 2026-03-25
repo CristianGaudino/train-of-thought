@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Plus, ChevronDown, ChevronRight,
     Check, SlidersHorizontal,
@@ -15,6 +15,8 @@ import EmptyState from '@/components/EmptyState';
 import { Task } from '@/components/projects/Task';
 
 export default function TasksPage() {
+    useEffect(() => { document.title = 'My Tasks | Train of Thought'; }, []);
+
     const {
         groups, loading,
         totalOpen, todayCount, overdueCount,

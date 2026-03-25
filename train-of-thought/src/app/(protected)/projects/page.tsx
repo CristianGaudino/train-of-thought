@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Search, Shapes } from 'lucide-react';
 import { STATUS_FILTERS, type Project, type ProjectStatus } from '@/lib/projects/definitions';
 import { STATUS_CONFIG } from '@/lib/projects/config';
@@ -14,6 +14,8 @@ import { CardSkeleton } from '@/components/ui/skeletons';
 import EmptyState from '@/components/EmptyState';
 
 export default function ProjectsPage() {
+    useEffect(() => { document.title = 'Projects | Train of Thought'; }, []);
+
     const { projects, loading, error, refetch, addProject, updateProject, notifySuccess, notifyError } = useProjects();
 
     const [filter, setFilter]       = useState<ProjectStatus | 'All'>('All');

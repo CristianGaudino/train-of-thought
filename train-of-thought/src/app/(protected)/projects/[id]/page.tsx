@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
     ArrowLeft, Pencil, AlertTriangle, Trash2,
@@ -35,6 +35,10 @@ export default function ProjectPage() {
         saveHeader, savingHeader,
         deleteProject, deleting,
     } = useProject(id);
+
+    useEffect(() => {
+        if (project) document.title = `${project.title} | Train of Thought`;
+    }, [project?.title]);
 
     // Use id-based active task so panel always reads from live sections state
     const [activeTaskId, setActiveTaskId]         = useState<string | null>(null);

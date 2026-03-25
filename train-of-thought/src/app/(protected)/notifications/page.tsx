@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { CheckCheck, Bell } from 'lucide-react';
 import { NOTIFICATION_CONFIG } from '@/lib/projects/config';
 import { useNotifications } from '@/hooks/projects/useNotifications';
@@ -11,6 +12,8 @@ import { RowSkeleton } from '@/components/ui/skeletons';
 import EmptyState from '@/components/EmptyState';
 
 export default function NotificationsPage() {
+    useEffect(() => { document.title = 'Notifications | Train of Thought'; }, []);
+
     const {
         notifications, grouped, loading, unreadCount,
         typeFilter, readFilter,

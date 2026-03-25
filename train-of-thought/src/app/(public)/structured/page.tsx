@@ -18,6 +18,8 @@ import { IDEA_STAGE_ID, Stage, StageThreads, STRUCTURED_STORAGE_KEY } from "@/li
 import { getDisplayContent, parseBrief } from "@/lib/chat/utils";
 
 export default function StructuredPage() {
+    useEffect(() => { document.title = 'Structured | Train of Thought'; }, []);
+
     const [depth, setDepth] = useState(1);
     const [input, setInput] = useState("");
     const [showIntro, setShowIntro] = useState(true);

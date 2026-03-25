@@ -16,6 +16,8 @@ import { Chat } from "@/components/chat/Chat";
 import { FREEFORM_STORAGE_KEY } from "@/lib/chat/definitions";
 
 export default function FreeformPage() {
+    useEffect(() => { document.title = 'Freeform | Train of Thought'; }, []);
+
     const [depth, setDepth] = useState(1);
     const [input, setInput] = useState("");
     const [showIntro, setShowIntro] = useState(true);
