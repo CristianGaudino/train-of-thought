@@ -116,6 +116,14 @@ export async function createSection(projectId: string, title: string, order: num
     return id;
 }
 
+export async function renameSection(id: string, title: string): Promise<void> {
+    await db.update(sections).set({ title }).where(eq(sections.id, id));
+}
+
+export async function deleteSection(id: string): Promise<void> {
+    await db.delete(sections).where(eq(sections.id, id));
+}
+
 // ─── Tasks ────────────────────────────────────────────────────────────────────
 
 export async function createTask(

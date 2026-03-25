@@ -310,8 +310,10 @@ export interface ProjectTasksProps {
     toggleTask:      (taskId: string) => Promise<void>;
     deleteTask:      (taskId: string) => Promise<void>;
     setActiveTaskId: (id: string | null) => void;
-    handleAddTask:   (secId: string) => Promise<void>;
+    handleAddTask:    (secId: string) => Promise<void>;
     handleAddSection: () => Promise<void>;
+    renameSection:    (sectionId: string, title: string) => Promise<void>;
+    deleteSection:    (sectionId: string) => Promise<void>;
 }
 
 export interface ProjectActivityProps {
@@ -351,6 +353,8 @@ export interface UseProjectReturn {
     deleteTask:     (taskId: string) => Promise<void>;
     // Section mutations
     addSection:     (title: string) => Promise<void>;
+    renameSection:  (sectionId: string, title: string) => Promise<void>;
+    deleteSection:  (sectionId: string) => Promise<void>;
     // Header mutations
     saveHeader:     (data: HeaderData) => Promise<void>;
     savingHeader:   boolean;

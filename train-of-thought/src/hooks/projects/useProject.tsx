@@ -208,6 +208,39 @@ export function useProject(id: string): UseProjectReturn {
         }
     };
 
+    // ── Rename section ──
+
+    const renameSection = async (sectionId: string, title: string) => {
+        const prev = sections.find(s => s.id === sectionId)?.title;
+        setSections(ss => ss.map(s => s.id === sectionId ? { ...s, title } : s));
+        try {
+            const res = await fetch(`/api/sections/${sectionId}`, {
+                method:  'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ title }),
+            });
+            if (!res.ok) throw new Error('Failed');
+        } catch {
+            toastError('Failed to rename section');
+            setSections(ss => ss.map(s => s.id === sectionId ? { ...s, title: prev ?? s.title } : s));
+        }
+    };
+
+    // ── Delete section ──
+
+    const deleteSection = async (sectionId: string) => {
+        const snapshot = sections;
+        setSections(ss => ss.filter(s => s.id !== sectionId));
+        try {
+            const res = await fetch(`/api/sections/${sectionId}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Failed');
+            success('Section deleted');
+        } catch {
+            toastError('Failed to delete section');
+            setSections(snapshot);
+        }
+    };
+
     // ── Save header ──
 
     const saveHeader = async (data: HeaderData) => {
@@ -265,6 +298,8 @@ export function useProject(id: string): UseProjectReturn {
         addTask,
         deleteTask,
         addSection,
+        renameSection,
+        deleteSection,
         saveHeader,
         savingHeader,
         deleteProject,
