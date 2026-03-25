@@ -156,6 +156,17 @@ export default function TaskPanel({
         }
     };
 
+    const deleteSub = async (id: string) => {
+        const updated = subtasks.filter(st => st.id !== id);
+        setSubtasks(updated);
+        try {
+            await onUpdate?.(task.id, { subtasks: updated }, { silent: true });
+        } catch {
+            toastError('Failed to delete sub-task');
+            setSubtasks(subtasks);
+        }
+    };
+
     const addSub = async () => {
         if (!newSub.trim()) return;
 
@@ -532,7 +543,7 @@ export default function TaskPanel({
                                 <div
                                     key={st.id}
                                     onClick={() => toggleSub(st.id)}
-                                    className="flex items-center gap-2.5 p-2.5 rounded-lg border border-zinc-100 cursor-pointer hover:bg-zinc-50 transition-colors"
+                                    className="group flex items-center gap-2.5 p-2.5 rounded-lg border border-zinc-100 cursor-pointer hover:bg-zinc-50 transition-colors"
                                 >
                                     <div
                                         className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all duration-200"
@@ -552,6 +563,12 @@ export default function TaskPanel({
                                     >
                                         {st.label}
                                     </span>
+                                    <button
+                                        onClick={e => { e.stopPropagation(); deleteSub(st.id); }}
+                                        className="opacity-0 group-hover:opacity-100 text-zinc-300 hover:text-red-400 transition-colors cursor-pointer"
+                                    >
+                                        <Trash2 size={13} />
+                                    </button>
                                 </div>
                             ))}
                         </div>
