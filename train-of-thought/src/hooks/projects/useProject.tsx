@@ -208,6 +208,27 @@ export function useProject(id: string): UseProjectReturn {
         }
     };
 
+    // ── Reorder tasks (within or across sections) ──
+
+    const reorderTasks = async (updatedSections: Section[]) => {
+        const prev = sections;
+        setSections(updatedSections);
+        try {
+            const updates = updatedSections.flatMap((s) =>
+                s.tasks.map((t, i) => ({ id: t.id, sectionId: s.id, order: i }))
+            );
+            const res = await fetch('/api/tasks/reorder', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(updates),
+            });
+            if (!res.ok) throw new Error('Failed');
+        } catch {
+            toastError('Failed to reorder tasks');
+            setSections(prev);
+        }
+    };
+
     // ── Reorder sections ──
 
     const reorderSections = async (reordered: Section[]) => {
@@ -316,6 +337,7 @@ export function useProject(id: string): UseProjectReturn {
         addTask,
         deleteTask,
         addSection,
+        reorderTasks,
         reorderSections,
         renameSection,
         deleteSection,

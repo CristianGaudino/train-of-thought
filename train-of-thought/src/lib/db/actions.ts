@@ -208,6 +208,16 @@ export async function deleteTask(id: string): Promise<void> {
     await db.delete(tasks).where(eq(tasks.id, id));
 }
 
+export async function reorderTasks(
+    updates: { id: string; sectionId: string; order: number }[]
+): Promise<void> {
+    await Promise.all(
+        updates.map(({ id, sectionId, order }) =>
+            db.update(tasks).set({ sectionId, order }).where(eq(tasks.id, id))
+        )
+    );
+}
+
 // ─── Comments ─────────────────────────────────────────────────────────────────
 
 export async function createComment(

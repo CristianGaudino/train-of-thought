@@ -292,6 +292,7 @@ export interface TaskProps {
     setActiveTaskId: (id: string) => void;
     deleteTask?: (id: string) => void;
     variant?: 'project' | 'tasks';
+    dragHandleProps?: React.HTMLAttributes<HTMLElement>;
 }
 
 export interface ProjectTasksProps {
@@ -313,6 +314,7 @@ export interface ProjectTasksProps {
     handleAddTask:    (secId: string) => Promise<void>;
     handleAddSection: () => Promise<void>;
     reorderSections:  (reordered: Section[]) => Promise<void>;
+    reorderTasks:     (updatedSections: Section[]) => Promise<void>;
     renameSection:    (sectionId: string, title: string) => Promise<void>;
     deleteSection:    (sectionId: string) => Promise<void>;
 }
@@ -360,6 +362,7 @@ export interface UseProjectReturn {
     deleteTask:     (taskId: string) => Promise<void>;
     // Section mutations
     addSection:      (title: string) => Promise<void>;
+    reorderTasks:    (updatedSections: Section[]) => Promise<void>;
     reorderSections: (reordered: Section[]) => Promise<void>;
     renameSection:   (sectionId: string, title: string) => Promise<void>;
     deleteSection:   (sectionId: string) => Promise<void>;

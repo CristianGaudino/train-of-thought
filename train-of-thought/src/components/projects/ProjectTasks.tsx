@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Plus, X } from 'lucide-react';
 import {
     DndContext,
@@ -8,7 +8,10 @@ import {
     PointerSensor,
     useSensor,
     useSensors,
+    type DragStartEvent,
+    type DragOverEvent,
     type DragEndEvent,
+    type CollisionDetection,
 } from '@dnd-kit/core';
 import {
     SortableContext,
@@ -17,10 +20,11 @@ import {
 } from '@dnd-kit/sortable';
 import { Task } from './Task';
 import { SortableSection } from './SortableSection';
+import { SortableTask } from './SortableTask';
 import { SectionHeader } from './SectionHeader';
 import { Button, DashedButton } from '@/components/ui/buttons';
 import ConfirmModal from '@/components/ConfirmModal';
-import type { ProjectTasksProps } from '@/lib/projects/definitions';
+import type { ProjectTasksProps, Section } from '@/lib/projects/definitions';
 
 export function ProjectTasks({
     sections,
@@ -41,17 +45,42 @@ export function ProjectTasks({
     handleAddTask,
     handleAddSection,
     reorderSections,
+    reorderTasks,
     renameSection,
     deleteSection,
 }: ProjectTasksProps) {
     const [renamingId, setRenamingId]           = useState<string | null>(null);
     const [renameVal, setRenameVal]             = useState('');
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-    const [draggingId, setDraggingId]           = useState<string | null>(null);
+    const [draggingId, setDraggingId]       = useState<string | null>(null);
+    const [localSections, setLocalSections] = useState<Section[]>(sections);
+
+    // Tracks which section the dragged task started in (set once, never updated)
+    const dragOriginalSectionRef = useRef<string | null>(null);
+    // Tracks which section the dragged task is currently in (updates on cross-section moves)
+    const draggingTaskSectionRef = useRef<string | null>(null);
+
+    // Sync local state from prop whenever we're not mid-drag
+    useEffect(() => {
+        if (!draggingId) setLocalSections(sections);
+    }, [sections, draggingId]);
 
     const sensors = useSensors(useSensor(PointerSensor, {
         activationConstraint: { distance: 5 },
     }));
+
+    // Sections only collide with sections; tasks use default closestCenter
+    const collisionDetection: CollisionDetection = (args) => {
+        if (args.active.data.current?.type === 'section') {
+            return closestCenter({
+                ...args,
+                droppableContainers: args.droppableContainers.filter(
+                    c => c.data.current?.type === 'section'
+                ),
+            });
+        }
+        return closestCenter(args);
+    };
 
     const startRename = (sectionId: string, currentTitle: string) => {
         setRenamingId(sectionId);
@@ -60,31 +89,140 @@ export function ProjectTasks({
 
     const commitRename = async (sectionId: string) => {
         setRenamingId(null);
-        if (renameVal.trim() && renameVal !== sections.find(s => s.id === sectionId)?.title) {
+        if (renameVal.trim() && renameVal !== localSections.find(s => s.id === sectionId)?.title) {
             await renameSection(sectionId, renameVal.trim());
         }
     };
 
-    const handleDragEnd = (event: DragEndEvent) => {
-        setDraggingId(null);
+    const handleDragStart = (event: DragStartEvent) => {
+        const { active } = event;
+        const type = active.data.current?.type as 'section' | 'task';
+        setDraggingId(String(active.id));
+        if (type === 'task') {
+            const sectionId = active.data.current?.sectionId ?? null;
+            dragOriginalSectionRef.current  = sectionId;
+            draggingTaskSectionRef.current  = sectionId;
+        }
+    };
+
+    const handleDragOver = (event: DragOverEvent) => {
         const { active, over } = event;
-        if (!over || active.id === over.id) return;
-        const oldIndex = sections.findIndex(s => s.id === active.id);
-        const newIndex = sections.findIndex(s => s.id === over.id);
-        reorderSections(arrayMove(sections, oldIndex, newIndex));
+        if (!over || active.data.current?.type !== 'task') return;
+
+        const activeTaskId    = String(active.id);
+        const activeSectionId = draggingTaskSectionRef.current;
+        if (!activeSectionId) return;
+
+        const overType = over.data.current?.type as string | undefined;
+        const targetSectionId: string | undefined =
+            overType === 'task'    ? (over.data.current?.sectionId as string) :
+            overType === 'section' ? String(over.id) :
+            undefined;
+
+        if (!targetSectionId || activeSectionId === targetSectionId) return;
+
+        setLocalSections(prev => {
+            const fromSection = prev.find(s => s.id === activeSectionId);
+            const toSection   = prev.find(s => s.id === targetSectionId);
+            if (!fromSection || !toSection) return prev;
+
+            const task = fromSection.tasks.find(t => t.id === activeTaskId);
+            if (!task) return prev;
+
+            let insertIndex: number;
+            if (overType === 'task') {
+                const overIdx = toSection.tasks.findIndex(t => t.id === String(over.id));
+                const activeCenter = (event.active.rect.current.translated?.top ?? 0)
+                    + (event.active.rect.current.translated?.height ?? 0) / 2;
+                const overCenter   = over.rect.top + over.rect.height / 2;
+                insertIndex = activeCenter > overCenter ? overIdx + 1 : overIdx;
+            } else {
+                insertIndex = toSection.tasks.length;
+            }
+
+            return prev.map(s => {
+                if (s.id === activeSectionId) return { ...s, tasks: s.tasks.filter(t => t.id !== activeTaskId) };
+                if (s.id === targetSectionId) {
+                    const next = [...s.tasks];
+                    next.splice(insertIndex, 0, task);
+                    return { ...s, tasks: next };
+                }
+                return s;
+            });
+        });
+
+        draggingTaskSectionRef.current = targetSectionId;
+    };
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        setDraggingId(null);
+
+        const originalSectionId        = dragOriginalSectionRef.current;
+        dragOriginalSectionRef.current  = null;
+        draggingTaskSectionRef.current  = null;
+
+        if (!over) return;
+
+        const activeType = active.data.current?.type as 'section' | 'task';
+
+        if (activeType === 'section') {
+            if (active.id === over.id) return;
+            const oldIdx = localSections.findIndex(s => s.id === String(active.id));
+            const newIdx = localSections.findIndex(s => s.id === String(over.id));
+            if (oldIdx !== -1 && newIdx !== -1 && oldIdx !== newIdx) {
+                reorderSections(arrayMove(localSections, oldIdx, newIdx));
+            }
+            return;
+        }
+
+        if (activeType === 'task') {
+            // Find where the task currently lives (may have moved via onDragOver)
+            const currentSection = localSections.find(s => s.tasks.some(t => t.id === String(active.id)));
+            if (!currentSection) return;
+
+            const crossSection = originalSectionId !== currentSection.id;
+
+            if (crossSection) {
+                // State already updated by handleDragOver — just persist
+                reorderTasks(localSections);
+                return;
+            }
+
+            // Same-section reorder
+            if (active.id === over.id || over.data.current?.type !== 'task') return;
+
+            const oldIdx = currentSection.tasks.findIndex(t => t.id === String(active.id));
+            const newIdx = currentSection.tasks.findIndex(t => t.id === String(over.id));
+            if (oldIdx !== -1 && newIdx !== -1 && oldIdx !== newIdx) {
+                reorderTasks(localSections.map(s =>
+                    s.id === currentSection.id
+                        ? { ...s, tasks: arrayMove(s.tasks, oldIdx, newIdx) }
+                        : s
+                ));
+            }
+        }
+    };
+
+    const handleDragCancel = () => {
+        setDraggingId(null);
+        dragOriginalSectionRef.current  = null;
+        draggingTaskSectionRef.current  = null;
+        setLocalSections(sections);
     };
 
     return (
         <div className="px-8 py-7 flex flex-col gap-7">
             <DndContext
                 sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragStart={e => setDraggingId(String(e.active.id))}
+                collisionDetection={collisionDetection}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
                 onDragEnd={handleDragEnd}
-                onDragCancel={() => setDraggingId(null)}
+                onDragCancel={handleDragCancel}
             >
-                <SortableContext items={sections.map(s => s.id)} strategy={verticalListSortingStrategy}>
-                    {sections.map(section => {
+                <SortableContext items={localSections.map(s => s.id)} strategy={verticalListSortingStrategy}>
+                    {localSections.map(section => {
                         const isCollapsed = collapsed[section.id];
                         const isRenaming  = renamingId === section.id;
 
@@ -113,16 +251,29 @@ export function ProjectTasks({
 
                                         {!isCollapsed && (
                                             <div className="flex flex-col gap-1.5 pl-1">
-                                                {section.tasks.map(task => (
-                                                    <Task
-                                                        key={task.id}
-                                                        task={task}
-                                                        accent={header.accent}
-                                                        toggleTask={toggleTask}
-                                                        setActiveTaskId={setActiveTaskId}
-                                                        deleteTask={deleteTask}
-                                                    />
-                                                ))}
+                                                <SortableContext
+                                                    items={section.tasks.map(t => t.id)}
+                                                    strategy={verticalListSortingStrategy}
+                                                >
+                                                    {section.tasks.map(task => (
+                                                        <SortableTask
+                                                            key={task.id}
+                                                            id={task.id}
+                                                            sectionId={section.id}
+                                                        >
+                                                            {taskHandleProps => (
+                                                                <Task
+                                                                    task={task}
+                                                                    accent={header.accent}
+                                                                    toggleTask={toggleTask}
+                                                                    setActiveTaskId={setActiveTaskId}
+                                                                    deleteTask={deleteTask}
+                                                                    dragHandleProps={taskHandleProps}
+                                                                />
+                                                            )}
+                                                        </SortableTask>
+                                                    ))}
+                                                </SortableContext>
 
                                                 {newTaskSec === section.id ? (
                                                     <div className="flex gap-2 mt-1">
@@ -211,7 +362,7 @@ export function ProjectTasks({
             {confirmDeleteId && (
                 <ConfirmModal
                     title="Delete section"
-                    message={`Are you sure you want to delete "${sections.find(s => s.id === confirmDeleteId)?.title}"? All tasks in this section will be permanently removed.`}
+                    message={`Are you sure you want to delete "${localSections.find(s => s.id === confirmDeleteId)?.title}"? All tasks in this section will be permanently removed.`}
                     confirmLabel="Delete section"
                     destructive
                     onConfirm={async () => {

@@ -5,7 +5,10 @@ import { CSS } from '@dnd-kit/utilities';
 import type { SortableSectionProps } from '@/lib/projects/definitions';
 
 export function SortableSection({ section, isDragging, children }: SortableSectionProps) {
-    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: section.id });
+    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
+        id: section.id,
+        data: { type: 'section' },
+    });
 
     return (
         <div

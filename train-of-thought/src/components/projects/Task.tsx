@@ -1,7 +1,7 @@
 import { PRIORITY_CONFIG } from '@/lib/projects/config';
 import { TaskProps } from '@/lib/projects/definitions';
 import { getDeadlineInfo } from '@/lib/projects/utils';
-import { Check, AlertTriangle, MessageSquare, ChevronRight, Trash2 } from 'lucide-react';
+import { Check, AlertTriangle, MessageSquare, ChevronRight, Trash2, GripVertical } from 'lucide-react';
 import { AvatarStack } from './AvatarStack';
 import Pill from '../ui/Pill';
 
@@ -13,6 +13,7 @@ export const Task = ({
     setActiveTaskId,
     deleteTask,
     variant = 'project',
+    dragHandleProps,
 }: TaskProps) => {
     const pr = PRIORITY_CONFIG[task.priority];
     const deadline = getDeadlineInfo(task.due);
@@ -37,6 +38,16 @@ export const Task = ({
                     className="absolute left-0 top-0 bottom-0 w-0.5"
                     style={{ background: task.projectAccent }}
                 />
+            )}
+
+            {dragHandleProps && (
+                <span
+                    {...dragHandleProps}
+                    onClick={e => e.stopPropagation()}
+                    className="text-zinc-200 hover:text-zinc-400 cursor-grab active:cursor-grabbing transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0 -ml-1"
+                >
+                    <GripVertical size={13} />
+                </span>
             )}
 
             <button
