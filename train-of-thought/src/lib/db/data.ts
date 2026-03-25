@@ -1,7 +1,8 @@
-import { eq, and, desc, asc } from 'drizzle-orm';
+import { eq, ne, and, desc, asc } from 'drizzle-orm';
 import { db } from './index';
 import { projects, sections, tasks, comments, notifications } from './schema';
 import type { Project, Section, Task, Comment, Notification, Subtask } from '@/lib/projects/definitions';
+import { timeAgo } from '@/lib/utils';
 
 // ─── Shape helpers ────────────────────────────────────────────────────────────
 // Convert DB rows → app types used by the UI
@@ -16,7 +17,7 @@ export function shapeComment(row: {
         id:     row.id,
         author: row.userId,
         text:   row.text,
-        time:   row.createdAt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+        time:   timeAgo(row.createdAt),
     };
 }
 
@@ -139,11 +140,43 @@ export async function getProjectById(id: string, userId: string): Promise<Projec
 
 // ─── Notifications ────────────────────────────────────────────────────────────
 
+export async function getActivityByProject(projectId: string): Promise<Notification[]> {
+    const rows = await db
+        .select()
+        .from(notifications)
+        .where(eq(notifications.projectId, projectId))
+        .orderBy(desc(notifications.createdAt));
+
+    // Deduplicate — multiple recipients can share the same event row
+    const seen    = new Set<string>();
+    const unique: Notification[] = [];
+
+    for (const n of rows) {
+        const key = `${n.actorId}|${n.text}|${n.subject}|${n.createdAt.toISOString().slice(0, 16)}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        unique.push({
+            id:            n.id,
+            type:          n.type          as Notification['type'],
+            read:          n.read,
+            time:          timeAgo(n.createdAt),
+            actor:         n.actorId,
+            projectId:     n.projectId,
+            projectTitle:  n.projectTitle,
+            projectAccent: n.projectAccent,
+            text:          n.text,
+            subject:       n.subject,
+        });
+    }
+
+    return unique;
+}
+
 export async function getNotificationsByUser(userId: string): Promise<Notification[]> {
     const rows = await db
         .select()
         .from(notifications)
-        .where(eq(notifications.userId, userId))
+        .where(and(eq(notifications.userId, userId), ne(notifications.actorId, userId)))
         .orderBy(desc(notifications.createdAt));
 
     return rows.map(n => ({

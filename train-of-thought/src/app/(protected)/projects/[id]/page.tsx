@@ -330,7 +330,7 @@ export default function ProjectPage() {
                 )}
 
                 {activeTab === 'activity' && (
-                    <ProjectActivity header={header} />
+                    <ProjectActivity header={header} projectId={id} />
                 )}
 
                 {activeTab === 'members' && (

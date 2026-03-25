@@ -320,7 +320,8 @@ export interface ProjectTasksProps {
 }
 
 export interface ProjectActivityProps {
-    header: HeaderData;
+    header:    HeaderData;
+    projectId: string;
 }
 
 export interface ProjectMembersProps {

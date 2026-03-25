@@ -41,10 +41,12 @@ export async function POST(req: Request, { params }: Params) {
                     .where(eq(projects.id, task.projectId));
 
                 if (project) {
-                    const recipients = (task.assignees ?? []).filter(
-                        (id: string) => id !== userId
-                    );
-                    // const recipients = task.assignees ?? [];
+                    // Include actor so the action is always recorded for activity;
+                    // self-notifications are filtered out on the notifications page
+                    const recipients = [
+                        userId,
+                        ...(task.assignees ?? []).filter((id: string) => id !== userId),
+                    ];
 
                     await Promise.allSettled(
                         recipients.map((recipientId: string) =>

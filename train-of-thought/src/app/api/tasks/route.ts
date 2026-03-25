@@ -41,21 +41,25 @@ export async function POST(req: Request) {
                 .where(eq(projects.id, projectId));
 
             if (project) {
+                // Include actor so the action is recorded for activity;
+                // self-notifications are filtered out on the notifications page
+                const recipients = [
+                    userId,
+                    ...(assignees as string[]).filter((id: string) => id !== userId),
+                ];
                 await Promise.allSettled(
-                    (assignees as string[])
-                        .filter((id: string) => id !== userId) // don't notify yourself
-                        .map((assigneeId: string) =>
-                            createNotification({
-                                userId:        assigneeId,
-                                type:          'assigned',
-                                actorId:       userId,
-                                projectId,
-                                projectTitle:  project.title,
-                                projectAccent: project.accent,
-                                subject:       title.trim(),
-                                text:          'Assigned you to',
-                            })
-                        )
+                    recipients.map((assigneeId: string) =>
+                        createNotification({
+                            userId:        assigneeId,
+                            type:          'assigned',
+                            actorId:       userId,
+                            projectId,
+                            projectTitle:  project.title,
+                            projectAccent: project.accent,
+                            subject:       title.trim(),
+                            text:          'Assigned you to',
+                        })
+                    )
                 );
             }
         }

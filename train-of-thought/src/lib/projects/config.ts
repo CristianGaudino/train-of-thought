@@ -375,10 +375,3 @@ export const MOCK_NOTIFICATIONS: Notification[] = [
     { id: 'n10', type: 'assigned',  read: true,  time: '3 days ago', actor: '3', projectId: '3', projectTitle: 'Q2 Product Launch', projectAccent: '#3A5FA0', text: 'Assigned you to',    subject: 'Launch blog post'        },
 ];
 
-export const ACTIVITY_DATA = [
-    { id: 'a1', type: 'comment',   actor: '2', text: 'commented on',    subject: 'Colour system',           time: '2 min ago'  },
-    { id: 'a2', type: 'assigned',  actor: '3', text: 'was assigned to', subject: 'Update docs site',        time: '14 min ago' },
-    { id: 'a3', type: 'completed', actor: '2', text: 'completed',       subject: 'Logo concepts (round 1)', time: '1 hr ago'   },
-    { id: 'a4', type: 'completed', actor: '1', text: 'completed',       subject: 'Competitor audit',        time: 'Yesterday'  },
-    { id: 'a5', type: 'comment',   actor: '4', text: 'commented on',    subject: 'First wheel session',     time: '2 days ago' },
-];
