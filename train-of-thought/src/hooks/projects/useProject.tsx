@@ -41,31 +41,30 @@ export function useProject(id: string): UseProjectReturn {
     // ── Toggle task done ──
 
     const toggleTask = async (taskId: string) => {
-        let previousDone: boolean | undefined;
+        const task = sections.flatMap(s => s.tasks).find(t => t.id === taskId);
+        const previousDone = task?.done ?? false;
+        const newDone = !previousDone;
 
         // Optimistic
         setSections(ss => ss.map(s => ({
             ...s,
-            tasks: s.tasks.map(t => {
-                if (t.id !== taskId) return t;
-                previousDone = t.done;
-                return { ...t, done: !t.done };
-            }),
+            tasks: s.tasks.map(t => t.id === taskId ? { ...t, done: newDone } : t),
         })));
 
         try {
-            await fetch(`/api/tasks/${taskId}`, {
+            const res = await fetch(`/api/tasks/${taskId}`, {
                 method:  'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ done: !previousDone }),
+                body:    JSON.stringify({ done: newDone }),
             });
+            if (!res.ok) throw new Error('Failed');
         } catch {
             toastError('Failed to update task', 'Your change could not be saved.');
             // Rollback
             setSections(ss => ss.map(s => ({
                 ...s,
                 tasks: s.tasks.map(t =>
-                    t.id === taskId ? { ...t, done: previousDone ?? t.done } : t
+                    t.id === taskId ? { ...t, done: previousDone } : t
                 ),
             })));
         }
