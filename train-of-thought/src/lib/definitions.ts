@@ -62,6 +62,12 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
     iconRight?: React.ReactNode;
 }
 
+export interface DashedButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    accent:    string;
+    icon?:     React.ReactNode;
+    children:  React.ReactNode;
+}
+
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     error?: string;
     variant?: InputVariant;
