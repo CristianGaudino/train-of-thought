@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useToast } from '@/components/ui/Toast';
 import {
@@ -55,11 +55,30 @@ export default function TaskPanel({
 
     const pr = PRIORITY_CONFIG[priority];
 
+    const priorityRef  = useRef<HTMLDivElement>(null);
+    const dueRef       = useRef<HTMLDivElement>(null);
+    const assigneesRef = useRef<HTMLDivElement>(null);
+
     const closeAllDropdowns = () => {
         setShowPriority(false);
         setShowDue(false);
         setShowAssignees(false);
     };
+
+    useEffect(() => {
+        if (!showPriority && !showDue && !showAssignees) return;
+        const handler = (e: MouseEvent) => {
+            const target = e.target as Node;
+            if (
+                priorityRef.current?.contains(target) ||
+                dueRef.current?.contains(target) ||
+                assigneesRef.current?.contains(target)
+            ) return;
+            closeAllDropdowns();
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [showPriority, showDue, showAssignees]);
 
     useEffect(() => {
         setComments(task.comments ?? []);
@@ -342,7 +361,7 @@ export default function TaskPanel({
                     <div className="flex items-center gap-2 mt-3 flex-wrap">
 
                         {/* Priority */}
-                        <div className="relative">
+                        <div className="relative" ref={priorityRef}>
                             <button
                                 onClick={() => { closeAllDropdowns(); setShowPriority(v => !v); }}
                                 className="flex items-center gap-1 cursor-pointer"
@@ -379,7 +398,7 @@ export default function TaskPanel({
                         </div>
 
                         {/* Due date */}
-                        <div className="relative">
+                        <div className="relative" ref={dueRef}>
                             <button
                                 onClick={() => { closeAllDropdowns(); setShowDue(v => !v); }}
                                 className="flex items-center gap-1 cursor-pointer"
@@ -437,7 +456,7 @@ export default function TaskPanel({
                         )}
 
                         {/* Assignee picker */}
-                        <div className="relative">
+                        <div className="relative" ref={assigneesRef}>
                             <button
                                 onClick={() => { closeAllDropdowns(); setShowAssignees(v => !v); }}
                                 className={`flex items-center gap-1 text-xs font-primary px-2 py-1 rounded-full transition-colors cursor-pointer ${showAssignees ? 'bg-zinc-200 text-zinc-700' : 'text-zinc-400 hover:text-zinc-600 hover:bg-white/60'}`}
