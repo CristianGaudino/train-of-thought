@@ -55,6 +55,7 @@ export default function TaskPanel({
 
     const pr = PRIORITY_CONFIG[priority];
 
+    const panelRef     = useRef<HTMLDivElement>(null);
     const priorityRef  = useRef<HTMLDivElement>(null);
     const dueRef       = useRef<HTMLDivElement>(null);
     const assigneesRef = useRef<HTMLDivElement>(null);
@@ -65,6 +66,18 @@ export default function TaskPanel({
         setShowAssignees(false);
     };
 
+    // Close panel when clicking outside
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+                onClose();
+            }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [onClose]);
+
+    // Close dropdowns when clicking outside them
     useEffect(() => {
         if (!showPriority && !showDue && !showAssignees) return;
         const handler = (e: MouseEvent) => {
@@ -268,10 +281,7 @@ export default function TaskPanel({
     };
 
     return (
-        <>
-            <div onClick={onClose} className="fixed inset-0 z-[200]" />
-
-            <div className="fixed right-0 top-0 bottom-0 w-[min(480px,92vw)] bg-white z-[201] flex flex-col shadow-2xl animate-in slide-in-from-right duration-200">
+        <div ref={panelRef} className="fixed right-0 top-0 bottom-0 w-[min(480px,92vw)] bg-white z-[201] flex flex-col shadow-2xl animate-in slide-in-from-right duration-200">
 
                 {/* ── Header ── */}
                 <div className="px-6 py-5 border-b border-zinc-100 flex-shrink-0" style={{ background: projectColor }}>
@@ -674,6 +684,5 @@ export default function TaskPanel({
                     </div>
                 </div>
             </div>
-        </>
     );
 }
