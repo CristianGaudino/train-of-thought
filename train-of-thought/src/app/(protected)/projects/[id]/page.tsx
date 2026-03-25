@@ -3,15 +3,12 @@
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
-    ArrowLeft, Pencil, Plus, ChevronDown, ChevronRight,
-    AlertTriangle, X, Trash2,
+    ArrowLeft, Pencil, AlertTriangle, Trash2,
 } from 'lucide-react';
 import {
     STATUS_CONFIG, ACCENT_PALETTE, STATUS_OPTIONS,
-    NOTIFICATION_CONFIG, ACTIVITY_DATA, MOCK_MEMBERS,
 } from '@/lib/projects/config';
-import { getDeadlineInfo, getMember } from '@/lib/projects/utils';
-import { Avatar } from '@/components/projects/Avatar';
+import { getDeadlineInfo } from '@/lib/projects/utils';
 import Ring from '@/components/projects/Ring';
 import Pill from '@/components/ui/Pill';
 import TaskPanel from '@/components/projects/TaskPanel';
@@ -23,7 +20,9 @@ import { PageSkeleton } from '@/components/ui/skeletons';
 import { Button } from '@/components/ui/buttons';
 import SectionLabel from '@/components/projects/SectionLabel';
 import { Input } from '@/components/ui/inputs';
-import { Task } from '@/components/projects/Task';
+import { ProjectTasks } from '@/components/projects/ProjectTasks';
+import { ProjectActivity } from '@/components/projects/ProjectActivity';
+import { ProjectMembers } from '@/components/projects/ProjectMembers';
 
 export default function ProjectPage() {
     const params = useParams();
@@ -300,244 +299,39 @@ export default function ProjectPage() {
             {/* ── Tab body ── */}
             <div className="flex-1 overflow-y-auto">
 
-                {/* Tasks tab */}
                 {activeTab === 'tasks' && (
-                    <div className="px-8 py-7 flex flex-col gap-7">
-                        {sections.map(section => {
-                            const secDone    = section.tasks.filter(t => t.done).length;
-                            const isC = collapsed[section.id];
-                            return (
-                                <div key={section.id}>
-                                    {/* Section heading */}
-                                    <div className="flex items-center gap-2.5 mb-2.5">
-                                        <button
-                                            onClick={() => toggleCollapse(section.id)}
-                                            className="text-zinc-300 hover:text-zinc-500 transition-colors cursor-pointer"
-                                        >
-                                            {isC ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
-                                        </button>
-                                        <span className="text-sm font-bold text-zinc-900 font-primary">{section.title}</span>
-                                        <span className="text-xs text-zinc-300 font-primary">{secDone}/{section.tasks.length}</span>
-                                        <div className="flex-1 h-px bg-zinc-100" />
-                                        <div className="w-16 h-1 rounded-full bg-zinc-100 overflow-hidden">
-                                            <div
-                                                className="h-full rounded-full transition-all duration-500"
-                                                style={{
-                                                    width:      `${section.tasks.length ? (secDone / section.tasks.length) * 100 : 0}%`,
-                                                    background: header.accent,
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Task rows */}
-                                    {!isC && (
-                                        <div className="flex flex-col gap-1.5 pl-1">
-                                            {section.tasks.map(task => (
-                                                <Task
-                                                    key={task.id}
-                                                    task={task}
-                                                    accent={header.accent}
-                                                    toggleTask={toggleTask}
-                                                    setActiveTaskId={setActiveTaskId}
-                                                    deleteTask={deleteTask}
-                                                />
-                                            ))}
-
-                                            {/* Add task */}
-                                            {newTaskSec === section.id ? (
-                                                <div className="flex gap-2 mt-1">
-                                                    <input
-                                                        autoFocus
-                                                        value={newTaskVal}
-                                                        onChange={e => setNewTaskVal(e.target.value)}
-                                                        onKeyDown={e => {
-                                                            if (e.key === 'Enter')  handleAddTask(section.id);
-                                                            if (e.key === 'Escape') { setNewTaskSec(null); setNewTaskVal(''); }
-                                                        }}
-                                                        placeholder="Task name…"
-                                                        className="flex-1 px-3.5 py-2 rounded-xl border text-sm font-primary text-zinc-800 bg-white outline-none"
-                                                        style={{ borderColor: header.accent }}
-                                                    />
-                                                    <Button
-                                                        size="md"
-                                                        onClick={() => handleAddTask(section.id)}
-                                                        style={{ background: header.accent }}
-                                                        className="border-0"
-                                                    >
-                                                        Add
-                                                    </Button>
-                                                    <Button
-                                                        variant="secondary"
-                                                        size="md"
-                                                        onClick={() => { setNewTaskSec(null); setNewTaskVal(''); }}
-                                                        icon={<X size={14} />}
-                                                    />
-                                                </div>
-                                            ) : (
-                                                <button
-                                                    onClick={() => setNewTaskSec(section.id)}
-                                                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border-2 border-dashed border-zinc-200 text-sm text-zinc-300 font-primary w-fit mt-1 transition-all duration-150 cursor-pointer"
-                                                    onMouseEnter={e => {
-                                                        (e.currentTarget as HTMLButtonElement).style.borderColor = header.accent;
-                                                        (e.currentTarget as HTMLButtonElement).style.color       = header.accent;
-                                                        (e.currentTarget as HTMLButtonElement).style.borderStyle = 'solid';
-                                                    }}
-                                                    onMouseLeave={e => {
-                                                        (e.currentTarget as HTMLButtonElement).style.borderColor = '';
-                                                        (e.currentTarget as HTMLButtonElement).style.color       = '';
-                                                        (e.currentTarget as HTMLButtonElement).style.borderStyle = 'dashed';
-                                                    }}
-                                                >
-                                                    <Plus size={13} /> Add task
-                                                </button>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
-
-                        {/* Add section */}
-                        {newSecMode ? (
-                            <div className="flex gap-2 items-center">
-                                <input
-                                    autoFocus
-                                    value={newSecVal}
-                                    onChange={e => setNewSecVal(e.target.value)}
-                                    onKeyDown={e => {
-                                        if (e.key === 'Enter')  handleAddSection();
-                                        if (e.key === 'Escape') { setNewSecMode(false); setNewSecVal(''); }
-                                    }}
-                                    placeholder="Section name…"
-                                    className="flex-1 px-3.5 py-2.5 rounded-xl border text-sm font-semibold font-primary text-zinc-800 bg-white outline-none"
-                                    style={{ borderColor: header.accent }}
-                                />
-                                <Button
-                                    size="md"
-                                    onClick={handleAddSection}
-                                    style={{ background: header.accent }}
-                                    className="border-0"
-                                >
-                                    Add
-                                </Button>
-                                <Button
-                                    variant="secondary"
-                                    size="md"
-                                    onClick={() => { setNewSecMode(false); setNewSecVal(''); }}
-                                    icon={<X size={14} />}
-                                />
-                            </div>
-                        ) : (
-                            <button
-                                onClick={() => setNewSecMode(true)}
-                                className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-zinc-200 text-sm text-zinc-300 font-primary w-fit transition-all duration-150 cursor-pointer"
-                                onMouseEnter={e => {
-                                    (e.currentTarget as HTMLButtonElement).style.borderColor = header.accent;
-                                    (e.currentTarget as HTMLButtonElement).style.color       = header.accent;
-                                    (e.currentTarget as HTMLButtonElement).style.borderStyle = 'solid';
-                                }}
-                                onMouseLeave={e => {
-                                    (e.currentTarget as HTMLButtonElement).style.borderColor = '';
-                                    (e.currentTarget as HTMLButtonElement).style.color       = '';
-                                    (e.currentTarget as HTMLButtonElement).style.borderStyle = 'dashed';
-                                }}
-                            >
-                                <Plus size={14} /> Add section
-                            </button>
-                        )}
-                    </div>
+                    <ProjectTasks
+                        sections={sections}
+                        header={header}
+                        collapsed={collapsed}
+                        toggleCollapse={toggleCollapse}
+                        newTaskSec={newTaskSec}
+                        setNewTaskSec={setNewTaskSec}
+                        newTaskVal={newTaskVal}
+                        setNewTaskVal={setNewTaskVal}
+                        newSecMode={newSecMode}
+                        setNewSecMode={setNewSecMode}
+                        newSecVal={newSecVal}
+                        setNewSecVal={setNewSecVal}
+                        toggleTask={toggleTask}
+                        deleteTask={deleteTask}
+                        setActiveTaskId={setActiveTaskId}
+                        handleAddTask={handleAddTask}
+                        handleAddSection={handleAddSection}
+                    />
                 )}
 
-                {/* Activity tab */}
                 {activeTab === 'activity' && (
-                    <div className="px-8 py-7 max-w-2xl">
-                        <div className="flex flex-col">
-                            {ACTIVITY_DATA.map((a, i) => {
-                                const actor = getMember(a.actor);
-                                const cfg   = NOTIFICATION_CONFIG[a.type] ?? NOTIFICATION_CONFIG.comment;
-                                return (
-                                    <div key={a.id} className="flex gap-3.5 items-start pb-5 relative">
-                                        {i < ACTIVITY_DATA.length - 1 && (
-                                            <div className="absolute left-[15px] top-8 bottom-0 w-px bg-zinc-100" />
-                                        )}
-                                        <div
-                                            className="w-8 h-8 rounded-full flex items-center justify-center text-xs flex-shrink-0 z-10 border"
-                                            style={{ background: cfg.bg, color: cfg.color, borderColor: cfg.color + '30' }}
-                                        >
-                                            {cfg.icon}
-                                        </div>
-                                        <div className="flex-1 pt-1">
-                                            <p className="text-sm font-primary text-zinc-700 leading-snug m-0">
-                                                <span className="font-semibold">{actor?.name ?? 'Someone'}</span>
-                                                {' '}{a.text}{' '}
-                                                <span className="font-semibold" style={{ color: header.accent }}>{a.subject}</span>
-                                            </p>
-                                            <p className="text-xs text-zinc-400 font-primary mt-1 m-0">{a.time}</p>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
+                    <ProjectActivity header={header} />
                 )}
 
-                {/* Members tab */}
                 {activeTab === 'members' && (
-                    <div className="px-8 py-7 max-w-lg">
-                        <div className="flex flex-col gap-2 mb-6">
-                            {MOCK_MEMBERS.map(member => {
-                                const isMember = header.members.includes(member.id);
-                                const isMe     = member.id === '1';
-                                return (
-                                    <div
-                                        key={member.id}
-                                        className="flex items-center gap-3.5 p-3.5 rounded-xl border transition-all duration-150"
-                                        style={{
-                                            borderColor: isMember ? header.accent + '40' : '#E4E4E7',
-                                            background:  isMember ? '#fff' : '#FAFAFA',
-                                        }}
-                                    >
-                                        <Avatar member={member} size={36} />
-                                        <div className="flex-1">
-                                            <div className="text-sm font-semibold text-zinc-900 font-primary">
-                                                {member.name}
-                                                {isMe && <span className="text-xs font-normal text-zinc-400 ml-1.5">you</span>}
-                                            </div>
-                                            <div className="text-xs text-zinc-400 font-primary mt-0.5">
-                                                {isMember ? 'Member' : 'Not a member'}
-                                            </div>
-                                        </div>
-                                        {!isMe && (
-                                            <button
-                                                onClick={() => setHeader(f => f ? {
-                                                    ...f,
-                                                    members: isMember
-                                                        ? f.members.filter(id => id !== member.id)
-                                                        : [...f.members, member.id],
-                                                } : f)}
-                                                className="px-3.5 py-1.5 rounded-lg border text-xs font-medium font-primary cursor-pointer transition-all duration-150"
-                                                style={{
-                                                    borderColor: isMember ? '#E4E4E7' : header.accent,
-                                                    background:  isMember ? '#fff'    : header.color,
-                                                    color:       isMember ? '#71717A' : header.accent,
-                                                }}
-                                            >
-                                                {isMember ? 'Remove' : 'Add'}
-                                            </button>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                        <Button
-                            onClick={handleSaveHeader}
-                            style={{ background: header.accent }}
-                            className="border-0"
-                        >
-                            Save changes
-                        </Button>
-                    </div>
+                    <ProjectMembers
+                        header={header}
+                        setHeader={setHeader}
+                        handleSaveHeader={handleSaveHeader}
+                        savingHeader={savingHeader}
+                    />
                 )}
             </div>
 

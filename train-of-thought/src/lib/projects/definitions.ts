@@ -294,6 +294,37 @@ export interface TaskProps {
     variant?: 'project' | 'tasks';
 }
 
+export interface ProjectTasksProps {
+    sections:        Section[];
+    header:          HeaderData;
+    collapsed:       Record<string, boolean>;
+    toggleCollapse:  (id: string) => void;
+    newTaskSec:      string | null;
+    setNewTaskSec:   (id: string | null) => void;
+    newTaskVal:      string;
+    setNewTaskVal:   (val: string) => void;
+    newSecMode:      boolean;
+    setNewSecMode:   (val: boolean) => void;
+    newSecVal:       string;
+    setNewSecVal:    (val: string) => void;
+    toggleTask:      (taskId: string) => Promise<void>;
+    deleteTask:      (taskId: string) => Promise<void>;
+    setActiveTaskId: (id: string | null) => void;
+    handleAddTask:   (secId: string) => Promise<void>;
+    handleAddSection: () => Promise<void>;
+}
+
+export interface ProjectActivityProps {
+    header: HeaderData;
+}
+
+export interface ProjectMembersProps {
+    header:           HeaderData;
+    setHeader:        (fn: (f: HeaderData | null) => HeaderData | null) => void;
+    handleSaveHeader: () => Promise<void>;
+    savingHeader:     boolean;
+}
+
 // Hook Interfaces
 
 export interface UseProjectsReturn {
