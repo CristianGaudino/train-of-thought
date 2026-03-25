@@ -312,6 +312,7 @@ export interface ProjectTasksProps {
     setActiveTaskId: (id: string | null) => void;
     handleAddTask:    (secId: string) => Promise<void>;
     handleAddSection: () => Promise<void>;
+    reorderSections:  (reordered: Section[]) => Promise<void>;
     renameSection:    (sectionId: string, title: string) => Promise<void>;
     deleteSection:    (sectionId: string) => Promise<void>;
 }
@@ -325,6 +326,12 @@ export interface ProjectMembersProps {
     setHeader:        (fn: (f: HeaderData | null) => HeaderData | null) => void;
     handleSaveHeader: () => Promise<void>;
     savingHeader:     boolean;
+}
+
+export interface SortableSectionProps {
+    section:    Section;
+    isDragging: boolean;
+    children:   (handleProps: React.HTMLAttributes<HTMLElement>) => React.ReactNode;
 }
 
 // Hook Interfaces
@@ -352,9 +359,10 @@ export interface UseProjectReturn {
     addTask:        (sectionId: string, title: string) => Promise<void>;
     deleteTask:     (taskId: string) => Promise<void>;
     // Section mutations
-    addSection:     (title: string) => Promise<void>;
-    renameSection:  (sectionId: string, title: string) => Promise<void>;
-    deleteSection:  (sectionId: string) => Promise<void>;
+    addSection:      (title: string) => Promise<void>;
+    reorderSections: (reordered: Section[]) => Promise<void>;
+    renameSection:   (sectionId: string, title: string) => Promise<void>;
+    deleteSection:   (sectionId: string) => Promise<void>;
     // Header mutations
     saveHeader:     (data: HeaderData) => Promise<void>;
     savingHeader:   boolean;

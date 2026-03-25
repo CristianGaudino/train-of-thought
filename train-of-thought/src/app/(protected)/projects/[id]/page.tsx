@@ -31,7 +31,7 @@ export default function ProjectPage() {
 
     const {
         project, sections, loading, error,
-        toggleTask, updateTask, addTask, deleteTask, addSection, renameSection, deleteSection,
+        toggleTask, updateTask, addTask, deleteTask, addSection, reorderSections, renameSection, deleteSection,
         saveHeader, savingHeader,
         deleteProject, deleting,
     } = useProject(id);
@@ -318,6 +318,7 @@ export default function ProjectPage() {
                         setActiveTaskId={setActiveTaskId}
                         handleAddTask={handleAddTask}
                         handleAddSection={handleAddSection}
+                        reorderSections={reorderSections}
                         renameSection={renameSection}
                         deleteSection={deleteSection}
                     />

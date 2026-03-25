@@ -208,6 +208,24 @@ export function useProject(id: string): UseProjectReturn {
         }
     };
 
+    // ── Reorder sections ──
+
+    const reorderSections = async (reordered: Section[]) => {
+        const prev = sections;
+        setSections(reordered);
+        try {
+            const res = await fetch('/api/sections/reorder', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(reordered.map((s, i) => ({ id: s.id, order: i }))),
+            });
+            if (!res.ok) throw new Error('Failed');
+        } catch {
+            toastError('Failed to reorder sections');
+            setSections(prev);
+        }
+    };
+
     // ── Rename section ──
 
     const renameSection = async (sectionId: string, title: string) => {
@@ -298,6 +316,7 @@ export function useProject(id: string): UseProjectReturn {
         addTask,
         deleteTask,
         addSection,
+        reorderSections,
         renameSection,
         deleteSection,
         saveHeader,
