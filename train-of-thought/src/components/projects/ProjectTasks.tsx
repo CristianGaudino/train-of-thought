@@ -2,7 +2,7 @@
 
 import { ChevronDown, ChevronRight, Plus, X } from 'lucide-react';
 import { Task } from './Task';
-import { Button } from '@/components/ui/buttons';
+import { Button, DashedButton } from '@/components/ui/buttons';
 import type { ProjectTasksProps } from '@/lib/projects/definitions';
 
 export function ProjectTasks({
@@ -95,22 +95,14 @@ export function ProjectTasks({
                                         />
                                     </div>
                                 ) : (
-                                    <button
+                                    <DashedButton
+                                        accent={header.accent}
                                         onClick={() => setNewTaskSec(section.id)}
-                                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border-2 border-dashed border-zinc-200 text-sm text-zinc-300 font-primary w-fit mt-1 transition-all duration-150 cursor-pointer"
-                                        onMouseEnter={e => {
-                                            (e.currentTarget as HTMLButtonElement).style.borderColor = header.accent;
-                                            (e.currentTarget as HTMLButtonElement).style.color       = header.accent;
-                                            (e.currentTarget as HTMLButtonElement).style.borderStyle = 'solid';
-                                        }}
-                                        onMouseLeave={e => {
-                                            (e.currentTarget as HTMLButtonElement).style.borderColor = '';
-                                            (e.currentTarget as HTMLButtonElement).style.color       = '';
-                                            (e.currentTarget as HTMLButtonElement).style.borderStyle = 'dashed';
-                                        }}
+                                        icon={<Plus size={13} />}
+                                        className="mt-1"
                                     >
-                                        <Plus size={13} /> Add task
-                                    </button>
+                                        Add task
+                                    </DashedButton>
                                 )}
                             </div>
                         )}
@@ -148,22 +140,9 @@ export function ProjectTasks({
                     />
                 </div>
             ) : (
-                <button
-                    onClick={() => setNewSecMode(true)}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-zinc-200 text-sm text-zinc-300 font-primary w-fit transition-all duration-150 cursor-pointer"
-                    onMouseEnter={e => {
-                        (e.currentTarget as HTMLButtonElement).style.borderColor = header.accent;
-                        (e.currentTarget as HTMLButtonElement).style.color       = header.accent;
-                        (e.currentTarget as HTMLButtonElement).style.borderStyle = 'solid';
-                    }}
-                    onMouseLeave={e => {
-                        (e.currentTarget as HTMLButtonElement).style.borderColor = '';
-                        (e.currentTarget as HTMLButtonElement).style.color       = '';
-                        (e.currentTarget as HTMLButtonElement).style.borderStyle = 'dashed';
-                    }}
-                >
-                    <Plus size={14} /> Add section
-                </button>
+                <DashedButton accent={header.accent} onClick={() => setNewSecMode(true)}>
+                    Add section
+                </DashedButton>
             )}
         </div>
     );
