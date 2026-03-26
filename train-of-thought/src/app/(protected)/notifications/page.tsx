@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useMembers } from '@/hooks/useMembers';
 import { CheckCheck, Bell } from 'lucide-react';
 import { NOTIFICATION_CONFIG } from '@/lib/projects/config';
 import { useNotifications } from '@/hooks/projects/useNotifications';
@@ -20,6 +21,9 @@ export default function NotificationsPage() {
         setTypeFilter, setReadFilter,
         markRead, markAll,
     } = useNotifications();
+
+    const actorIds  = useMemo(() => [...new Set(notifications.map(n => n.actor))], [notifications]);
+    const memberMap = useMembers(actorIds);
 
     return (
         <div className="flex flex-col h-full overflow-hidden">
@@ -112,7 +116,7 @@ export default function NotificationsPage() {
                                             key={n.id}
                                             className={i < group.items.length - 1 ? 'border-b border-zinc-50' : ''}
                                         >
-                                            <NotificationRow notification={n} onRead={markRead} />
+                                            <NotificationRow notification={n} onRead={markRead} memberMap={memberMap} />
                                         </div>
                                     ))}
                                 </div>

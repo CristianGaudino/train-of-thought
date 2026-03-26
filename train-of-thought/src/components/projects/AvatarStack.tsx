@@ -1,12 +1,15 @@
+'use client';
+
 import { AvatarStackProps } from "@/lib/projects/definitions";
-import { getMember } from "@/lib/projects/utils";
+import { useMembers } from "@/hooks/useMembers";
 import { Avatar } from "./Avatar";
 
 export function AvatarStack({ ids, size = 24 }: AvatarStackProps) {
+    const memberMap = useMembers(ids);
     return (
         <div className="flex">
             {ids.map((id, i) => {
-                const member = getMember(id);
+                const member = memberMap[id];
                 if (!member) return null;
                 return (
                     <div

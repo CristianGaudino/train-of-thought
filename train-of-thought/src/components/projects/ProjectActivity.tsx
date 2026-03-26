@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { NOTIFICATION_CONFIG } from '@/lib/projects/config';
 import type { Notification, ProjectActivityProps } from '@/lib/projects/definitions';
-import { getMember } from '@/lib/projects/utils';
+import { useMembers } from '@/hooks/useMembers';
 import { RowSkeleton } from '@/components/ui/skeletons';
 
 export function ProjectActivity({ header, projectId }: ProjectActivityProps) {
@@ -19,6 +19,9 @@ export function ProjectActivity({ header, projectId }: ProjectActivityProps) {
             .finally(() => setLoading(false));
     }, [projectId]);
 
+    const actorIds  = useMemo(() => [...new Set(activity.map(a => a.actor))], [activity]);
+    const memberMap = useMembers(actorIds);
+
     return (
         <div className="px-8 py-7 max-w-2xl">
             {loading ? (
@@ -30,7 +33,7 @@ export function ProjectActivity({ header, projectId }: ProjectActivityProps) {
             ) : (
                 <div className="flex flex-col">
                     {activity.map((a, i) => {
-                        const actor = getMember(a.actor);
+                        const actor = memberMap[a.actor];
                         const cfg   = NOTIFICATION_CONFIG[a.type] ?? NOTIFICATION_CONFIG.comment;
                         return (
                             <div key={a.id} className="flex gap-3.5 items-start pb-5 relative">

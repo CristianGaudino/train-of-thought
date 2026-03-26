@@ -2,9 +2,9 @@ import { NOTIFICATION_CONFIG } from "@/lib/projects/config";
 import { NotificationRowProps } from "@/lib/projects/definitions";
 import { getMember } from "@/lib/projects/utils";
 
-export function NotificationRow({ notification, onRead, compact = false }: NotificationRowProps) {
+export function NotificationRow({ notification, onRead, compact = false, memberMap }: NotificationRowProps) {
     const cfg   = NOTIFICATION_CONFIG[notification.type];
-    const actor = getMember(notification.actor);
+    const actor = memberMap?.[notification.actor] ?? getMember(notification.actor);
     const py    = compact ? 'py-3' : 'py-3.5';
 
     return (
@@ -19,7 +19,6 @@ export function NotificationRow({ notification, onRead, compact = false }: Notif
                 }
             `}
         >
-            {/* Unread dot */}
             {!notification.read && (
                 <div
                     className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full"
@@ -27,7 +26,6 @@ export function NotificationRow({ notification, onRead, compact = false }: Notif
                 />
             )}
 
-            {/* Type icon */}
             <div
                 className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm flex-shrink-0 ${!notification.read ? 'ml-2' : ''}`}
                 style={{ background: cfg.bg, color: cfg.color }}
@@ -35,7 +33,6 @@ export function NotificationRow({ notification, onRead, compact = false }: Notif
                 {cfg.icon}
             </div>
 
-            {/* Content */}
             <div className="flex-1 min-w-0">
                 <p className="text-sm font-primary text-zinc-800 leading-snug m-0">
                     <span className="font-semibold">

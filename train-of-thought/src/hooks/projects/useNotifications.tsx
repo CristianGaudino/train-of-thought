@@ -50,7 +50,7 @@ export function useNotifications(): UseNotificationsReturn {
         const today:   Notification[] = [];
         const earlier: Notification[] = [];
         filtered.forEach(n => {
-            if (n.time.includes('min') || n.time.includes('hr')) today.push(n);
+            if (n.time === 'just now' || n.time.includes('ago')) today.push(n);
             else earlier.push(n);
         });
         const g: { label: string; items: Notification[] }[] = [];

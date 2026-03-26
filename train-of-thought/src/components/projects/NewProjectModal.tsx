@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useUser } from '@clerk/nextjs';
 import { X, Plus, ChevronRight } from 'lucide-react';
 import { EMPTY_FORM, STEPS, type FormState, type NewProjectModalProps, type Project, type ProjectStatus } from '@/lib/projects/definitions';
 import { ACCENT_PALETTE, STATUS_CONFIG, STATUS_OPTIONS } from '@/lib/projects/config';
-import { MOCK_MEMBERS, ME_ID } from '@/lib/projects/config';
 import { generateId } from '@/lib/projects/utils';
 import Pill from '../ui/Pill';
-import { Avatar } from './Avatar';
 import { formatDate } from '@/lib/utils';
 import { Input, Textarea } from '../ui/inputs';
 import Button from '../ui/buttons';
@@ -19,10 +18,15 @@ export default function NewProjectModal({ onClose, onCreate }: NewProjectModalPr
     const [tagInput, setTagInput] = useState('');
     const [errors, setErrors]     = useState<Partial<Record<keyof FormState, string>>>({});
     const titleRef = useRef<HTMLInputElement>(null);
+    const { user } = useUser();
 
     useEffect(() => {
         setTimeout(() => titleRef.current?.focus(), 80);
     }, []);
+
+    useEffect(() => {
+        if (user?.id) setForm(f => ({ ...f, members: [user.id] }));
+    }, [user?.id]);
 
     const set = <K extends keyof FormState>(k: K, v: FormState[K]) => {
         setForm(f => ({ ...f, [k]: v }));
@@ -326,42 +330,39 @@ export default function NewProjectModal({ onClose, onCreate }: NewProjectModalPr
                     {step === 3 && (
                         <div className="flex flex-col gap-4">
                             <p className="text-sm text-zinc-400 font-primary m-0 leading-relaxed">
-                                Choose who has access to this project. You're included by default.
+                                You're included as owner by default.
                             </p>
-                            {MOCK_MEMBERS.map(member => {
-                                const selected = form.members.includes(member.id);
-                                const isMe     = member.id === ME_ID;
-                                return (
-                                    <button
-                                        key={member.id}
-                                        onClick={() => !isMe && toggleMember(member.id)}
-                                        className="flex items-center gap-3.5 p-3.5 rounded-xl border text-left transition-all duration-150 w-full"
-                                        style={{
-                                            border:     `1.5px solid ${selected ? form.accent + '55' : '#E4E4E7'}`,
-                                            background: selected ? form.color : '#fff',
-                                            cursor:     isMe ? 'default' : 'pointer',
-                                        }}
-                                    >
-                                        <Avatar member={member} size={36} />
-                                        <div className="flex-1">
-                                            <div className="text-sm font-semibold text-zinc-900 font-primary">
-                                                {member.name}
-                                                {isMe && <span className="text-xs font-normal text-zinc-400 ml-1.5">you</span>}
-                                            </div>
-                                            <div className="text-xs text-zinc-400 font-primary mt-0.5">Member</div>
-                                        </div>
+                            {user && (
+                                <div
+                                    className="flex items-center gap-3.5 p-3.5 rounded-xl border"
+                                    style={{ borderColor: form.accent + '55', background: form.color }}
+                                >
+                                    {user.imageUrl ? (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img src={user.imageUrl} alt={user.firstName ?? 'You'} className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
+                                    ) : (
                                         <div
-                                            className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all duration-200"
-                                            style={{
-                                                borderColor: selected ? form.accent : '#D1D5DB',
-                                                background:  selected ? form.accent : 'transparent',
-                                            }}
+                                            className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-white font-primary text-sm flex-shrink-0"
+                                            style={{ background: '#2D7A5F' }}
                                         >
-                                            {selected && <span className="text-white text-xs leading-none">✓</span>}
+                                            {(user.firstName?.[0] ?? '') + (user.lastName?.[0] ?? '')}
                                         </div>
-                                    </button>
-                                );
-                            })}
+                                    )}
+                                    <div className="flex-1">
+                                        <div className="text-sm font-semibold text-zinc-900 font-primary">
+                                            {user.fullName ?? user.firstName ?? 'You'}
+                                            <span className="text-xs font-normal text-zinc-400 ml-1.5">you</span>
+                                        </div>
+                                        <div className="text-xs text-zinc-400 font-primary mt-0.5">Owner</div>
+                                    </div>
+                                    <div
+                                        className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 border-2"
+                                        style={{ borderColor: form.accent, background: form.accent }}
+                                    >
+                                        <span className="text-white text-xs leading-none">✓</span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

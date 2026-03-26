@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useToast } from '@/components/ui/Toast';
 import {
@@ -43,8 +43,9 @@ function SortableSubtask({
         </div>
     );
 }
-import { MOCK_MEMBERS, PRIORITY_CONFIG } from '@/lib/projects/config';
-import { getMember, generateId } from '@/lib/projects/utils';
+import { PRIORITY_CONFIG } from '@/lib/projects/config';
+import { generateId } from '@/lib/projects/utils';
+import { useMembers } from '@/hooks/useMembers';
 import Pill from '../ui/Pill';
 import { Avatar } from './Avatar';
 import { formatDate } from '@/lib/utils';
@@ -56,6 +57,7 @@ export default function TaskPanel({
     task,
     accent,
     projectColor,
+    memberIds = [],
     onClose,
     onUpdate,
     onDelete,
@@ -87,6 +89,12 @@ export default function TaskPanel({
     const [submitting, setSubmitting] = useState(false);
 
     const pr = PRIORITY_CONFIG[priority];
+
+    const allMemberIds = useMemo(
+        () => [...new Set([...memberIds, ...assignees, ...comments.map(c => c.author)])],
+        [memberIds, assignees, comments],
+    );
+    const memberMap = useMembers(allMemberIds);
 
     const panelRef     = useRef<HTMLDivElement>(null);
     const priorityRef  = useRef<HTMLDivElement>(null);
@@ -326,7 +334,7 @@ export default function TaskPanel({
                 color:    '#2D7A5F',
             };
         }
-        return getMember(authorId);
+        return memberMap[authorId];
     };
 
     return (
@@ -504,7 +512,7 @@ export default function TaskPanel({
                         {assignees.length > 0 && (
                             <div className="flex">
                                 {assignees.map((id, i) => {
-                                    const m = getMember(id);
+                                    const m = memberMap[id];
                                     return m ? (
                                         <div key={id} style={{ marginLeft: i ? -8 : 0 }}>
                                             <Avatar member={m} size={24} />
@@ -530,12 +538,14 @@ export default function TaskPanel({
                                             Assignees
                                         </span>
                                     </div>
-                                    {MOCK_MEMBERS.map(member => {
-                                        const assigned = assignees.includes(member.id);
+                                    {memberIds.map(memberId => {
+                                        const member   = memberMap[memberId];
+                                        if (!member) return null;
+                                        const assigned = assignees.includes(memberId);
                                         return (
                                             <button
-                                                key={member.id}
-                                                onClick={() => toggleAssignee(member.id)}
+                                                key={memberId}
+                                                onClick={() => toggleAssignee(memberId)}
                                                 className="flex items-center gap-2.5 w-full px-3 py-2.5 hover:bg-zinc-50 transition-colors cursor-pointer"
                                             >
                                                 <Avatar member={member} size={22} />
@@ -550,7 +560,7 @@ export default function TaskPanel({
 
                         {assignees.length > 0 && (
                             <span className="text-xs text-zinc-500 font-primary">
-                                {assignees.map(id => getMember(id)?.name).filter(Boolean).join(', ')}
+                                {assignees.map(id => memberMap[id]?.name).filter(Boolean).join(', ')}
                             </span>
                         )}
                     </div>

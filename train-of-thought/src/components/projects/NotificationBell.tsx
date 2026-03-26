@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { Bell, CheckCheck } from 'lucide-react';
 import type { Notification } from '@/lib/projects/definitions';
 import { NotificationRow } from './NotificationRow';
+import { useMembers } from '@/hooks/useMembers';
 
 export default function NotificationBell() {
     const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -12,6 +13,9 @@ export default function NotificationBell() {
     const ref                               = useRef<HTMLDivElement>(null);
 
     const unreadCount = notifications.filter(n => !n.read).length;
+
+    const actorIds  = useMemo(() => [...new Set(notifications.map(n => n.actor))], [notifications]);
+    const memberMap = useMembers(actorIds);
 
     // ── Fetch ──
 
@@ -130,7 +134,7 @@ export default function NotificationBell() {
                             </div>
                         ) : (
                             notifications.slice(0, 5).map(n => (
-                                <NotificationRow key={n.id} notification={n} onRead={markRead} compact />
+                                <NotificationRow key={n.id} notification={n} onRead={markRead} compact memberMap={memberMap} />
                             ))
                         )}
                     </div>

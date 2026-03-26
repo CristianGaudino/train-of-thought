@@ -222,15 +222,17 @@ export interface DeadlineInfo {
 // Props
 
 export interface NotificationRowProps {
-    notification:   Notification;
-    onRead:  (id: string) => void;
-    compact?: boolean;
+    notification: Notification;
+    onRead:       (id: string) => void;
+    compact?:     boolean;
+    memberMap?:   Record<string, Member>;
 }
 
 export interface TaskPanelProps {
     task:         Task;
     accent:       string;
     projectColor: string;
+    memberIds?:   string[];
     onClose:      () => void;
     onUpdate?:    (taskId: string, data: Partial<Task>, options?: { silent?: boolean }) => Promise<void>;
     onDelete?:    (taskId: string) => Promise<void>;

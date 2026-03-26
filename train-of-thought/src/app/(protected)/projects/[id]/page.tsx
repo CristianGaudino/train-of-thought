@@ -350,6 +350,7 @@ export default function ProjectPage() {
                     task={activeTask}
                     accent={header.accent}
                     projectColor={header.color}
+                    memberIds={project.members}
                     onClose={() => setActiveTaskId(null)}
                     onUpdate={updateTask}
                     onDelete={async (taskId) => { await deleteTask(taskId); setActiveTaskId(null); }}
