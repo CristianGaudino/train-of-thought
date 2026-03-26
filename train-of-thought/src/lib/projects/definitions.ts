@@ -137,6 +137,7 @@ export interface Notification {
     projectTitle: string;
     projectAccent: string;
     taskId?: string;        // set for task-level notifications
+    sectionTitle?: string;
     text: string;           // verb phrase e.g. "Left a comment on"
     subject: string;        // task or project title
 }

@@ -4,7 +4,7 @@ import {
     projects, sections, tasks, comments, notifications,
     type ProjectInsert, type SectionInsert, type TaskInsert, type CommentInsert,
 } from './schema';
-import type { Project, Section, Task, Comment, Subtask } from '@/lib/projects/definitions';
+import type { Project, Task, Comment, Subtask } from '@/lib/projects/definitions';
 import { generateId } from '@/lib/projects/utils';
 import { shapeComment, shapeProject, shapeTask } from './data';
 
@@ -255,9 +255,10 @@ export async function createNotification(data: {
     projectId:    string;
     projectTitle: string;
     projectAccent: string;
-    taskId?:      string;
-    subject:      string;
-    text:         string;
+    taskId?:       string;
+    sectionTitle?: string;
+    subject:       string;
+    text:          string;
 }): Promise<void> {
     await db.insert(notifications).values({
         id: generateId('n'),

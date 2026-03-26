@@ -43,9 +43,14 @@ export default function ProjectPage() {
 
     // Use id-based active task so panel always reads from live sections state
     const [activeTaskId, setActiveTaskId]         = useState<string | null>(null);
-    const activeTask = activeTaskId
-        ? sections.flatMap(s => s.tasks).find(t => t.id === activeTaskId) ?? null
-        : null;
+    const activeTask = (() => {
+        if (!activeTaskId) return null;
+        for (const s of sections) {
+            const t = s.tasks.find(t => t.id === activeTaskId);
+            if (t) return { ...t, sectionTitle: s.title, projectTitle: project?.title };
+        }
+        return null;
+    })();
 
     // Open task panel from ?task= query param (e.g. linked from notifications)
     useEffect(() => {

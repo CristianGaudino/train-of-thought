@@ -1,7 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { tasks, projects } from '@/lib/db/schema';
+import { tasks, projects, sections } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { createComment, createNotification } from '@/lib/db/actions';
 
@@ -30,19 +30,18 @@ export async function POST(req: Request, { params }: Params) {
                     title:     tasks.title,
                     assignees: tasks.assignees,
                     projectId: tasks.projectId,
+                    sectionId: tasks.sectionId,
                 })
                 .from(tasks)
                 .where(eq(tasks.id, taskId));
 
             if (task && task.projectId) {
-                const [project] = await db
-                    .select({ title: projects.title, accent: projects.accent })
-                    .from(projects)
-                    .where(eq(projects.id, task.projectId));
+                const [[project], [section]] = await Promise.all([
+                    db.select({ title: projects.title, accent: projects.accent }).from(projects).where(eq(projects.id, task.projectId)),
+                    db.select({ title: sections.title }).from(sections).where(eq(sections.id, task.sectionId)),
+                ]);
 
                 if (project) {
-                    // Include actor so the action is always recorded for activity;
-                    // self-notifications are filtered out on the notifications page
                     const recipients = [
                         userId,
                         ...(task.assignees ?? []).filter((id: string) => id !== userId),
@@ -58,6 +57,7 @@ export async function POST(req: Request, { params }: Params) {
                                 projectTitle:  project.title,
                                 projectAccent: project.accent,
                                 taskId:        taskId,
+                                sectionTitle:  section?.title,
                                 subject:       task.title,
                                 text:          'Commented on',
                             })

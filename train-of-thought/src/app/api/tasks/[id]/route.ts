@@ -2,7 +2,7 @@ import { deleteTask, updateTask, createNotification } from '@/lib/db/actions';
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { tasks, projects } from '@/lib/db/schema';
+import { tasks, projects, sections } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 interface Params {
@@ -23,6 +23,7 @@ export async function PATCH(req: Request, { params }: Params) {
             .select({
                 title:     tasks.title,
                 projectId: tasks.projectId,
+                sectionId: tasks.sectionId,
                 priority:  tasks.priority,
                 due:       tasks.due,
                 assignees: tasks.assignees,
@@ -47,10 +48,10 @@ export async function PATCH(req: Request, { params }: Params) {
                         .where(eq(projects.id, task.projectId));
 
                     if (project) {
+                        const [section] = await db.select({ title: sections.title }).from(sections).where(eq(sections.id, task.sectionId));
                         const others = (task.assignees ?? []).filter((aid: string) => aid !== userId);
 
                         if (doneChanged) {
-                            // Activity row for actor + notify assignees
                             const recipients = [userId, ...others];
                             await Promise.allSettled(
                                 recipients.map((recipientId: string) =>
@@ -62,6 +63,7 @@ export async function PATCH(req: Request, { params }: Params) {
                                         projectTitle:  project.title,
                                         projectAccent: project.accent,
                                         taskId:        id,
+                                        sectionTitle:  section?.title,
                                         subject:       task.title,
                                         text:          'Completed',
                                     })
@@ -70,7 +72,6 @@ export async function PATCH(req: Request, { params }: Params) {
                         }
 
                         if (priorityChanged) {
-                            // Activity row for actor + notify assignees
                             const recipients = [userId, ...others];
                             await Promise.allSettled(
                                 recipients.map((recipientId: string) =>
@@ -82,6 +83,7 @@ export async function PATCH(req: Request, { params }: Params) {
                                         projectTitle:  project.title,
                                         projectAccent: project.accent,
                                         taskId:        id,
+                                        sectionTitle:  section?.title,
                                         subject:       task.title,
                                         text:          `set priority to ${body.priority} on`,
                                     })
@@ -90,7 +92,6 @@ export async function PATCH(req: Request, { params }: Params) {
                         }
 
                         if (dueChanged) {
-                            // Activity row for actor + notify assignees
                             const recipients = [userId, ...others];
                             await Promise.allSettled(
                                 recipients.map((recipientId: string) =>
@@ -102,6 +103,7 @@ export async function PATCH(req: Request, { params }: Params) {
                                         projectTitle:  project.title,
                                         projectAccent: project.accent,
                                         taskId:        id,
+                                        sectionTitle:  section?.title,
                                         subject:       task.title,
                                         text:          'updated due date on',
                                     })

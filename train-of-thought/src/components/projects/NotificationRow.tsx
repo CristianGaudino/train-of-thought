@@ -56,8 +56,14 @@ export function NotificationRow({ notification, onRead, compact = false, memberM
                     <span className="text-xs text-zinc-400 font-primary">{notification.time}</span>
                     <span className="w-1 h-1 rounded-full bg-zinc-300 inline-block" />
                     <span className="flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: notification.projectAccent }} />
+                        <span className="w-1.5 h-1.5 rounded-full inline-block flex-shrink-0" style={{ background: notification.projectAccent }} />
                         <span className="text-xs text-zinc-500 font-primary">{notification.projectTitle}</span>
+                        {notification.sectionTitle && (
+                            <>
+                                <svg width="8" height="8" viewBox="0 0 8 8" className="text-zinc-300 flex-shrink-0"><path d="M2.5 1.5L5.5 4L2.5 6.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
+                                <span className="text-xs text-zinc-400 font-primary">{notification.sectionTitle}</span>
+                            </>
+                        )}
                     </span>
                 </div>
             </Link>

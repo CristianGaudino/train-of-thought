@@ -1,7 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { projects } from '@/lib/db/schema';
+import { projects, sections } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { createNotification, createTask } from '@/lib/db/actions';
 
@@ -34,15 +34,12 @@ export async function POST(req: Request) {
 
         // ── Auto-create notifications for each assignee (except the creator) ──
         if (assignees && assignees.length > 0) {
-            // Fetch project info for the notification
-            const [project] = await db
-                .select({ title: projects.title, accent: projects.accent })
-                .from(projects)
-                .where(eq(projects.id, projectId));
+            const [[project], [section]] = await Promise.all([
+                db.select({ title: projects.title, accent: projects.accent }).from(projects).where(eq(projects.id, projectId)),
+                db.select({ title: sections.title }).from(sections).where(eq(sections.id, sectionId)),
+            ]);
 
             if (project) {
-                // Include actor so the action is recorded for activity;
-                // self-notifications are filtered out on the notifications page
                 const recipients = [
                     userId,
                     ...(assignees as string[]).filter((id: string) => id !== userId),
@@ -57,6 +54,7 @@ export async function POST(req: Request) {
                             projectTitle:  project.title,
                             projectAccent: project.accent,
                             taskId:        task.id,
+                            sectionTitle:  section?.title,
                             subject:       title.trim(),
                             text:          'Assigned you to',
                         })
