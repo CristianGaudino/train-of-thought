@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { UserButton, useUser } from '@clerk/nextjs';
 import {
     LayoutGrid, CheckSquare, Bell,
-    Lightbulb, LayoutTemplate,
+    Lightbulb, LayoutTemplate, Building2,
     Sparkles, FlaskConical,
 } from 'lucide-react';
 import NotificationBell from './NotificationBell';
@@ -16,6 +16,7 @@ const NAV_ITEMS = [
     { id: 'notifications', href: '/notifications', icon: Bell,           label: 'Notifications' },
     { id: 'ideas',         href: '/ideas',         icon: Lightbulb,      label: 'Ideas'         },
     { id: 'templates',     href: '/templates',     icon: LayoutTemplate, label: 'Templates'     },
+    { id: 'organisation',  href: '/organisation',  icon: Building2,      label: 'Organisation'  },
 ];
 
 const CHAT_ITEMS = [
