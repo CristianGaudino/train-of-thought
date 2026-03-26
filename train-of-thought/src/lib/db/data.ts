@@ -1,4 +1,4 @@
-import { eq, ne, and, desc, asc } from 'drizzle-orm';
+import { eq, and, desc, asc } from 'drizzle-orm'; // ne removed temporarily for testing
 import { db } from './index';
 import { projects, sections, tasks, comments, notifications } from './schema';
 import type { Project, Section, Task, Comment, Notification, Subtask } from '@/lib/projects/definitions';
@@ -176,18 +176,19 @@ export async function getNotificationsByUser(userId: string): Promise<Notificati
     const rows = await db
         .select()
         .from(notifications)
-        .where(and(eq(notifications.userId, userId), ne(notifications.actorId, userId)))
+        .where(eq(notifications.userId, userId)) // TODO: restore ne(actorId, userId) after testing
         .orderBy(desc(notifications.createdAt));
 
     return rows.map(n => ({
         id:           n.id,
         type:         n.type as Notification['type'],
         read:         n.read,
-        time:         n.createdAt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+        time:         timeAgo(n.createdAt),
         actor:        n.actorId,
         projectId:    n.projectId,
         projectTitle: n.projectTitle,
         projectAccent: n.projectAccent,
+        taskId:       n.taskId ?? undefined,
         text:         n.text,
         subject:      n.subject,
     }));

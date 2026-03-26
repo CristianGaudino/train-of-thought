@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
     ArrowLeft, Pencil, AlertTriangle, Trash2,
 } from 'lucide-react';
@@ -25,9 +25,10 @@ import { ProjectActivity } from '@/components/projects/ProjectActivity';
 import { ProjectMembers } from '@/components/projects/ProjectMembers';
 
 export default function ProjectPage() {
-    const params = useParams();
-    const router = useRouter();
-    const id     = params.id as string;
+    const params        = useParams();
+    const router        = useRouter();
+    const searchParams  = useSearchParams();
+    const id            = params.id as string;
 
     const {
         project, sections, loading, error,
@@ -45,6 +46,14 @@ export default function ProjectPage() {
     const activeTask = activeTaskId
         ? sections.flatMap(s => s.tasks).find(t => t.id === activeTaskId) ?? null
         : null;
+
+    // Open task panel from ?task= query param (e.g. linked from notifications)
+    useEffect(() => {
+        const taskParam = searchParams.get('task');
+        if (!taskParam || loading) return;
+        const exists = sections.flatMap(s => s.tasks).some(t => t.id === taskParam);
+        if (exists) setActiveTaskId(taskParam);
+    }, [searchParams, sections, loading]);
 
     const [collapsed, setCollapsed]               = useState<Record<string, boolean>>({});
     const [activeTab, setActiveTab]               = useState<Tab>('tasks');

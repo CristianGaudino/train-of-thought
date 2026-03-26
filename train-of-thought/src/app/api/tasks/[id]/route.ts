@@ -61,6 +61,7 @@ export async function PATCH(req: Request, { params }: Params) {
                                         projectId:     task.projectId,
                                         projectTitle:  project.title,
                                         projectAccent: project.accent,
+                                        taskId:        id,
                                         subject:       task.title,
                                         text:          'Completed',
                                     })
@@ -80,6 +81,7 @@ export async function PATCH(req: Request, { params }: Params) {
                                         projectId:     task.projectId,
                                         projectTitle:  project.title,
                                         projectAccent: project.accent,
+                                        taskId:        id,
                                         subject:       task.title,
                                         text:          `set priority to ${body.priority} on`,
                                     })
@@ -99,6 +101,7 @@ export async function PATCH(req: Request, { params }: Params) {
                                         projectId:     task.projectId,
                                         projectTitle:  project.title,
                                         projectAccent: project.accent,
+                                        taskId:        id,
                                         subject:       task.title,
                                         text:          'updated due date on',
                                     })

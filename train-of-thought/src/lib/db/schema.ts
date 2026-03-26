@@ -78,6 +78,7 @@ export const notifications = pgTable('notifications', {
     projectId:    text('project_id').notNull(),
     projectTitle: text('project_title').notNull(),
     projectAccent: text('project_accent').notNull(),
+    taskId:       text('task_id'),
     subject:      text('subject').notNull(),
     text:         text('text').notNull(),
     read:         boolean('read').notNull().default(false),

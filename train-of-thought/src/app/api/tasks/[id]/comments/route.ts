@@ -57,6 +57,7 @@ export async function POST(req: Request, { params }: Params) {
                                 projectId:     task.projectId,
                                 projectTitle:  project.title,
                                 projectAccent: project.accent,
+                                taskId:        taskId,
                                 subject:       task.title,
                                 text:          'Commented on',
                             })

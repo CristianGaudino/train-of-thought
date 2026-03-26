@@ -56,6 +56,7 @@ export async function POST(req: Request) {
                             projectId,
                             projectTitle:  project.title,
                             projectAccent: project.accent,
+                            taskId:        task.id,
                             subject:       title.trim(),
                             text:          'Assigned you to',
                         })

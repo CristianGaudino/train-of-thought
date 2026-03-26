@@ -255,6 +255,7 @@ export async function createNotification(data: {
     projectId:    string;
     projectTitle: string;
     projectAccent: string;
+    taskId?:      string;
     subject:      string;
     text:         string;
 }): Promise<void> {
