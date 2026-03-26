@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { Users } from 'lucide-react';
-import { Avatar } from '@/components/projects/Avatar';
+import { MemberRow } from '@/components/MemberRow';
 import { useMembers } from '@/hooks/useMembers';
 import { RowSkeleton } from '@/components/ui/skeletons';
 import type { Member } from '@/lib/projects/definitions';
@@ -67,30 +67,14 @@ export default function OrganisationPage() {
                 ) : (
                     <div className="max-w-lg">
                         <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
-                            {members.map((member, i) => {
-                                const isMe  = member.id === user?.id;
-                                return (
-                                    <div
-                                        key={member.id}
-                                        className={`flex items-center gap-3.5 px-4 py-3.5 ${i < members.length - 1 ? 'border-b border-zinc-50' : ''}`}
-                                    >
-                                        <Avatar member={member} size={38} />
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-1.5">
-                                                <span className="text-sm font-semibold text-zinc-900 font-primary truncate">
-                                                    {member.name}
-                                                </span>
-                                                {isMe && (
-                                                    <span className="text-xs text-zinc-400 font-primary flex-shrink-0">you</span>
-                                                )}
-                                            </div>
-                                            <div className="text-xs text-zinc-400 font-primary mt-0.5 truncate">
-                                                Member
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                            {members.map((member, i) => (
+                                <MemberRow
+                                    key={member.id}
+                                    member={member}
+                                    isMe={member.id === user?.id}
+                                    className={`px-4 py-3.5 ${i < members.length - 1 ? 'border-b border-zinc-50' : ''}`}
+                                />
+                            ))}
                         </div>
                     </div>
                 )}

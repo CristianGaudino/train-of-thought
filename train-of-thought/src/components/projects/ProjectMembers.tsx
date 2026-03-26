@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useMembers } from '@/hooks/useMembers';
-import { Avatar } from './Avatar';
+import { MemberRow } from '../MemberRow';
 import { Button } from '@/components/ui/buttons';
 import { ProjectMembersProps } from '@/lib/projects/definitions';
 
@@ -27,25 +27,17 @@ export function ProjectMembers({ header, setHeader, handleSaveHeader, savingHead
                     const isMember = header.members.includes(id);
                     const isMe     = id === user?.id;
                     return (
-                        <div
+                        <MemberRow
                             key={id}
-                            className="flex items-center gap-3.5 p-3.5 rounded-xl border transition-all duration-150"
+                            member={member}
+                            isMe={isMe}
+                            sublabel={isMember ? 'Member' : 'Not a member'}
+                            className="p-3.5 rounded-xl border transition-all duration-150"
                             style={{
                                 borderColor: isMember ? header.accent + '40' : '#E4E4E7',
                                 background:  isMember ? '#fff' : '#FAFAFA',
                             }}
-                        >
-                            <Avatar member={member} size={36} />
-                            <div className="flex-1">
-                                <div className="text-sm font-semibold text-zinc-900 font-primary">
-                                    {member.name}
-                                    {isMe && <span className="text-xs font-normal text-zinc-400 ml-1.5">you</span>}
-                                </div>
-                                <div className="text-xs text-zinc-400 font-primary mt-0.5">
-                                    {isMember ? 'Member' : 'Not a member'}
-                                </div>
-                            </div>
-                            {!isMe && (
+                            action={!isMe ? (
                                 <button
                                     onClick={() => setHeader(f => f ? {
                                         ...f,
@@ -62,8 +54,8 @@ export function ProjectMembers({ header, setHeader, handleSaveHeader, savingHead
                                 >
                                     {isMember ? 'Remove' : 'Add'}
                                 </button>
-                            )}
-                        </div>
+                            ) : undefined}
+                        />
                     );
                 })}
             </div>
