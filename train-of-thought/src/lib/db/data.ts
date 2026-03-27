@@ -164,6 +164,8 @@ export async function getActivityByProject(projectId: string): Promise<Notificat
             projectId:     n.projectId,
             projectTitle:  n.projectTitle,
             projectAccent: n.projectAccent,
+            taskId:        n.taskId       ?? undefined,
+            sectionTitle:  n.sectionTitle ?? undefined,
             text:          n.text,
             subject:       n.subject,
         });

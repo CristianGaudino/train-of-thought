@@ -324,8 +324,9 @@ export interface ProjectTasksProps {
 }
 
 export interface ProjectActivityProps {
-    header:    HeaderData;
-    projectId: string;
+    header:       HeaderData;
+    projectId:    string;
+    onTaskClick?: (taskId: string) => void;
 }
 
 export interface ProjectMembersProps {

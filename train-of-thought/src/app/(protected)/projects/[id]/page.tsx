@@ -344,7 +344,7 @@ export default function ProjectPage() {
                 )}
 
                 {activeTab === 'activity' && (
-                    <ProjectActivity header={header} projectId={id} />
+                    <ProjectActivity header={header} projectId={id} onTaskClick={setActiveTaskId} />
                 )}
 
                 {activeTab === 'members' && (

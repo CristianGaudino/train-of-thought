@@ -6,7 +6,7 @@ import type { Notification, ProjectActivityProps } from '@/lib/projects/definiti
 import { useMembers } from '@/hooks/useMembers';
 import { RowSkeleton } from '@/components/ui/skeletons';
 
-export function ProjectActivity({ header, projectId }: ProjectActivityProps) {
+export function ProjectActivity({ header, projectId, onTaskClick }: ProjectActivityProps) {
     const [activity, setActivity] = useState<Notification[]>([]);
     const [loading, setLoading]   = useState(true);
 
@@ -50,7 +50,17 @@ export function ProjectActivity({ header, projectId }: ProjectActivityProps) {
                                     <p className="text-sm font-primary text-zinc-700 leading-snug m-0">
                                         <span className="font-semibold">{actor?.name ?? 'Someone'}</span>
                                         {' '}{a.text}{' '}
-                                        <span className="font-semibold" style={{ color: header.accent }}>{a.subject}</span>
+                                        {a.taskId && onTaskClick ? (
+                                            <button
+                                                onClick={() => onTaskClick(a.taskId!)}
+                                                className="font-semibold cursor-pointer hover:underline underline-offset-2 bg-transparent border-0 p-0"
+                                                style={{ color: header.accent }}
+                                            >
+                                                {a.subject}
+                                            </button>
+                                        ) : (
+                                            <span className="font-semibold" style={{ color: header.accent }}>{a.subject}</span>
+                                        )}
                                     </p>
                                     <p className="text-xs text-zinc-400 font-primary mt-1 m-0">{a.time}</p>
                                 </div>
