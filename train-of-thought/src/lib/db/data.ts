@@ -66,6 +66,8 @@ export function shapeProject(
         color:       projectRow.color,
         members:     projectRow.members ?? [],
         sections:    shapedSections,
+        order:       projectRow.order,
+        favourite:   projectRow.favourite,
     };
 }
 
@@ -76,7 +78,7 @@ export async function getProjectsByUser(userId: string): Promise<Project[]> {
         .select()
         .from(projects)
         .where(eq(projects.userId, userId))
-        .orderBy(desc(projects.createdAt));
+        .orderBy(desc(projects.favourite), asc(projects.order), desc(projects.createdAt));
 
     if (projectRows.length === 0) return [];
 

@@ -1,4 +1,4 @@
-import { createNotification, createProject } from '@/lib/db/actions';
+import { createNotification, createProject, reorderProjects } from '@/lib/db/actions';
 import { getProjectsByUser } from '@/lib/db/data';
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
@@ -13,6 +13,23 @@ export async function GET() {
     } catch (err) {
         console.error('[GET /api/projects]', err);
         return NextResponse.json({ error: 'Failed to fetch projects' }, { status: 500 });
+    }
+}
+
+export async function PATCH(req: Request) {
+    const { userId } = await auth();
+    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    try {
+        const { updates } = await req.json();
+        if (!Array.isArray(updates)) {
+            return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
+        }
+        await reorderProjects(userId, updates);
+        return NextResponse.json({ success: true });
+    } catch (err) {
+        console.error('[PATCH /api/projects]', err);
+        return NextResponse.json({ error: 'Failed to reorder projects' }, { status: 500 });
     }
 }
 

@@ -1,7 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Search, Shapes } from 'lucide-react';
+import { Plus, Search, Shapes, Star } from 'lucide-react';
+import {
+    DndContext,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragEndEvent,
+    DragOverlay,
+    DragStartEvent,
+} from '@dnd-kit/core';
+import {
+    SortableContext,
+    arrayMove,
+    rectSortingStrategy,
+} from '@dnd-kit/sortable';
 import { STATUS_FILTERS, type Project, type ProjectStatus } from '@/lib/projects/definitions';
 import { STATUS_CONFIG } from '@/lib/projects/config';
 import ProjectCard from '@/components/projects/ProjectCard';
@@ -12,15 +26,37 @@ import { Input } from '@/components/ui/inputs';
 import { Button } from '@/components/ui/buttons';
 import { CardSkeleton } from '@/components/ui/skeletons';
 import EmptyState from '@/components/EmptyState';
+import { SortableProjectCard } from '@/components/projects/SortableProjectCard';
+
+// ─── Sortable card wrapper ────────────────────────────────────────────────────
+
+
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ProjectsPage() {
     useEffect(() => { document.title = 'Projects | Train of Thought'; }, []);
 
-    const { projects, loading, error, refetch, addProject, updateProject, notifySuccess, notifyError } = useProjects();
+    const {
+        projects,
+        loading,
+        error,
+        refetch,
+        addProject,
+        updateProject,
+        removeProject: _removeProject,
+        reorderProjects,
+        toggleFavourite,
+        notifySuccess,
+        notifyError,
+    } = useProjects();
 
-    const [filter, setFilter]       = useState<ProjectStatus | 'All'>('All');
-    const [search, setSearch]       = useState('');
-    const [showModal, setShowModal] = useState(false);
+    const [filter, setFilter]         = useState<ProjectStatus | 'All'>('All');
+    const [search, setSearch]         = useState('');
+    const [showModal, setShowModal]   = useState(false);
+    const [activeId, setActiveId]     = useState<string | null>(null);
+
+    const dragEnabled = filter === 'All' && !search;
 
     const filtered = projects.filter(p => {
         const matchStatus = filter === 'All' || p.status === filter;
@@ -31,8 +67,75 @@ export default function ProjectsPage() {
         return matchStatus && matchSearch;
     });
 
+    const sortedFavourites = filtered
+        .filter(p => p.favourite)
+        .sort((a, b) => a.order - b.order);
+
+    const sortedRegular = filtered
+        .filter(p => !p.favourite)
+        .sort((a, b) => a.order - b.order);
+
+    const activeProject = activeId ? projects.find(p => p.id === activeId) ?? null : null;
+
+    // ── DnD ──────────────────────────────────────────────────────────────────
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+    );
+
+    function handleDragStart(event: DragStartEvent) {
+        setActiveId(String(event.active.id));
+    }
+
+    function handleDragEnd(event: DragEndEvent) {
+        setActiveId(null);
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+
+        const activeId = String(active.id);
+        const overId   = String(over.id);
+
+        const inFav  = sortedFavourites.some(p => p.id === activeId);
+        const inFav2 = sortedFavourites.some(p => p.id === overId);
+        if (inFav !== inFav2) return; // can't drag across groups
+
+        const group    = inFav ? sortedFavourites : sortedRegular;
+        const oldIndex = group.findIndex(p => p.id === activeId);
+        const newIndex = group.findIndex(p => p.id === overId);
+        const reordered = arrayMove(group, oldIndex, newIndex);
+
+        const updates = reordered.map((p, i) => ({ id: p.id, order: i }));
+        reorderProjects(updates);
+
+        fetch('/api/projects', {
+            method:  'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ updates }),
+        }).catch(() => refetch());
+    }
+
+    // ── Favourite ─────────────────────────────────────────────────────────────
+
+    async function handleToggleFavourite(id: string) {
+        const project = projects.find(p => p.id === id);
+        if (!project) return;
+        const newValue = !project.favourite;
+        toggleFavourite(id);
+        try {
+            const res = await fetch(`/api/projects/${id}`, {
+                method:  'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ favourite: newValue }),
+            });
+            if (!res.ok) throw new Error('Failed');
+        } catch {
+            toggleFavourite(id); // rollback
+        }
+    }
+
+    // ── Create ────────────────────────────────────────────────────────────────
+
     const handleCreate = async (project: Project) => {
-        // Optimistic add
         addProject(project);
         try {
             const res = await fetch('/api/projects', {
@@ -49,6 +152,8 @@ export default function ProjectsPage() {
             refetch();
         }
     };
+
+    // ── Render ────────────────────────────────────────────────────────────────
 
     return (
         <div className="flex flex-col h-full overflow-hidden">
@@ -128,30 +233,106 @@ export default function ProjectsPage() {
                     </div>
                 )}
 
-                {/* Onboarding — no projects at all yet */}
                 {!loading && !error && projects.length === 0 && (
-                // {!loading && !error && true && (
                     <OnboardingEmptyState onNewProject={() => setShowModal(true)} />
                 )}
 
-                {/* Filtered empty — has projects but none match filters */}
                 {!loading && !error && projects.length > 0 && filtered.length === 0 && (
                     <EmptyState title="No projects match your filters" icon={Shapes} />
                 )}
 
                 {!loading && filtered.length > 0 && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {filtered.map(p => <ProjectCard key={p.id} project={p} />)}
-                        <button
-                            onClick={() => setShowModal(true)}
-                            className="border-2 border-dashed border-zinc-200 rounded-2xl p-6 flex flex-col items-center justify-center gap-2.5 min-h-40 cursor-pointer hover:border-zinc-400 hover:bg-zinc-50 transition-all duration-150"
-                        >
-                            <div className="w-9 h-9 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400">
-                                <Plus size={18} />
+                    <DndContext
+                        sensors={sensors}
+                        onDragStart={handleDragStart}
+                        onDragEnd={handleDragEnd}
+                    >
+                        {/* Starred section */}
+                        {sortedFavourites.length > 0 && (
+                            <div className="mb-6">
+                                <div className="flex items-center gap-1.5 mb-3">
+                                    <Star size={12} className="text-amber-400 fill-amber-400" />
+                                    <span className="text-xs font-semibold uppercase tracking-widest text-zinc-400 font-primary">
+                                        Starred
+                                    </span>
+                                </div>
+                                <SortableContext
+                                    items={sortedFavourites.map(p => p.id)}
+                                    strategy={rectSortingStrategy}
+                                >
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {sortedFavourites.map(p => (
+                                            <SortableProjectCard
+                                                key={p.id}
+                                                project={p}
+                                                onFavourite={handleToggleFavourite}
+                                                dragEnabled={dragEnabled}
+                                            />
+                                        ))}
+                                    </div>
+                                </SortableContext>
                             </div>
-                            <span className="text-sm text-zinc-400 font-primary">New project</span>
-                        </button>
-                    </div>
+                        )}
+
+                        {/* Regular projects */}
+                        {sortedRegular.length > 0 && (
+                            <div>
+                                {sortedFavourites.length > 0 && (
+                                    <div className="flex items-center gap-1.5 mb-3">
+                                        <span className="text-xs font-semibold uppercase tracking-widest text-zinc-400 font-primary">
+                                            Projects
+                                        </span>
+                                    </div>
+                                )}
+                                <SortableContext
+                                    items={sortedRegular.map(p => p.id)}
+                                    strategy={rectSortingStrategy}
+                                >
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {sortedRegular.map(p => (
+                                            <SortableProjectCard
+                                                key={p.id}
+                                                project={p}
+                                                onFavourite={handleToggleFavourite}
+                                                dragEnabled={dragEnabled}
+                                            />
+                                        ))}
+                                        <button
+                                            onClick={() => setShowModal(true)}
+                                            className="border-2 border-dashed border-zinc-200 rounded-2xl p-6 flex flex-col items-center justify-center gap-2.5 min-h-40 cursor-pointer hover:border-zinc-400 hover:bg-zinc-50 transition-all duration-150"
+                                        >
+                                            <div className="w-9 h-9 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400">
+                                                <Plus size={18} />
+                                            </div>
+                                            <span className="text-sm text-zinc-400 font-primary">New project</span>
+                                        </button>
+                                    </div>
+                                </SortableContext>
+                            </div>
+                        )}
+
+                        {/* New project button when all projects are starred */}
+                        {sortedRegular.length === 0 && sortedFavourites.length > 0 && (
+                            <button
+                                onClick={() => setShowModal(true)}
+                                className="mt-4 border-2 border-dashed border-zinc-200 rounded-2xl p-6 w-full flex flex-col items-center justify-center gap-2.5 min-h-24 cursor-pointer hover:border-zinc-400 hover:bg-zinc-50 transition-all duration-150"
+                            >
+                                <div className="w-9 h-9 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400">
+                                    <Plus size={18} />
+                                </div>
+                                <span className="text-sm text-zinc-400 font-primary">New project</span>
+                            </button>
+                        )}
+
+                        {/* Drag overlay */}
+                        <DragOverlay>
+                            {activeProject && (
+                                <div className="opacity-90 rotate-1 shadow-2xl">
+                                    <ProjectCard project={activeProject} />
+                                </div>
+                            )}
+                        </DragOverlay>
+                    </DndContext>
                 )}
             </div>
 

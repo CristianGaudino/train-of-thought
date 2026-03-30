@@ -20,6 +20,8 @@ export const projects = pgTable('projects', {
     color:       text('color').notNull(),
     tags:        text('tags').array().notNull().default([]),
     members:     text('members').array().notNull().default([]),
+    order:       integer('order').notNull().default(0),
+    favourite:   boolean('favourite').notNull().default(false),
     createdAt:   timestamp('created_at').notNull().defaultNow(),
     updatedAt:   timestamp('updated_at').notNull().defaultNow(),
 });

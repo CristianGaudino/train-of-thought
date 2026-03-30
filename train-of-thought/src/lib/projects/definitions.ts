@@ -131,6 +131,8 @@ export interface Project {
     accent: string;          // primary colour hex
     members: string[];       // Member ids
     sections: Section[];
+    order: number;
+    favourite: boolean;
 }
 
 export interface Notification {
@@ -275,6 +277,8 @@ export interface PillProps {
 
 export interface ProjectCardProps {
     project: Project;
+    onFavourite?: (id: string) => void;
+    dragHandleProps?: React.HTMLAttributes<HTMLElement>;
 }
 
 export interface RingProps {
@@ -356,15 +360,17 @@ export interface SortableSectionProps {
 // Hook Interfaces
 
 export interface UseProjectsReturn {
-    projects:      Project[];
-    loading:       boolean;
-    error:         string | null;
-    refetch:       () => Promise<void>;
-    addProject:    (project: Project) => void;
-    updateProject: (updated: Project) => void;
-    removeProject:   (id: string) => void;
-    notifySuccess:   (title: string, message?: string) => void;
-    notifyError:     (title: string, message?: string) => void;
+    projects:         Project[];
+    loading:          boolean;
+    error:            string | null;
+    refetch:          () => Promise<void>;
+    addProject:       (project: Project) => void;
+    updateProject:    (updated: Project) => void;
+    removeProject:    (id: string) => void;
+    reorderProjects:  (updates: { id: string; order: number }[]) => void;
+    toggleFavourite:  (id: string) => void;
+    notifySuccess:    (title: string, message?: string) => void;
+    notifyError:      (title: string, message?: string) => void;
 }
 
 export interface UseProjectReturn {

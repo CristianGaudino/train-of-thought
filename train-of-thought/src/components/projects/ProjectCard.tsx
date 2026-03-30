@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, GripVertical, Star } from 'lucide-react';
 import type { ProjectCardProps } from '@/lib/projects/definitions';
 import { STATUS_CONFIG } from '@/lib/projects/config';
 import { countTasks, getDeadlineInfo } from '@/lib/projects/utils';
@@ -9,7 +9,7 @@ import Ring from './Ring';
 import Pill from '../ui/Pill';
 import { AvatarStack } from './AvatarStack';
 
-export default function ProjectCard({ project }: ProjectCardProps) {
+export default function ProjectCard({ project, onFavourite, dragHandleProps }: ProjectCardProps) {
     const router = useRouter();
     const sc = STATUS_CONFIG[project.status] ?? STATUS_CONFIG['Not Started'];
     const dl = getDeadlineInfo(project.deadline);
@@ -18,7 +18,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
     return (
         <div
             onClick={() => router.push(`/projects/${project.id}`)}
-            className="bg-white border border-zinc-200 rounded-2xl p-6 cursor-pointer flex flex-col gap-3.5 relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+            className="bg-white border border-zinc-200 rounded-2xl p-6 cursor-pointer flex flex-col gap-3.5 relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg group"
             onMouseEnter={e => {
                 (e.currentTarget as HTMLDivElement).style.borderColor = project.accent + '55';
             }}
@@ -31,6 +31,31 @@ export default function ProjectCard({ project }: ProjectCardProps) {
                 className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl"
                 style={{ background: project.accent }}
             />
+
+            {/* Drag handle — top left, visible on hover */}
+            {dragHandleProps && (
+                <div
+                    {...dragHandleProps}
+                    onClick={e => e.stopPropagation()}
+                    className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing text-zinc-300 hover:text-zinc-500 touch-none"
+                >
+                    <GripVertical size={15} />
+                </div>
+            )}
+
+            {/* Favourite button — top right */}
+            {onFavourite && (
+                <button
+                    onClick={e => { e.stopPropagation(); onFavourite(project.id); }}
+                    className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-lg hover:bg-zinc-100"
+                    title={project.favourite ? 'Remove from starred' : 'Star project'}
+                >
+                    <Star
+                        size={14}
+                        className={project.favourite ? 'text-amber-400 fill-amber-400' : 'text-zinc-300'}
+                    />
+                </button>
+            )}
 
             {/* Title + ring */}
             <div className="flex justify-between items-start mt-1">

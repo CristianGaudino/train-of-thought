@@ -62,6 +62,8 @@ export async function createProject(
             color:       projectInsert.color,
             tags:        projectInsert.tags        ?? [],
             members:     projectInsert.members     ?? [],
+            order:       0,
+            favourite:   false,
             createdAt:   now,
             updatedAt:   now,
         },
@@ -88,6 +90,8 @@ export async function updateProject(
         color:       string;
         tags:        string[];
         members:     string[];
+        order:       number;
+        favourite:   boolean;
     }>
 ): Promise<void> {
     await db
@@ -106,6 +110,19 @@ export async function deleteProject(id: string, userId: string): Promise<void> {
     await db
         .delete(projects)
         .where(and(eq(projects.id, id), eq(projects.userId, userId)));
+}
+
+export async function reorderProjects(
+    userId: string,
+    updates: { id: string; order: number }[]
+): Promise<void> {
+    await Promise.all(
+        updates.map(({ id, order }) =>
+            db.update(projects)
+                .set({ order })
+                .where(and(eq(projects.id, id), eq(projects.userId, userId)))
+        )
+    );
 }
 
 // ─── Sections ─────────────────────────────────────────────────────────────────

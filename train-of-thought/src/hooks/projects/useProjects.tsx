@@ -40,8 +40,19 @@ export function useProjects(): UseProjectsReturn {
         setProjects(ps => ps.filter(p => p.id !== id));
     };
 
+    const reorderProjects = (updates: { id: string; order: number }[]) => {
+        setProjects(ps => ps.map(p => {
+            const upd = updates.find(u => u.id === p.id);
+            return upd ? { ...p, order: upd.order } : p;
+        }));
+    };
+
+    const toggleFavourite = (id: string) => {
+        setProjects(ps => ps.map(p => p.id === id ? { ...p, favourite: !p.favourite } : p));
+    };
+
     const notifySuccess = (title: string, message?: string) => success(title, message);
     const notifyError   = (title: string, message?: string) => toastError(title, message);
 
-    return { projects, loading, error, refetch, addProject, updateProject, removeProject, notifySuccess, notifyError };
+    return { projects, loading, error, refetch, addProject, updateProject, removeProject, reorderProjects, toggleFavourite, notifySuccess, notifyError };
 }
