@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Menu } from 'lucide-react';
 import Sidebar from './Sidebar';
 import NotificationBell from './NotificationBell';
+import Logo from '@/components/ui/svg';
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -32,9 +33,12 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
                     >
                         <Menu size={20} />
                     </button>
-                    <span className="text-base font-secondary text-zinc-900 tracking-tight">
-                        Train of Thought
-                    </span>
+                    <div className="flex items-center gap-2">
+                        <Logo size={22} />
+                        <span className="text-base font-secondary text-zinc-900 tracking-tight">
+                            Train of Thought
+                        </span>
+                    </div>
                     <NotificationBell />
                 </div>
 

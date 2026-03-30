@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { UserButton, useUser } from '@clerk/nextjs';
 import NotificationBell from './NotificationBell';
 import { CHAT_ITEMS, NAV_ITEMS, SidebarProps } from '@/lib/projects/definitions';
+import Logo from '@/components/ui/svg';
 
 export default function Sidebar({ open, onClose }: SidebarProps) {
     const pathname    = usePathname();
@@ -20,17 +21,20 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-zinc-200 flex flex-col py-7
             transition-transform duration-300 ease-in-out
             ${open ? 'translate-x-0' : '-translate-x-full'}
-            md:relative md:inset-auto md:z-auto md:w-56 md:translate-x-0 md:flex-shrink-0
+            md:relative md:inset-auto md:z-10 md:w-64 md:translate-x-0 md:flex-shrink-0
         `}>
 
             {/* Logo + bell — desktop only (bell shown in mobile top bar) */}
             <div className="flex items-center justify-between px-5 pb-6 border-b border-zinc-100">
-                <div>
-                    <div className="text-lg font-secondary text-zinc-900 tracking-tight">
-                        Train of Thought
-                    </div>
-                    <div className="text-xs text-zinc-400 mt-0.5 font-primary">
-                        a thinking space
+                <div className="flex items-center gap-2.5">
+                    <Logo size={28} />
+                    <div>
+                        <div className="text-lg font-secondary text-zinc-900 tracking-tight">
+                            Train of Thought
+                        </div>
+                        <div className="text-xs text-zinc-400 mt-0.5 font-primary">
+                            a thinking space
+                        </div>
                     </div>
                 </div>
                 <div className="hidden md:block">
