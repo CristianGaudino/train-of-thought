@@ -56,10 +56,10 @@ export default function TasksPage() {
         <div className="flex flex-col h-full overflow-hidden">
 
             {/* Header */}
-            <div className="px-8 pt-6 flex-shrink-0">
-                <div className="flex items-start justify-between mb-5">
+            <div className="px-4 md:px-8 pt-6 flex-shrink-0">
+                <div className="flex items-start justify-between gap-3 mb-5 flex-wrap">
                     <div>
-                        <h1 className="text-2xl font-secondary text-zinc-900 tracking-tight m-0">
+                        <h1 className="text-xl md:text-2xl font-secondary text-zinc-900 tracking-tight m-0">
                             My Tasks
                         </h1>
                         <p className="text-sm text-zinc-400 font-primary mt-1 m-0">
@@ -129,30 +129,32 @@ export default function TasksPage() {
                 )}
 
                 {/* Filters + group by */}
-                <div className="flex items-center gap-2.5 pb-4 border-b border-zinc-100 flex-wrap">
-                    <Select
-                        variant="pill"
-                        value={filterProject}
-                        onChange={e => setFilterProject(e.target.value)}
-                    >
-                        <option value="all">All projects</option>
-                        {uniqueProjects.map(p => (
-                            <option key={p.id} value={p.id}>{p.title}</option>
-                        ))}
-                    </Select>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 pb-4 border-b border-zinc-100">
+                    <div className="flex gap-2.5 flex-wrap">
+                        <Select
+                            variant="pill"
+                            value={filterProject}
+                            onChange={e => setFilterProject(e.target.value)}
+                        >
+                            <option value="all">All projects</option>
+                            {uniqueProjects.map(p => (
+                                <option key={p.id} value={p.id}>{p.title}</option>
+                            ))}
+                        </Select>
 
-                    <Select
-                        variant="pill"
-                        value={filterPriority}
-                        onChange={e => setFilterPriority(e.target.value)}
-                    >
-                        <option value="all">All priorities</option>
-                        {['Critical', 'High', 'Medium', 'Low'].map(p => (
-                            <option key={p}>{p}</option>
-                        ))}
-                    </Select>
+                        <Select
+                            variant="pill"
+                            value={filterPriority}
+                            onChange={e => setFilterPriority(e.target.value)}
+                        >
+                            <option value="all">All priorities</option>
+                            {['Critical', 'High', 'Medium', 'Low'].map(p => (
+                                <option key={p}>{p}</option>
+                            ))}
+                        </Select>
+                    </div>
 
-                    <div className="flex-1" />
+                    <div className="hidden sm:block flex-1" />
 
                     <div className="flex items-center gap-2">
                         <span className="text-xs text-zinc-400 font-primary flex items-center gap-1">
@@ -173,7 +175,7 @@ export default function TasksPage() {
             </div>
 
             {/* Task list */}
-            <div className="flex-1 overflow-y-auto px-8 py-5">
+            <div className="flex-1 overflow-y-auto px-4 md:px-8 py-5">
 
                 {loading && (
                     <div className="flex flex-col gap-2">

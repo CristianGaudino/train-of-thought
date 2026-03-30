@@ -54,9 +54,9 @@ export default function ProjectsPage() {
         <div className="flex flex-col h-full overflow-hidden">
 
             {/* Header */}
-            <div className="flex items-start justify-between px-8 pt-6 flex-shrink-0">
+            <div className="flex flex-wrap gap-3 items-start justify-between px-4 md:px-8 pt-6 flex-shrink-0">
                 <div>
-                    <h1 className="text-2xl font-secondary text-zinc-900 tracking-tight m-0">
+                    <h1 className="text-xl md:text-2xl font-secondary text-zinc-900 tracking-tight m-0">
                         Project Space
                     </h1>
                     <p className="text-sm text-zinc-400 font-primary mt-1 m-0">
@@ -73,7 +73,7 @@ export default function ProjectsPage() {
                             value={search}
                             onChange={e => setSearch(e.target.value)}
                             placeholder="Search…"
-                            className="pl-8 py-2 w-44 text-sm"
+                            className="pl-8 py-2 w-36 sm:w-44 text-sm"
                         />
                     </div>
                     <Button onClick={() => setShowModal(true)} icon={<Plus size={15} />}>
@@ -83,7 +83,7 @@ export default function ProjectsPage() {
             </div>
 
             {/* Status filters */}
-            <div className="flex gap-1.5 px-8 pt-4 flex-shrink-0 flex-wrap">
+            <div className="flex gap-1.5 px-4 md:px-8 pt-4 flex-shrink-0 flex-wrap">
                 {STATUS_FILTERS.map(s => {
                     const cfg    = s !== 'All' ? STATUS_CONFIG[s] : null;
                     const active = filter === s;
@@ -113,7 +113,7 @@ export default function ProjectsPage() {
             </div>
 
             {/* Grid */}
-            <div className="flex-1 overflow-y-auto px-8 py-5">
+            <div className="flex-1 overflow-y-auto px-4 md:px-8 py-5">
 
                 {error && (
                     <div className="mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-600 font-primary flex items-center justify-between">
@@ -123,7 +123,7 @@ export default function ProjectsPage() {
                 )}
 
                 {loading && (
-                    <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {[1, 2, 3].map(i => <CardSkeleton key={i} />)}
                     </div>
                 )}
@@ -140,7 +140,7 @@ export default function ProjectsPage() {
                 )}
 
                 {!loading && filtered.length > 0 && (
-                    <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {filtered.map(p => <ProjectCard key={p.id} project={p} />)}
                         <button
                             onClick={() => setShowModal(true)}

@@ -1,4 +1,4 @@
-import type { Project, FlatTask, Member, TaskGroup, PreviewSection, Priority, DeadlineInfo } from './definitions';
+import type { Project, FlatTask, Member, TaskGroup, PreviewSection, Priority, DeadlineInfo, Notification } from './definitions';
 import { MOCK_MEMBERS, ME_ID } from './config';
 import { formatDate } from '../utils';
 import { GeneratedProject } from '@/app/api/generate-project/route';
@@ -141,4 +141,30 @@ export function toPreviewSections(generated: GeneratedProject): PreviewSection[]
             notes:    t.notes,
         })),
     }));
+}
+
+export function activityText(text: string): string {
+    return text
+        .replace(/^Assigned you to$/i,    'assigned')
+        .replace(/^added you to$/i,        'added a member to')
+        .replace(/^Commented on$/i,        'commented on')
+        .replace(/^Completed$/i,           'completed')
+        .replace(/^deleted task$/i,        'deleted task')
+        .replace(/^created section$/i,     'created section')
+        .replace(/^deleted section$/i,     'deleted section')
+        .replace(/^renamed project to$/i,  'renamed project to')
+        .replace(/^updated deadline on$/i, 'updated deadline on')
+        .replace(/^updated due date on$/i, 'updated due date on');
+}
+
+export function groupByDate(items: Notification[]): { label: string; items: Notification[] }[] {
+    const groups = new Map<string, Notification[]>();
+    for (const item of items) {
+        const label = (item.time === 'just now' || item.time.includes('ago'))
+            ? 'Today'
+            : item.time === 'yesterday' ? 'Yesterday' : item.time;
+        if (!groups.has(label)) groups.set(label, []);
+        groups.get(label)!.push(item);
+    }
+    return [...groups.entries()].map(([label, items]) => ({ label, items }));
 }

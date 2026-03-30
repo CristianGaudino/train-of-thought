@@ -19,7 +19,7 @@ export function ProjectMembers({ header, setHeader, handleSaveHeader, savingHead
     const memberMap = useMembers(displayIds);
 
     return (
-        <div className="px-8 py-7 max-w-lg">
+        <div className="px-4 md:px-8 py-6 md:py-7 max-w-lg">
             <div className="flex flex-col gap-2 mb-6">
                 {displayIds.map(id => {
                     const member  = memberMap[id];

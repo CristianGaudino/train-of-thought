@@ -40,10 +40,10 @@ export default function OrganisationPage() {
         <div className="flex flex-col h-full overflow-hidden">
 
             {/* Header */}
-            <div className="px-8 pt-6 pb-5 flex-shrink-0 border-b border-zinc-100">
+            <div className="px-4 md:px-8 pt-6 pb-5 flex-shrink-0 border-b border-zinc-100">
                 <div className="flex items-start justify-between">
                     <div>
-                        <h1 className="text-2xl font-secondary text-zinc-900 tracking-tight m-0">
+                        <h1 className="text-xl md:text-2xl font-secondary text-zinc-900 tracking-tight m-0">
                             Organisation
                         </h1>
                         <p className="text-sm text-zinc-400 font-primary mt-1 m-0">
@@ -54,7 +54,7 @@ export default function OrganisationPage() {
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto px-8 py-6">
+            <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6">
                 {loading ? (
                     <div className="flex flex-col gap-3 max-w-lg">
                         {[1, 2, 3].map(i => <RowSkeleton key={i} height="h-16" />)}

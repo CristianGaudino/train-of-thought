@@ -341,7 +341,7 @@ export default function TaskPanel({
         <div ref={panelRef} className="fixed right-0 top-0 bottom-0 w-[min(480px,92vw)] bg-white z-[201] flex flex-col shadow-2xl animate-in slide-in-from-right duration-200">
 
                 {/* ── Header ── */}
-                <div className="px-6 py-5 border-b border-zinc-100 flex-shrink-0" style={{ background: projectColor }}>
+                <div className="px-4 md:px-6 py-4 md:py-5 border-b border-zinc-100 flex-shrink-0" style={{ background: projectColor }}>
                     <div className="flex justify-between items-start gap-3">
                         <div className="flex-1 min-w-0">
 
@@ -567,7 +567,7 @@ export default function TaskPanel({
                 </div>
 
                 {/* ── Body ── */}
-                <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-6">
+                <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 md:py-5 flex flex-col gap-6">
 
                     {/* Description */}
                     <div>

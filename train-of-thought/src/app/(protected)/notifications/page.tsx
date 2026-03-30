@@ -29,10 +29,10 @@ export default function NotificationsPage() {
         <div className="flex flex-col h-full overflow-hidden">
 
             {/* Header */}
-            <div className="px-8 pt-6 flex-shrink-0">
-                <div className="flex items-start justify-between mb-5">
+            <div className="px-4 md:px-8 pt-6 flex-shrink-0">
+                <div className="flex items-start justify-between gap-3 mb-5 flex-wrap">
                     <div>
-                        <h1 className="text-2xl font-secondary text-zinc-900 tracking-tight m-0">
+                        <h1 className="text-xl md:text-2xl font-secondary text-zinc-900 tracking-tight m-0">
                             Notifications
                         </h1>
                         <p className="text-sm text-zinc-400 font-primary mt-1 m-0">
@@ -52,7 +52,7 @@ export default function NotificationsPage() {
                 </div>
 
                 {/* Filters */}
-                <div className="flex items-center gap-2.5 pb-4 border-b border-zinc-100 flex-wrap">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 pb-4 border-b border-zinc-100">
                     <div className="flex gap-1.5 flex-wrap">
                         {TYPE_FILTERS.map(({ value, label }) => {
                             const cfg    = value !== 'all' ? NOTIFICATION_CONFIG[value] : null;
@@ -81,7 +81,7 @@ export default function NotificationsPage() {
                         })}
                     </div>
 
-                    <div className="flex-1" />
+                    <div className="hidden sm:block flex-1" />
 
                     <SegmentedControl
                         segments={[
@@ -96,7 +96,7 @@ export default function NotificationsPage() {
             </div>
 
             {/* List */}
-            <div className="flex-1 overflow-y-auto px-8 py-5">
+            <div className="flex-1 overflow-y-auto px-4 md:px-8 py-5">
                 {loading ? (
                     <div className="flex flex-col gap-3">
                         {[1, 2, 3, 4].map(i => <RowSkeleton key={i} height="h-16" />)}

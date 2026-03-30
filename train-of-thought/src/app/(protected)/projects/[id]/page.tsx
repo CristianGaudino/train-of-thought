@@ -141,7 +141,7 @@ export default function ProjectPage() {
             <div className="flex-shrink-0 border-b border-black/7" style={{ background: header.color }}>
 
                 {/* Top bar */}
-                <div className="flex items-center gap-3 px-8 pt-4">
+                <div className="flex items-center gap-3 px-4 md:px-8 pt-4">
                     <button
                         onClick={() => router.push('/projects')}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/7 hover:bg-black/12 text-xs font-medium font-primary text-zinc-600 transition-colors cursor-pointer"
@@ -170,7 +170,7 @@ export default function ProjectPage() {
                 </div>
 
                 {/* Identity / edit form */}
-                <div className="px-8 pt-5">
+                <div className="px-4 md:px-8 pt-5">
                     {editingHeader ? (
                         <div className="flex flex-col gap-3 pb-5">
                             <div className="flex gap-3 flex-wrap">
@@ -244,8 +244,8 @@ export default function ProjectPage() {
                     ) : (
                         <div className="pb-5">
                             <div className="flex items-start gap-4 flex-wrap">
-                                <div className="flex-1 min-w-48">
-                                    <h1 className="text-3xl font-secondary text-zinc-900 tracking-tight m-0 leading-tight">
+                                <div className="flex-1 min-w-0">
+                                    <h1 className="text-2xl md:text-3xl font-secondary text-zinc-900 tracking-tight m-0 leading-tight">
                                         {header.title}
                                     </h1>
                                     {header.description && (
@@ -272,7 +272,7 @@ export default function ProjectPage() {
 
                                 {/* Progress card */}
                                 <div
-                                    className="rounded-2xl px-4 py-3.5 min-w-44"
+                                    className="rounded-2xl px-4 py-3.5 w-full sm:w-auto"
                                     style={{ background: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(4px)' }}
                                 >
                                     <SectionLabel className="mb-2">Progress</SectionLabel>
@@ -296,7 +296,7 @@ export default function ProjectPage() {
                 </div>
 
                 {/* Tabs */}
-                <div className="flex px-8 -mb-px">
+                <div className="flex px-4 md:px-8 -mb-px">
                     {(['tasks', 'activity', 'members'] as Tab[]).map(t => (
                         <button
                             key={t}
