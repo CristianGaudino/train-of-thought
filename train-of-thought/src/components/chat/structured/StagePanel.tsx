@@ -6,7 +6,19 @@ import { ChevronLeft } from "lucide-react";
 
 export function StagePanel({ stages, activeStageId, brief, ideaStageId, onStageClick, onClose }: StagePanelProps) {
     return (
-        <aside className="w-52 shrink-0 border-r border-zinc-100 flex flex-col">
+        <>
+            {/* Mobile backdrop */}
+            <div
+                className="md:hidden fixed inset-0 z-40 bg-black/20"
+                onClick={onClose}
+            />
+        <aside className={[
+            "flex flex-col border-zinc-100 bg-white",
+            // Mobile: fixed overlay sliding from left
+            "max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-50 max-md:shadow-xl max-md:w-72 max-md:border-r",
+            // Desktop: in-flow panel
+            "md:w-52 md:shrink-0 md:border-r",
+        ].join(" ")}>
             <div className="px-4 py-3 border-b border-zinc-100 flex items-center justify-between">
                 <span className="text-xs font-medium text-zinc-400 uppercase tracking-widest">Journey</span>
                 <button onClick={onClose} className="text-zinc-300 hover:text-zinc-500 transition">
@@ -50,5 +62,6 @@ export function StagePanel({ stages, activeStageId, brief, ideaStageId, onStageC
                 ))}
             </div>
         </aside>
+        </>
     );
 }

@@ -11,13 +11,13 @@ export function ChatNav() {
     const isSignedIn = isLoaded && !!user;
 
     return (
-        <div className="flex-shrink-0 flex items-center justify-between px-6 py-3 bg-white border-b border-zinc-100">
+        <div className="flex-shrink-0 flex items-center justify-between px-4 sm:px-6 py-3 bg-white border-b border-zinc-100">
 
             {/* Left — logo + back link */}
             <div className="flex items-center gap-3">
                 <Link href="/" className="flex items-center gap-2 group">
                     <Logo size={24} />
-                    <span className="text-sm font-secondary text-zinc-800 tracking-tight group-hover:text-zinc-600 transition-colors">
+                    <span className="hidden sm:inline text-sm font-secondary text-zinc-800 tracking-tight group-hover:text-zinc-600 transition-colors">
                         Train of Thought
                     </span>
                 </Link>

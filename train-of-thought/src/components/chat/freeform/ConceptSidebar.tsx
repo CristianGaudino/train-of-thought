@@ -107,10 +107,24 @@ export function ConceptSidebar({
     onRemove: (id: string) => void;
 }) {
     return (
+        <>
+            {/* Mobile backdrop */}
+            {sidebarOpen && (
+                <div
+                    className="md:hidden fixed inset-0 z-40 bg-black/20"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
         <aside
-            className={`shrink-0 flex flex-col border-l border-zinc-100 transition-all duration-300 ${
-                sidebarOpen ? "w-72" : "w-12"
-            }`}
+            className={[
+                "flex flex-col bg-white border-zinc-100",
+                // Mobile: fixed overlay sliding from right
+                "max-md:fixed max-md:inset-y-0 max-md:right-0 max-md:z-50 max-md:shadow-xl max-md:w-80 max-md:border-l max-md:transition-transform max-md:duration-300",
+                sidebarOpen ? "max-md:translate-x-0" : "max-md:translate-x-full",
+                // Desktop: in-flow sidebar with toggling width
+                "md:shrink-0 md:border-l md:transition-all md:duration-300",
+                sidebarOpen ? "md:w-72" : "md:w-12",
+            ].join(" ")}
         >
             <div className="flex items-center justify-between px-3 py-3 border-b border-zinc-100">
                 {sidebarOpen && (
@@ -175,5 +189,6 @@ export function ConceptSidebar({
                 </>
             )}
         </aside>
+        </>
     );
 }

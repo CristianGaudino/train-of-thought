@@ -3,7 +3,7 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { RotateCcw, ChevronLeft, Sparkles } from "lucide-react";
+import { RotateCcw, ChevronLeft, Sparkles, FileText } from "lucide-react";
 import { StagePanel } from "../../../components/chat/structured/StagePanel";
 import { BriefPanel } from "../../../components/chat/structured/BriefPanel";
 import { ResumeModal } from "@/components/chat/ResumeModal";
@@ -35,6 +35,7 @@ export default function StructuredPage() {
     const [railOpen, setRailOpen] = useState(true);
 
     const [showPreview, setShowPreview] = useState(false);
+    const [briefMobileOpen, setBriefMobileOpen] = useState(false);
 
     const [chatId, setChatId] = useState(() => `${IDEA_STAGE_ID}-${crypto.randomUUID()}`);
     const savingFromStageRef = useRef<string>(IDEA_STAGE_ID);
@@ -226,19 +227,31 @@ export default function StructuredPage() {
                     {canShape && (
                         <button
                             onClick={handleShapeIdea}
+                            title="Shape this idea"
                             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 rounded-lg transition"
                         >
                             <Sparkles size={13} />
-                            Shape this idea
+                            <span className="hidden sm:inline">Shape this idea</span>
+                        </button>
+                    )}
+                    {generated && (
+                        <button
+                            onClick={() => setBriefMobileOpen(true)}
+                            title={filledSections > 0 ? `Brief (${filledSections})` : "Brief"}
+                            className="md:hidden flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50 rounded-lg transition"
+                        >
+                            <FileText size={13} />
+                            {filledSections > 0 && <span className="text-xs">{filledSections}</span>}
                         </button>
                     )}
                     {hasMessages && (
                         <button
                             onClick={handleReset}
+                            title="Reset"
                             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-700 hover:bg-zinc-50 rounded-lg transition"
                         >
                             <RotateCcw size={13} />
-                            Reset
+                            <span className="hidden sm:inline">Reset</span>
                         </button>
                     )}
                 </ChatHeader>
@@ -273,6 +286,8 @@ export default function StructuredPage() {
                     onExport={() => {}}
                     onAddToProjects={handleAddToProjects}
                     generating={generatingProject}
+                    mobileOpen={briefMobileOpen}
+                    onMobileClose={() => setBriefMobileOpen(false)}
                 />
             )}
 

@@ -9,12 +9,29 @@ export function BriefPanel({
     onExport,
     onAddToProjects,
     generating = false,
-}: BriefPanelProps) {
+    mobileOpen = false,
+    onMobileClose,
+}: BriefPanelProps & { mobileOpen?: boolean; onMobileClose?: () => void }) {
 
     const hasContent = filledCount > 0;
 
     return (
-        <aside className="w-56 shrink-0 border-l border-zinc-100 flex flex-col bg-zinc-50">
+        <>
+            {/* Mobile backdrop */}
+            {mobileOpen && (
+                <div
+                    className="md:hidden fixed inset-0 z-40 bg-black/20"
+                    onClick={onMobileClose}
+                />
+            )}
+        <aside className={[
+            "flex flex-col bg-zinc-50 border-zinc-100",
+            // Mobile: fixed overlay sliding from right
+            "max-md:fixed max-md:inset-y-0 max-md:right-0 max-md:z-50 max-md:shadow-xl max-md:w-80 max-md:border-l max-md:transition-transform max-md:duration-300",
+            mobileOpen ? "max-md:translate-x-0" : "max-md:translate-x-full",
+            // Desktop: in-flow panel
+            "md:w-56 md:shrink-0 md:border-l",
+        ].join(" ")}>
             <div className="px-4 py-3 border-b border-zinc-100 bg-white flex items-center justify-between">
                 <span className="text-xs font-medium text-zinc-400 uppercase tracking-widest">Brief</span>
                 {filledCount > 0 && (
@@ -82,5 +99,6 @@ export function BriefPanel({
                 )}
             </div>
         </aside>
+        </>
     );
 }

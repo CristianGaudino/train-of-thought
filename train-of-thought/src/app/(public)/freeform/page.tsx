@@ -3,7 +3,7 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useState, useEffect } from "react";
-import { Sparkles, RotateCcw } from "lucide-react";
+import { Sparkles, RotateCcw, BookmarkCheck } from "lucide-react";
 import { ConceptSidebar } from "../../../components/chat/freeform/ConceptSidebar";
 import { SummaryModal } from "../../../components/chat/freeform/SummaryModal";
 import { ResumeModal } from "@/components/chat/ResumeModal";
@@ -21,7 +21,7 @@ export default function FreeformPage() {
     const [depth, setDepth] = useState(1);
     const [input, setInput] = useState("");
     const [showIntro, setShowIntro] = useState(true);
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     const [chatError, setChatError] = useState<string | null>(null);
     const [resumeMessages, setResumeMessages] = useState<any[]>([]);
     const [chatId] = useState(() => crypto.randomUUID());
@@ -75,7 +75,11 @@ export default function FreeformPage() {
 
     useEffect(() => {
         const saved = localStorage.getItem("freeformSidebar");
-        if (saved) setSidebarOpen(JSON.parse(saved));
+        if (saved !== null) {
+            setSidebarOpen(JSON.parse(saved));
+        } else {
+            setSidebarOpen(window.innerWidth >= 768);
+        }
     }, []);
 
     useEffect(() => {
@@ -133,20 +137,30 @@ export default function FreeformPage() {
                             <button
                                 onClick={openSummary}
                                 disabled={!canSummarise}
+                                title="Summarise"
                                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 rounded-lg transition disabled:opacity-40"
                             >
                                 <Sparkles size={13} />
-                                {summarising ? "Summarising…" : "Summarise"}
+                                <span className="hidden sm:inline">{summarising ? "Summarising…" : "Summarise"}</span>
                             </button>
                             <button
                                 onClick={handleReset}
+                                title="Reset"
                                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-700 hover:bg-zinc-50 rounded-lg transition"
                             >
                                 <RotateCcw size={13} />
-                                Reset
+                                <span className="hidden sm:inline">Reset</span>
                             </button>
                         </>
                     )}
+                    <button
+                        onClick={() => setSidebarOpen(true)}
+                        title={cards.length > 0 ? `Concepts (${cards.length})` : "Concepts"}
+                        className="md:hidden flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50 rounded-lg transition"
+                    >
+                        <BookmarkCheck size={13} />
+                        {cards.length > 0 && <span className="text-xs">{cards.length}</span>}
+                    </button>
                 </ChatHeader>
 
                 <div className="flex-1 relative overflow-hidden flex flex-col min-h-0">
