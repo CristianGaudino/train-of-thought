@@ -3,28 +3,10 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { UserButton, useUser } from '@clerk/nextjs';
-import {
-    LayoutGrid, CheckSquare, Bell,
-    Lightbulb, LayoutTemplate, Building2,
-    Sparkles, FlaskConical,
-} from 'lucide-react';
 import NotificationBell from './NotificationBell';
+import { CHAT_ITEMS, NAV_ITEMS, SidebarProps } from '@/lib/projects/definitions';
 
-const NAV_ITEMS = [
-    { id: 'projects',      href: '/projects',     icon: LayoutGrid,     label: 'Project Space' },
-    { id: 'tasks',         href: '/tasks',         icon: CheckSquare,    label: 'My Tasks'      },
-    { id: 'notifications', href: '/notifications', icon: Bell,           label: 'Notifications' },
-    { id: 'ideas',         href: '/ideas',         icon: Lightbulb,      label: 'Ideas'         },
-    { id: 'templates',     href: '/templates',     icon: LayoutTemplate, label: 'Templates'     },
-    { id: 'organisation',  href: '/organisation',  icon: Building2,      label: 'Organisation'  },
-];
-
-const CHAT_ITEMS = [
-    { id: 'freeform',   href: '/freeform',   icon: Sparkles,     label: 'Freeform'   },
-    { id: 'structured', href: '/structured', icon: FlaskConical, label: 'Structured' },
-];
-
-export default function Sidebar() {
+export default function Sidebar({ open, onClose }: SidebarProps) {
     const pathname    = usePathname();
     const { user }    = useUser();
 
@@ -34,25 +16,32 @@ export default function Sidebar() {
         ?? 'My Account';
 
     return (
-        <aside className="w-56 flex-shrink-0 bg-white border-r border-zinc-200 flex flex-col py-7">
+        <aside className={`
+            fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-zinc-200 flex flex-col py-7
+            transition-transform duration-300 ease-in-out
+            ${open ? 'translate-x-0' : '-translate-x-full'}
+            md:relative md:inset-auto md:z-auto md:w-56 md:translate-x-0 md:flex-shrink-0
+        `}>
 
-            {/* Logo + bell */}
+            {/* Logo + bell — desktop only (bell shown in mobile top bar) */}
             <div className="flex items-center justify-between px-5 pb-6 border-b border-zinc-100">
                 <div>
-                    <div className="text-xl font-secondary text-zinc-900 tracking-tight">
+                    <div className="text-lg font-secondary text-zinc-900 tracking-tight">
                         Train of Thought
                     </div>
                     <div className="text-xs text-zinc-400 mt-0.5 font-primary">
                         a thinking space
                     </div>
                 </div>
-                <NotificationBell />
+                <div className="hidden md:block">
+                    <NotificationBell />
+                </div>
             </div>
 
             {/* Nav */}
-            <nav className="flex-1 px-3 pt-4 flex flex-col">
+            <nav className="flex-1 px-3 pt-4 flex flex-col overflow-y-auto">
 
-                {/* Main project items */}
+                {/* Main items */}
                 <div className="flex-1">
                     {NAV_ITEMS.map(item => {
                         const active = pathname.startsWith(item.href);
@@ -61,8 +50,9 @@ export default function Sidebar() {
                             <Link
                                 key={item.id}
                                 href={item.href}
+                                onClick={onClose}
                                 className={`
-                                    flex items-center gap-2.5 px-2.5 py-2 rounded-xl mb-0.5
+                                    flex items-center gap-2.5 px-2.5 py-2.5 rounded-xl mb-0.5
                                     text-sm font-primary transition-colors duration-150
                                     ${active
                                         ? 'bg-zinc-100 text-zinc-900 font-semibold'
@@ -77,7 +67,7 @@ export default function Sidebar() {
                     })}
                 </div>
 
-                {/* Explore section — AI chat tools */}
+                {/* Explore section */}
                 <div className="pt-4 border-t border-zinc-100">
                     <div className="px-2.5 mb-1.5">
                         <span className="text-xs font-semibold uppercase tracking-widest text-zinc-300 font-primary">
@@ -91,8 +81,9 @@ export default function Sidebar() {
                             <Link
                                 key={item.id}
                                 href={item.href}
+                                onClick={onClose}
                                 className={`
-                                    flex items-center gap-2.5 px-2.5 py-2 rounded-xl mb-0.5
+                                    flex items-center gap-2.5 px-2.5 py-2.5 rounded-xl mb-0.5
                                     text-sm font-primary transition-colors duration-150
                                     ${active
                                         ? 'bg-zinc-100 text-zinc-900 font-semibold'

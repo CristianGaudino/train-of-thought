@@ -1,4 +1,4 @@
-import { LayoutGrid, CheckSquare, Bell, Lightbulb, LayoutTemplate } from 'lucide-react';
+import { LayoutGrid, CheckSquare, Bell, Lightbulb, LayoutTemplate, Building2, Sparkles, FlaskConical } from 'lucide-react';
 import { ACCENT_PALETTE, ME_ID } from './config';
 import { GeneratedProject } from '@/app/api/generate-project/route';
 
@@ -10,6 +10,12 @@ export const NAV_ITEMS = [
     { id: 'notifications', href: '/notifications', icon: Bell,           label: 'Notifications' },
     { id: 'ideas',         href: '/ideas',         icon: Lightbulb,      label: 'Ideas'         },
     { id: 'templates',     href: '/templates',     icon: LayoutTemplate, label: 'Templates'     },
+    { id: 'organisation',  href: '/organisation',  icon: Building2,      label: 'Organisation'  },
+];
+
+export const CHAT_ITEMS = [
+    { id: 'freeform',   href: '/freeform',   icon: Sparkles,     label: 'Freeform'   },
+    { id: 'structured', href: '/structured', icon: FlaskConical, label: 'Structured' },
 ];
 
 export const TYPE_FILTERS: { value: TypeFilter; label: string }[] = [
@@ -222,6 +228,11 @@ export interface DeadlineInfo {
 }
 
 // Props
+
+export interface SidebarProps {
+    open:    boolean;
+    onClose: () => void;
+}
 
 export interface NotificationRowProps {
     notification: Notification;
