@@ -1,11 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import { Check } from 'lucide-react';
 import { NOTIFICATION_CONFIG } from '@/lib/projects/config';
 import { getMember } from '@/lib/projects/utils';
 import type { NotificationRowProps } from '@/lib/projects/definitions';
 
-export function NotificationRow({ notification, onRead, compact = false, memberMap }: NotificationRowProps) {
+export function NotificationRow({ notification, onRead, onClose, compact = false, memberMap }: NotificationRowProps) {
     const cfg   = NOTIFICATION_CONFIG[notification.type];
     const actor = memberMap?.[notification.actor] ?? getMember(notification.actor);
     const py    = compact ? 'py-3' : 'py-3.5';
@@ -15,19 +16,7 @@ export function NotificationRow({ notification, onRead, compact = false, memberM
         : `/projects/${notification.projectId}`;
 
     return (
-        <div className={`flex items-start gap-3 px-4 ${py} group transition-colors duration-150 ${notification.read ? 'bg-white hover:bg-zinc-50' : 'bg-emerald-50/40 hover:bg-emerald-50/70'}`}>
-
-            {/* Dot — space always reserved to prevent layout shift */}
-            <div className="w-4 flex-shrink-0 flex items-center justify-center self-center">
-                {!notification.read && (
-                    <button
-                        onClick={() => onRead(notification.id)}
-                        title="Mark as read"
-                        className="w-1.5 h-1.5 rounded-full cursor-pointer hover:scale-150 transition-transform duration-150"
-                        style={{ background: cfg.color }}
-                    />
-                )}
-            </div>
+        <div className={`flex items-start gap-3 px-4 ${py} group relative transition-colors duration-150 ${notification.read ? 'bg-white hover:bg-zinc-50' : 'bg-emerald-50/40 hover:bg-emerald-50/70'}`}>
 
             {/* Icon */}
             <div
@@ -37,10 +26,13 @@ export function NotificationRow({ notification, onRead, compact = false, memberM
                 {cfg.icon}
             </div>
 
-            {/* Text + meta — clicking navigates and marks read */}
+            {/* Text + meta */}
             <Link
                 href={href}
-                onClick={() => { if (!notification.read) onRead(notification.id); }}
+                onClick={() => {
+                    if (!notification.read) onRead(notification.id);
+                    onClose?.();
+                }}
                 className="flex-1 min-w-0 no-underline"
             >
                 <p className="text-sm font-primary text-zinc-800 leading-snug m-0">
@@ -68,17 +60,16 @@ export function NotificationRow({ notification, onRead, compact = false, memberM
                 </div>
             </Link>
 
-            {/* Mark as read — visible on hover for unread rows */}
-            <div className="flex-shrink-0 self-center w-20 flex justify-end">
-                {!notification.read && (
-                    <button
-                        onClick={() => onRead(notification.id)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 text-xs text-zinc-400 hover:text-zinc-600 font-primary cursor-pointer whitespace-nowrap"
-                    >
-                        Mark read
-                    </button>
-                )}
-            </div>
+            {/* Mark as read — small check icon, top-right, on hover */}
+            {!notification.read && (
+                <button
+                    onClick={() => onRead(notification.id)}
+                    title="Mark as read"
+                    className="absolute top-2.5 right-3 opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 flex items-center justify-center rounded-full hover:bg-zinc-200 text-zinc-400 hover:text-zinc-600 cursor-pointer"
+                >
+                    <Check size={11} />
+                </button>
+            )}
         </div>
     );
 }

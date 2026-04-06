@@ -239,6 +239,7 @@ export interface SidebarProps {
 export interface NotificationRowProps {
     notification: Notification;
     onRead:       (id: string) => void;
+    onClose?:     () => void;
     compact?:     boolean;
     memberMap?:   Record<string, Member>;
 }

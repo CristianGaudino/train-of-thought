@@ -134,7 +134,7 @@ export default function NotificationBell() {
                             </div>
                         ) : (
                             notifications.slice(0, 5).map(n => (
-                                <NotificationRow key={n.id} notification={n} onRead={markRead} compact memberMap={memberMap} />
+                                <NotificationRow key={n.id} notification={n} onRead={markRead} onClose={() => setOpen(false)} compact memberMap={memberMap} />
                             ))
                         )}
                     </div>
