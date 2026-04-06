@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { AlertTriangle, GripVertical, Star } from 'lucide-react';
+import { AlertTriangle, Star } from 'lucide-react';
 import type { ProjectCardProps } from '@/lib/projects/definitions';
 import { STATUS_CONFIG } from '@/lib/projects/config';
 import { countTasks, getDeadlineInfo } from '@/lib/projects/utils';
@@ -17,8 +17,9 @@ export default function ProjectCard({ project, onFavourite, dragHandleProps }: P
 
     return (
         <div
+            {...dragHandleProps}
             onClick={() => router.push(`/projects/${project.id}`)}
-            className="bg-white border border-zinc-200 rounded-2xl p-6 cursor-pointer flex flex-col gap-3.5 relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg group"
+            className="bg-white border border-zinc-200 rounded-2xl p-6 cursor-pointer flex flex-col gap-3.5 relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg group touch-none"
             onMouseEnter={e => {
                 (e.currentTarget as HTMLDivElement).style.borderColor = project.accent + '55';
             }}
@@ -31,17 +32,6 @@ export default function ProjectCard({ project, onFavourite, dragHandleProps }: P
                 className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl"
                 style={{ background: project.accent }}
             />
-
-            {/* Drag handle — top left, visible on hover */}
-            {dragHandleProps && (
-                <div
-                    {...dragHandleProps}
-                    onClick={e => e.stopPropagation()}
-                    className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing text-zinc-300 hover:text-zinc-500 touch-none"
-                >
-                    <GripVertical size={15} />
-                </div>
-            )}
 
             {/* Favourite button — top right */}
             {onFavourite && (

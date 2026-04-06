@@ -1,7 +1,7 @@
 import { PRIORITY_CONFIG } from '@/lib/projects/config';
 import { TaskProps } from '@/lib/projects/definitions';
 import { getDeadlineInfo } from '@/lib/projects/utils';
-import { Check, AlertTriangle, MessageSquare, ChevronRight, Trash2, GripVertical } from 'lucide-react';
+import { Check, AlertTriangle, MessageSquare, ChevronRight, Trash2 } from 'lucide-react';
 import { AvatarStack } from './AvatarStack';
 import Pill from '../ui/Pill';
 
@@ -20,12 +20,13 @@ export const Task = ({
 
     return (
         <div
+            {...dragHandleProps}
             onClick={() => setActiveTaskId(task.id)}
             style={{ ['--accent' as any]: accent }}
             className={`
                 flex items-center gap-3 px-4 rounded-xl
                 bg-white border border-zinc-100
-                transition-all duration-150 group cursor-pointer
+                transition-all duration-150 group cursor-pointer touch-none
                 hover:bg-zinc-50
                 hover:border-[color:var(--accent)]
                 active:scale-[0.995]
@@ -38,16 +39,6 @@ export const Task = ({
                     className="absolute left-0 top-0 bottom-0 w-0.5"
                     style={{ background: task.projectAccent }}
                 />
-            )}
-
-            {dragHandleProps && (
-                <span
-                    {...dragHandleProps}
-                    onClick={e => e.stopPropagation()}
-                    className="text-zinc-200 hover:text-zinc-400 cursor-grab active:cursor-grabbing transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0 -ml-1"
-                >
-                    <GripVertical size={13} />
-                </span>
             )}
 
             <button

@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, ChevronRight, GripVertical, Pencil, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Pencil, Trash2 } from 'lucide-react';
 import type { Section } from '@/lib/projects/definitions';
 
 interface SectionHeaderProps {
@@ -35,14 +35,7 @@ export function SectionHeader({
     const secDone = section.tasks.filter(t => t.done).length;
 
     return (
-        <div className="flex items-center gap-2.5 mb-2.5 group/section">
-            {/* Drag handle */}
-            <span
-                {...dragHandleProps}
-                className="text-zinc-200 hover:text-zinc-400 cursor-grab active:cursor-grabbing transition-colors opacity-0 group-hover/section:opacity-100"
-            >
-                <GripVertical size={14} />
-            </span>
+        <div {...dragHandleProps} className="flex items-center gap-2.5 mb-2.5 group/section touch-none cursor-pointer">
 
             {/* Collapse toggle */}
             <button

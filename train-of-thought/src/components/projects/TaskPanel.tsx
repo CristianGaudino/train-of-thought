@@ -6,7 +6,7 @@ import { useToast } from '@/components/ui/Toast';
 import {
     X, Plus, ArrowUp, ChevronRight,
     Pencil, Check, Calendar, Flag,
-    UserPlus, Trash2, GripVertical,
+    UserPlus, Trash2,
 } from 'lucide-react';
 import {
     DndContext,
@@ -712,16 +712,10 @@ export default function TaskPanel({
                                             <SortableSubtask key={st.id} id={st.id}>
                                                 {handleProps => (
                                                     <div
+                                                        {...handleProps}
                                                         onClick={() => toggleSub(st.id)}
-                                                        className="group flex items-center gap-2.5 p-2.5 rounded-lg border border-zinc-100 cursor-pointer hover:bg-zinc-50 transition-colors"
+                                                        className="group flex items-center gap-2.5 p-2.5 rounded-lg border border-zinc-100 cursor-pointer hover:bg-zinc-50 transition-colors touch-none"
                                                     >
-                                                        <span
-                                                            {...handleProps}
-                                                            onClick={e => e.stopPropagation()}
-                                                            className="text-zinc-200 hover:text-zinc-400 cursor-grab active:cursor-grabbing transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0"
-                                                        >
-                                                            <GripVertical size={12} />
-                                                        </span>
                                                         <div
                                                             className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all duration-200"
                                                             style={{
