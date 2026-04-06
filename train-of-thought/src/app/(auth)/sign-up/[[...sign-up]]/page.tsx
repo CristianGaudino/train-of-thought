@@ -65,7 +65,7 @@ export default function SignUpPage() {
 
             {/* Right panel */}
             <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
-                <div className="w-full max-w-md">
+                <div className="w-full max-w-md mx-auto">
 
                     {/* Mobile logo */}
                     <div className="lg:hidden flex flex-col items-center mb-8">
@@ -109,8 +109,9 @@ export default function SignUpPage() {
                                     bg-zinc-900 hover:bg-zinc-700 rounded-xl font-primary
                                     font-semibold text-sm h-11 transition-colors
                                 `,
+                                footer:            'bg-transparent',
                                 footerActionLink:  'text-zinc-900 font-semibold font-primary hover:text-zinc-600',
-                                footerActionText:  'text-zinc-400 font-primary text-sm',
+                                footerActionText:  'text-zinc-500 font-primary text-sm',
                                 identityPreviewText: 'font-primary text-sm',
                                 identityPreviewEditButtonIcon: 'text-zinc-500',
                                 formFieldInputShowPasswordButton: 'text-zinc-400 hover:text-zinc-600',
