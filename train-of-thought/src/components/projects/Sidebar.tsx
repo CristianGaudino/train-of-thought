@@ -21,7 +21,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-zinc-200 flex flex-col py-7
             transition-transform duration-300 ease-in-out
             ${open ? 'translate-x-0' : '-translate-x-full'}
-            md:relative md:inset-auto md:z-10 md:w-64 md:translate-x-0 md:flex-shrink-0
+            md:relative md:inset-auto md:w-64 md:translate-x-0 md:flex-shrink-0
         `}>
 
             {/* Logo + bell — desktop only (bell shown in mobile top bar) */}
