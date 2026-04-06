@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, EyeOff, Eye } from 'lucide-react';
 import {
     DndContext,
     closestCenter,
@@ -54,6 +54,7 @@ export function ProjectTasks({
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
     const [draggingId, setDraggingId]       = useState<string | null>(null);
     const [localSections, setLocalSections] = useState<Section[]>(sections);
+    const [hideCompleted, setHideCompleted] = useState(false);
 
     // Tracks which section the dragged task started in (set once, never updated)
     const dragOriginalSectionRef = useRef<string | null>(null);
@@ -212,7 +213,16 @@ export function ProjectTasks({
     };
 
     return (
-        <div className="px-8 py-7 flex flex-col gap-7">
+        <div className="px-4 md:px-8 py-7 flex flex-col gap-7">
+            <div className="flex justify-end -my-3">
+                <button
+                    onClick={() => setHideCompleted(v => !v)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-xs font-medium font-primary text-zinc-500 transition-colors cursor-pointer"
+                >
+                    {hideCompleted ? <Eye size={13} /> : <EyeOff size={13} />}
+                    {hideCompleted ? 'Show completed' : 'Hide completed'}
+                </button>
+            </div>
             <DndContext
                 sensors={sensors}
                 collisionDetection={collisionDetection}
@@ -252,10 +262,10 @@ export function ProjectTasks({
                                         {!isCollapsed && (
                                             <div className="flex flex-col gap-1.5 pl-1">
                                                 <SortableContext
-                                                    items={section.tasks.filter(t => !t.deleted).map(t => t.id)}
+                                                    items={section.tasks.filter(t => !t.deleted && (!hideCompleted || !t.done)).map(t => t.id)}
                                                     strategy={verticalListSortingStrategy}
                                                 >
-                                                    {section.tasks.filter(t => !t.deleted).map(task => (
+                                                    {section.tasks.filter(t => !t.deleted && (!hideCompleted || !t.done)).map(task => (
                                                         <SortableTask
                                                             key={task.id}
                                                             id={task.id}
