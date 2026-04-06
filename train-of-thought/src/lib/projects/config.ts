@@ -32,6 +32,24 @@ export const NOTIFICATION_CONFIG: Record<string, NotificationConfig> = {
     project:   { icon: '⬡', color: '#A0714F', bg: '#F5F0EA', label: 'Project'    },
 };
 
+// Maps action codes (stored in the `text` DB column) to human-readable verb phrases.
+// Format: "{actor} {verb} {subject}"
+export const ACTION_VERB: Record<string, string> = {
+    ASSIGNED:                 'assigned you to',
+    COMMENTED:                'commented on',
+    COMPLETED:                'completed',
+    PRIORITY_CHANGED:         'changed priority on',
+    DUE_DATE_CHANGED:         'updated due date on',
+    TASK_DELETED:             'deleted',
+    TASK_CREATED:             'created',
+    SECTION_CREATED:          'created section',
+    SECTION_DELETED:          'deleted section',
+    MEMBER_ADDED:             'added you to',
+    PROJECT_RENAMED:          'renamed',
+    PROJECT_STATUS_CHANGED:   'changed status on',
+    PROJECT_DEADLINE_CHANGED: 'updated deadline on',
+};
+
 export const ACCENT_PALETTE: AccentPair[] = [
     { accent: '#2D7A5F', color: '#E8F4F0' },
     { accent: '#3A5FA0', color: '#EEF2F8' },
@@ -369,15 +387,15 @@ export const MOCK_PROJECTS: Project[] = [
 ];
 
 export const MOCK_NOTIFICATIONS: Notification[] = [
-    { id: 'n1',  type: 'comment',   read: false, time: '2 min ago',  actor: '2', projectId: '1', projectTitle: 'Brand Redesign',    projectAccent: '#2D7A5F', text: 'Left a comment on',  subject: 'Colour system'           },
-    { id: 'n2',  type: 'assigned',  read: false, time: '14 min ago', actor: '3', projectId: '3', projectTitle: 'Q2 Product Launch', projectAccent: '#3A5FA0', text: 'Assigned you to',    subject: 'Update docs site'        },
-    { id: 'n3',  type: 'completed', read: false, time: '1 hr ago',   actor: '2', projectId: '1', projectTitle: 'Brand Redesign',    projectAccent: '#2D7A5F', text: 'Completed',          subject: 'Logo concepts (round 1)' },
-    { id: 'n4',  type: 'project',   read: false, time: '2 hr ago',   actor: '4', projectId: '3', projectTitle: 'Q2 Product Launch', projectAccent: '#3A5FA0', text: 'Created project',    subject: 'Q2 Product Launch'       },
-    { id: 'n5',  type: 'comment',   read: true,  time: '3 hr ago',   actor: '3', projectId: '3', projectTitle: 'Q2 Product Launch', projectAccent: '#3A5FA0', text: 'Commented on',       subject: 'QA regression pass'      },
-    { id: 'n6',  type: 'assigned',  read: true,  time: 'Yesterday',  actor: '2', projectId: '1', projectTitle: 'Brand Redesign',    projectAccent: '#2D7A5F', text: 'Assigned you to',    subject: 'Typography pairing'      },
-    { id: 'n7',  type: 'completed', read: true,  time: 'Yesterday',  actor: '1', projectId: '1', projectTitle: 'Brand Redesign',    projectAccent: '#2D7A5F', text: 'You completed',      subject: 'Competitor audit'        },
-    { id: 'n8',  type: 'comment',   read: true,  time: '2 days ago', actor: '4', projectId: '2', projectTitle: 'Learn Ceramics',    projectAccent: '#A0714F', text: 'Commented on',       subject: 'First wheel session'     },
-    { id: 'n9',  type: 'project',   read: true,  time: '2 days ago', actor: '1', projectId: '2', projectTitle: 'Learn Ceramics',    projectAccent: '#A0714F', text: 'Created project',    subject: 'Learn Ceramics'          },
-    { id: 'n10', type: 'assigned',  read: true,  time: '3 days ago', actor: '3', projectId: '3', projectTitle: 'Q2 Product Launch', projectAccent: '#3A5FA0', text: 'Assigned you to',    subject: 'Launch blog post'        },
+    { id: 'n1',  type: 'comment',   read: false, time: '2 min ago',  actor: '2', projectId: '1', projectTitle: 'Brand Redesign',    projectAccent: '#2D7A5F', text: 'COMMENTED',  subject: 'Colour system'           },
+    { id: 'n2',  type: 'assigned',  read: false, time: '14 min ago', actor: '3', projectId: '3', projectTitle: 'Q2 Product Launch', projectAccent: '#3A5FA0', text: 'ASSIGNED',   subject: 'Update docs site'        },
+    { id: 'n3',  type: 'completed', read: false, time: '1 hr ago',   actor: '2', projectId: '1', projectTitle: 'Brand Redesign',    projectAccent: '#2D7A5F', text: 'COMPLETED',  subject: 'Logo concepts (round 1)' },
+    { id: 'n4',  type: 'project',   read: false, time: '2 hr ago',   actor: '4', projectId: '3', projectTitle: 'Q2 Product Launch', projectAccent: '#3A5FA0', text: 'MEMBER_ADDED', subject: 'Q2 Product Launch'     },
+    { id: 'n5',  type: 'comment',   read: true,  time: '3 hr ago',   actor: '3', projectId: '3', projectTitle: 'Q2 Product Launch', projectAccent: '#3A5FA0', text: 'COMMENTED',  subject: 'QA regression pass'      },
+    { id: 'n6',  type: 'assigned',  read: true,  time: 'Yesterday',  actor: '2', projectId: '1', projectTitle: 'Brand Redesign',    projectAccent: '#2D7A5F', text: 'ASSIGNED',   subject: 'Typography pairing'      },
+    { id: 'n7',  type: 'completed', read: true,  time: 'Yesterday',  actor: '1', projectId: '1', projectTitle: 'Brand Redesign',    projectAccent: '#2D7A5F', text: 'COMPLETED',  subject: 'Competitor audit'        },
+    { id: 'n8',  type: 'comment',   read: true,  time: '2 days ago', actor: '4', projectId: '2', projectTitle: 'Learn Ceramics',    projectAccent: '#A0714F', text: 'COMMENTED',  subject: 'First wheel session'     },
+    { id: 'n9',  type: 'project',   read: true,  time: '2 days ago', actor: '1', projectId: '2', projectTitle: 'Learn Ceramics',    projectAccent: '#A0714F', text: 'MEMBER_ADDED', subject: 'Learn Ceramics'        },
+    { id: 'n10', type: 'assigned',  read: true,  time: '3 days ago', actor: '3', projectId: '3', projectTitle: 'Q2 Product Launch', projectAccent: '#3A5FA0', text: 'ASSIGNED',   subject: 'Launch blog post'        },
 ];
 

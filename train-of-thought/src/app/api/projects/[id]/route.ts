@@ -65,7 +65,7 @@ export async function PATCH(req: Request, { params }: Params) {
                     projectTitle,
                     projectAccent,
                     subject:       body.title,
-                    text:          'renamed project to',
+                    text:          'PROJECT_RENAMED',
                 });
             }
 
@@ -79,7 +79,7 @@ export async function PATCH(req: Request, { params }: Params) {
                     projectTitle,
                     projectAccent,
                     subject:       projectTitle,
-                    text:          `set status to ${body.status} on`,
+                    text:          'PROJECT_STATUS_CHANGED',
                 });
             }
 
@@ -100,7 +100,7 @@ export async function PATCH(req: Request, { params }: Params) {
                                 projectTitle,
                                 projectAccent,
                                 subject:       projectTitle,
-                                text:          'updated deadline on',
+                                text:          'PROJECT_DEADLINE_CHANGED',
                             })
                         )
                     );
@@ -124,7 +124,7 @@ export async function PATCH(req: Request, { params }: Params) {
                                 projectTitle,
                                 projectAccent,
                                 subject:       projectTitle,
-                                text:          'added you to',
+                                text:          'MEMBER_ADDED',
                             })
                         )
                     );

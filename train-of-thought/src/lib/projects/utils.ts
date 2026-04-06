@@ -1,5 +1,5 @@
 import type { Project, FlatTask, Member, TaskGroup, PreviewSection, Priority, DeadlineInfo, Notification } from './definitions';
-import { MOCK_MEMBERS, ME_ID } from './config';
+import { MOCK_MEMBERS, ME_ID, ACTION_VERB } from './config';
 import { formatDate } from '../utils';
 import { GeneratedProject } from '@/app/api/generate-project/route';
 
@@ -144,17 +144,7 @@ export function toPreviewSections(generated: GeneratedProject): PreviewSection[]
 }
 
 export function activityText(text: string): string {
-    return text
-        .replace(/^Assigned you to$/i,    'assigned')
-        .replace(/^added you to$/i,        'added a member to')
-        .replace(/^Commented on$/i,        'commented on')
-        .replace(/^Completed$/i,           'completed')
-        .replace(/^deleted task$/i,        'deleted task')
-        .replace(/^created section$/i,     'created section')
-        .replace(/^deleted section$/i,     'deleted section')
-        .replace(/^renamed project to$/i,  'renamed project to')
-        .replace(/^updated deadline on$/i, 'updated deadline on')
-        .replace(/^updated due date on$/i, 'updated due date on');
+    return ACTION_VERB[text] ?? text.toLowerCase();
 }
 
 export function groupByDate(items: Notification[]): { label: string; items: Notification[] }[] {

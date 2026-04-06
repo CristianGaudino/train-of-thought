@@ -69,7 +69,7 @@ export async function POST(req: Request) {
                         projectTitle:  project.title,
                         projectAccent: project.accent,
                         subject:       project.title,
-                        text:          'Added you to',
+                        text:          'MEMBER_ADDED',
                     })
                 )
             );

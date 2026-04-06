@@ -69,7 +69,7 @@ export async function DELETE(_req: Request, { params }: Params) {
                     projectTitle,
                     projectAccent,
                     subject:       sectionTitle,
-                    text:          'deleted section',
+                    text:          'SECTION_DELETED',
                 });
             } catch (notifErr) {
                 console.error('[DELETE /api/sections/[id]] notification error:', notifErr);

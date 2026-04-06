@@ -65,7 +65,7 @@ export async function PATCH(req: Request, { params }: Params) {
                                         taskId:        id,
                                         sectionTitle:  section?.title,
                                         subject:       task.title,
-                                        text:          'Completed',
+                                        text:          'COMPLETED',
                                     })
                                 )
                             );
@@ -85,7 +85,7 @@ export async function PATCH(req: Request, { params }: Params) {
                                         taskId:        id,
                                         sectionTitle:  section?.title,
                                         subject:       task.title,
-                                        text:          `set priority to ${body.priority} on`,
+                                        text:          'PRIORITY_CHANGED',
                                     })
                                 )
                             );
@@ -105,7 +105,7 @@ export async function PATCH(req: Request, { params }: Params) {
                                         taskId:        id,
                                         sectionTitle:  section?.title,
                                         subject:       task.title,
-                                        text:          'updated due date on',
+                                        text:          'DUE_DATE_CHANGED',
                                     })
                                 )
                             );
@@ -173,7 +173,7 @@ export async function DELETE(_req: Request, { params }: Params) {
                     projectAccent,
                     taskId:        id,
                     subject:       taskTitle,
-                    text:          'deleted task',
+                    text:          'TASK_DELETED',
                 });
             } catch (notifErr) {
                 console.error('[DELETE /api/tasks/[id]] notification error:', notifErr);

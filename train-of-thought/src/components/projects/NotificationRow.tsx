@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Check } from 'lucide-react';
-import { NOTIFICATION_CONFIG } from '@/lib/projects/config';
+import { NOTIFICATION_CONFIG, ACTION_VERB } from '@/lib/projects/config';
 import { getMember } from '@/lib/projects/utils';
 import type { NotificationRowProps } from '@/lib/projects/definitions';
 
@@ -39,7 +39,7 @@ export function NotificationRow({ notification, onRead, onClose, compact = false
                     <span className="font-semibold">
                         {actor?.name ?? 'Someone'}
                     </span>
-                    {' '}{notification.text}{' '}
+                    {' '}{ACTION_VERB[notification.text] ?? notification.text}{' '}
                     <span className="font-semibold" style={{ color: notification.projectAccent }}>
                         {notification.subject}
                     </span>

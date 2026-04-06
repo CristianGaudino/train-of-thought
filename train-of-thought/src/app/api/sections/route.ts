@@ -22,14 +22,14 @@ export async function POST(req: Request) {
 
             if (project) {
                 await createNotification({
-                    userId,
+                    userId:        'activity',
                     type:          'project',
                     actorId:       userId,
                     projectId,
                     projectTitle:  project.title,
                     projectAccent: project.accent,
                     subject:       title,
-                    text:          'created section',
+                    text:          'SECTION_CREATED',
                 });
             }
         } catch (notifErr) {

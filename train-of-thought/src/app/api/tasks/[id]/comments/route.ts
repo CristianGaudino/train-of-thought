@@ -59,7 +59,7 @@ export async function POST(req: Request, { params }: Params) {
                                 taskId:        taskId,
                                 sectionTitle:  section?.title,
                                 subject:       task.title,
-                                text:          'Commented on',
+                                text:          'COMMENTED',
                             })
                         )
                     );
