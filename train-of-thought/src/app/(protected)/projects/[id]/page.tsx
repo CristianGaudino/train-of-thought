@@ -153,22 +153,26 @@ export default function ProjectPage() {
                     <div className="w-px h-4 bg-black/12" />
                     <span className="text-sm text-zinc-500 font-primary flex-1 truncate">{header.title}</span>
                     <div className="flex items-center gap-2">
+                        {!headerCollapsed && (
+                            <>
+                                <button
+                                    onClick={() => setEditingHeader(v => !v)}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium font-primary text-zinc-600 transition-colors cursor-pointer ${editingHeader ? 'bg-black/12' : 'bg-black/7 hover:bg-black/12'}`}
+                                >
+                                    <Pencil size={13} />
+                                    Edit
+                                </button>
+                                <button
+                                    onClick={() => setShowDeleteConfirm(true)}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/7 hover:bg-red-50 hover:text-red-500 text-xs font-medium font-primary text-zinc-600 transition-colors cursor-pointer"
+                                >
+                                    <Trash2 size={13} />
+                                    Delete
+                                </button>
+                            </>
+                        )}
                         <button
-                            onClick={() => setEditingHeader(v => !v)}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium font-primary text-zinc-600 transition-colors cursor-pointer ${editingHeader ? 'bg-black/12' : 'bg-black/7 hover:bg-black/12'}`}
-                        >
-                            <Pencil size={13} />
-                            Edit
-                        </button>
-                        <button
-                            onClick={() => setShowDeleteConfirm(true)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/7 hover:bg-red-50 hover:text-red-500 text-xs font-medium font-primary text-zinc-600 transition-colors cursor-pointer"
-                        >
-                            <Trash2 size={13} />
-                            Delete
-                        </button>
-                        <button
-                            onClick={() => setHeaderCollapsed(v => !v)}
+                            onClick={() => { setHeaderCollapsed(v => !v); setEditingHeader(false); }}
                             className="flex items-center justify-center w-7 h-7 rounded-lg bg-black/7 hover:bg-black/12 text-zinc-600 transition-colors cursor-pointer"
                             aria-label={headerCollapsed ? 'Expand header' : 'Collapse header'}
                         >
