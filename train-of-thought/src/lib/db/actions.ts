@@ -190,6 +190,7 @@ export async function createTask(
             assignees:   insert.assignees   ?? [],
             subtasks:    insert.subtasks    ?? [],
             order:       insert.order       ?? 0,
+            deleted:     false,
             createdAt:   taskNow,
             updatedAt:   taskNow,
         },
