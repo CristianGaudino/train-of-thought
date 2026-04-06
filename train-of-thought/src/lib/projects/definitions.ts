@@ -101,6 +101,7 @@ export interface Task {
     title: string;
     description: string;
     done: boolean;
+    deleted?: boolean;
     priority: Priority;
     due: string | null; // ISO date string, null if no deadline
     assignees: string[]; // Member ids

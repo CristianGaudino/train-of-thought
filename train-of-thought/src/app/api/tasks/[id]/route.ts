@@ -171,6 +171,7 @@ export async function DELETE(_req: Request, { params }: Params) {
                     projectId,
                     projectTitle,
                     projectAccent,
+                    taskId:        id,
                     subject:       taskTitle,
                     text:          'deleted task',
                 });

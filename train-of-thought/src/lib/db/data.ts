@@ -30,6 +30,7 @@ export function shapeTask(
         title:       row.title,
         description: row.description,
         done:        row.done,
+        deleted:     row.deleted,
         priority:    row.priority as Task['priority'],
         due:         row.due ? row.due.toISOString().split('T')[0] : null,
         assignees:   row.assignees ?? [],

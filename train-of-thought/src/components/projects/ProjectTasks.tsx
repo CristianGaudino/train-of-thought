@@ -252,10 +252,10 @@ export function ProjectTasks({
                                         {!isCollapsed && (
                                             <div className="flex flex-col gap-1.5 pl-1">
                                                 <SortableContext
-                                                    items={section.tasks.map(t => t.id)}
+                                                    items={section.tasks.filter(t => !t.deleted).map(t => t.id)}
                                                     strategy={verticalListSortingStrategy}
                                                 >
-                                                    {section.tasks.map(task => (
+                                                    {section.tasks.filter(t => !t.deleted).map(task => (
                                                         <SortableTask
                                                             key={task.id}
                                                             id={task.id}

@@ -48,6 +48,7 @@ export const tasks = pgTable('tasks', {
     title:       text('title').notNull(),
     description: text('description').notNull().default(''),
     done:        boolean('done').notNull().default(false),
+    deleted:     boolean('deleted').notNull().default(false),
     priority:    text('priority').notNull().default('Medium'),
     due:         timestamp('due'),
     assignees:   text('assignees').array().notNull().default([]),

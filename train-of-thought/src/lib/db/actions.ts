@@ -222,7 +222,7 @@ export async function updateTask(
 }
 
 export async function deleteTask(id: string): Promise<void> {
-    await db.delete(tasks).where(eq(tasks.id, id));
+    await db.update(tasks).set({ deleted: true }).where(eq(tasks.id, id));
 }
 
 export async function reorderTasks(

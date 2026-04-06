@@ -161,10 +161,10 @@ export function useProject(id: string): UseProjectReturn {
         // Snapshot for rollback
         const snapshot = sections;
 
-        // Optimistic
+        // Optimistic — mark as deleted (soft delete keeps it available for activity/notifications)
         setSections(ss => ss.map(s => ({
             ...s,
-            tasks: s.tasks.filter(t => t.id !== taskId),
+            tasks: s.tasks.map(t => t.id === taskId ? { ...t, deleted: true } : t),
         })));
 
         try {
