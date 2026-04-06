@@ -58,6 +58,7 @@ export function useProject(id: string): UseProjectReturn {
                 body:    JSON.stringify({ done: newDone }),
             });
             if (!res.ok) throw new Error('Failed');
+            if (newDone) success('Task completed');
         } catch {
             toastError('Failed to update task', 'Your change could not be saved.');
             // Rollback
