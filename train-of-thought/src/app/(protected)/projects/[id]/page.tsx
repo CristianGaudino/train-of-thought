@@ -17,7 +17,7 @@ import type { HeaderData, Tab } from '@/lib/projects/definitions';
 import { useProject } from '@/hooks/projects/useProject';
 import { AvatarStack } from '@/components/projects/AvatarStack';
 import { PageSkeleton } from '@/components/ui/skeletons';
-import { Button } from '@/components/ui/buttons';
+import { Button, SubtleButton, ToggleButton } from '@/components/ui/buttons';
 import SectionLabel from '@/components/projects/SectionLabel';
 import { Input } from '@/components/ui/inputs';
 import { ProjectTasks } from '@/components/projects/ProjectTasks';
@@ -144,45 +144,45 @@ export default function ProjectPage() {
 
                 {/* Top bar */}
                 <div className="flex items-center gap-3 px-4 md:px-8 pt-4">
-                    <button
-                        onClick={() => router.push('/projects')}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/7 hover:bg-black/12 text-xs font-medium font-primary text-zinc-600 transition-colors cursor-pointer"
-                    >
-                        <ArrowLeft size={14} />
+                    <SubtleButton icon={<ArrowLeft size={14} />} onClick={() => router.push('/projects')}>
                         Projects
-                    </button>
+                    </SubtleButton>
                     <div className="w-px h-4 bg-black/12" />
                     <span className="text-sm text-zinc-500 font-primary flex-1 truncate">{header.title}</span>
                     <div className="flex items-center gap-2">
                         {!headerCollapsed && (
                             <>
-                                <button
+                                <SubtleButton
+                                    icon={<Pencil size={13} />}
+                                    active={editingHeader}
                                     onClick={() => setEditingHeader(v => !v)}
-                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium font-primary text-zinc-600 transition-colors cursor-pointer ${editingHeader ? 'bg-black/12' : 'bg-black/7 hover:bg-black/12'}`}
                                 >
-                                    <Pencil size={13} />
                                     Edit
-                                </button>
-                                <button
+                                </SubtleButton>
+                                <SubtleButton
+                                    icon={<Trash2 size={13} />}
+                                    destructive
                                     onClick={() => setShowDeleteConfirm(true)}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/7 hover:bg-red-50 hover:text-red-500 text-xs font-medium font-primary text-zinc-600 transition-colors cursor-pointer"
                                 >
-                                    <Trash2 size={13} />
                                     Delete
-                                </button>
+                                </SubtleButton>
                             </>
                         )}
-                        <button
+                        <ToggleButton
+                            active={headerCollapsed}
+                            activeClassName="bg-black/7 hover:bg-black/12 text-zinc-600"
+                            inactiveClassName="bg-black/7 hover:bg-black/12 text-zinc-600"
+                            className="w-7 h-7"
+                            icon={
+                                <ChevronDown
+                                    size={14}
+                                    className="transition-transform duration-300"
+                                    style={{ transform: headerCollapsed ? 'rotate(-180deg)' : 'rotate(0deg)' }}
+                                />
+                            }
                             onClick={() => { setHeaderCollapsed(v => !v); setEditingHeader(false); }}
-                            className="flex items-center justify-center w-7 h-7 rounded-lg bg-black/7 hover:bg-black/12 text-zinc-600 transition-colors cursor-pointer"
                             aria-label={headerCollapsed ? 'Expand header' : 'Collapse header'}
-                        >
-                            <ChevronDown
-                                size={14}
-                                className="transition-transform duration-300"
-                                style={{ transform: headerCollapsed ? 'rotate(-180deg)' : 'rotate(0deg)' }}
-                            />
-                        </button>
+                        />
                     </div>
                 </div>
 

@@ -62,6 +62,22 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
     iconRight?: React.ReactNode;
 }
 
+export interface ToggleButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    active:             boolean;
+    icon?:              React.ReactNode;
+    iconRight?:         React.ReactNode;
+    children?:          React.ReactNode;
+    activeClassName?:   string;
+    inactiveClassName?: string;
+}
+
+export interface SubtleButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    icon?:        React.ReactNode;
+    children?:    React.ReactNode;
+    active?:      boolean;
+    destructive?: boolean;
+}
+
 export interface DashedButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     accent:    string;
     icon?:     React.ReactNode;
