@@ -310,6 +310,24 @@ export function useProject(id: string): UseProjectReturn {
     };
 
 
+    // ── Toggle favourite ──
+
+    const toggleFavourite = async () => {
+        if (!project) return;
+        const newValue = !project.favourite;
+        setProject(p => p ? { ...p, favourite: newValue } : p);
+        try {
+            const res = await fetch(`/api/projects/${id}`, {
+                method:  'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ favourite: newValue }),
+            });
+            if (!res.ok) throw new Error('Failed');
+        } catch {
+            setProject(p => p ? { ...p, favourite: !newValue } : p);
+        }
+    };
+
     // ── Delete project ──
 
     const deleteProject = async (): Promise<boolean> => {
@@ -343,6 +361,7 @@ export function useProject(id: string): UseProjectReturn {
         deleteSection,
         saveHeader,
         savingHeader,
+        toggleFavourite,
         deleteProject,
         deleting,
     };

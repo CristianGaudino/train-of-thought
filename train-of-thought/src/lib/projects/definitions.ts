@@ -391,8 +391,9 @@ export interface UseProjectReturn {
     renameSection:   (sectionId: string, title: string) => Promise<void>;
     deleteSection:   (sectionId: string) => Promise<void>;
     // Header mutations
-    saveHeader:     (data: HeaderData) => Promise<void>;
-    savingHeader:   boolean;
+    saveHeader:      (data: HeaderData) => Promise<void>;
+    savingHeader:    boolean;
+    toggleFavourite: () => Promise<void>;
     // Project deletion
     deleteProject:  () => Promise<boolean>;
     deleting:       boolean;

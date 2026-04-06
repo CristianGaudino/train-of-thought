@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
-    ArrowLeft, Pencil, AlertTriangle, Trash2, ChevronDown,
+    ArrowLeft, Pencil, AlertTriangle, Trash2, ChevronDown, Star,
 } from 'lucide-react';
 import {
     STATUS_CONFIG, ACCENT_PALETTE, STATUS_OPTIONS,
@@ -34,6 +34,7 @@ export default function ProjectPage() {
         project, sections, loading, error,
         toggleTask, updateTask, addTask, deleteTask, addSection, reorderTasks, reorderSections, renameSection, deleteSection,
         saveHeader, savingHeader,
+        toggleFavourite,
         deleteProject, deleting,
     } = useProject(id);
 
@@ -265,9 +266,21 @@ export default function ProjectPage() {
                         <div className="pb-5">
                             <div className="flex items-start gap-4 flex-wrap">
                                 <div className="flex-1 min-w-0">
-                                    <h1 className="text-2xl md:text-3xl font-secondary text-zinc-900 tracking-tight m-0 leading-tight">
-                                        {header.title}
-                                    </h1>
+                                    <div className="flex items-center gap-2.5">
+                                        <h1 className="text-2xl md:text-3xl font-secondary text-zinc-900 tracking-tight m-0 leading-tight">
+                                            {header.title}
+                                        </h1>
+                                        <button
+                                            onClick={toggleFavourite}
+                                            className="p-1 rounded-lg hover:bg-black/7 transition-colors cursor-pointer flex-shrink-0"
+                                            title={project.favourite ? 'Remove from starred' : 'Star project'}
+                                        >
+                                            <Star
+                                                size={16}
+                                                className={project.favourite ? 'text-amber-400 fill-amber-400' : 'text-zinc-300'}
+                                            />
+                                        </button>
+                                    </div>
                                     {header.description && (
                                         <p className="text-sm text-zinc-500 font-primary mt-1.5 m-0 leading-relaxed max-w-lg">
                                             {header.description}
