@@ -344,67 +344,69 @@ export default function TaskPanel({
 
                 {/* ── Header ── */}
                 <div className="px-4 md:px-6 py-4 md:py-5 border-b border-zinc-100 flex-shrink-0" style={{ background: projectColor }}>
-                    <div className="flex justify-between items-start gap-3">
-                        <div className="flex-1 min-w-0">
+                    <div className="flex flex-col">
+                        <div className="flex items-center gap-3">
+                            <div className="flex-1 min-w-0">
 
-                            {/* Title */}
-                            {!readOnly && editingTitle ? (
-                                <input
-                                    autoFocus
-                                    value={title}
-                                    onChange={e => setTitle(e.target.value)}
-                                    onBlur={commitTitle}
-                                    onKeyDown={e => {
-                                        if (e.key === 'Enter')  commitTitle();
-                                        if (e.key === 'Escape') { setTitle(task.title); setEditingTitle(false); }
-                                    }}
-                                    className="w-full text-xl font-bold font-secondary text-zinc-900 bg-white/70 rounded-lg px-2 py-1 outline-none border border-zinc-300 focus:border-zinc-500"
-                                />
-                            ) : readOnly ? (
-                                <h3 className="text-xl font-bold font-secondary text-zinc-900 leading-snug">
-                                    {title}
-                                </h3>
-                            ) : (
-                                <button
-                                    onClick={() => setEditingTitle(true)}
-                                    className="group flex items-start gap-1.5 text-left w-full"
-                                >
-                                    <h3 className="text-xl font-bold font-secondary text-zinc-900 leading-snug flex-1">
+                                {/* Title */}
+                                {!readOnly && editingTitle ? (
+                                    <input
+                                        autoFocus
+                                        value={title}
+                                        onChange={e => setTitle(e.target.value)}
+                                        onBlur={commitTitle}
+                                        onKeyDown={e => {
+                                            if (e.key === 'Enter')  commitTitle();
+                                            if (e.key === 'Escape') { setTitle(task.title); setEditingTitle(false); }
+                                        }}
+                                        className="w-full text-xl font-bold font-secondary text-zinc-900 bg-white/70 rounded-lg px-2 py-1 outline-none border border-zinc-300 focus:border-zinc-500"
+                                    />
+                                ) : readOnly ? (
+                                    <h3 className="text-xl font-bold font-secondary text-zinc-900 leading-snug">
                                         {title}
                                     </h3>
-                                    <Pencil size={13} className="text-zinc-300 group-hover:text-zinc-500 mt-1.5 flex-shrink-0 transition-colors" />
-                                </button>
-                            )}
+                                ) : (
+                                    <button
+                                        onClick={() => setEditingTitle(true)}
+                                        className="group flex items-center gap-1.5 text-left w-full"
+                                    >
+                                        <h3 className="text-xl font-bold font-secondary text-zinc-900 leading-snug flex-1">
+                                            {title}
+                                        </h3>
+                                        <Pencil size={13} className="text-zinc-300 group-hover:text-zinc-500 flex-shrink-0 transition-colors" />
+                                    </button>
+                                )}
+                            </div>
 
-                            {/* Breadcrumb */}
-                            {task.projectTitle && (
-                                <div className="mt-1.5 text-xs text-zinc-500 font-primary flex items-center gap-1">
-                                    <span className="inline-block w-2 h-2 rounded-full flex-shrink-0" style={{ background: accent }} />
-                                    {task.projectTitle}
-                                    {task.sectionTitle && (
-                                        <><ChevronRight size={12} className="text-zinc-300" />{task.sectionTitle}</>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="flex items-center gap-1 flex-shrink-0">
-                            {!readOnly && onDelete && !confirmDelete && (
+                            <div className="flex items-center gap-1 flex-shrink-0">
+                                {!readOnly && onDelete && !confirmDelete && (
+                                    <button
+                                        onClick={() => setConfirmDelete(true)}
+                                        className="p-1.5 rounded-lg text-zinc-300 hover:text-red-400 hover:bg-red-50 transition-colors cursor-pointer"
+                                        title="Delete task"
+                                    >
+                                        <Trash2 size={15} />
+                                    </button>
+                                )}
                                 <button
-                                    onClick={() => setConfirmDelete(true)}
-                                    className="p-1.5 rounded-lg text-zinc-300 hover:text-red-400 hover:bg-red-50 transition-colors cursor-pointer"
-                                    title="Delete task"
+                                    onClick={onClose}
+                                    className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-600 hover:bg-black/5 transition-colors cursor-pointer"
                                 >
-                                    <Trash2 size={15} />
+                                    <X size={18} />
                                 </button>
-                            )}
-                            <button
-                                onClick={onClose}
-                                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-600 hover:bg-black/5 transition-colors cursor-pointer"
-                            >
-                                <X size={18} />
-                            </button>
+                            </div>
                         </div>
+
+                        {/* Breadcrumb */}
+                        {task.projectTitle && (
+                            <div className="mt-1.5 text-xs text-zinc-500 font-primary flex items-center gap-1">
+                                <span className="inline-block w-2 h-2 rounded-full flex-shrink-0" style={{ background: accent }} />
+                                {task.projectTitle}
+                                {task.sectionTitle && (
+                                    <><ChevronRight size={12} className="text-zinc-300" />{task.sectionTitle}</>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* Deleted banner */}
