@@ -233,8 +233,10 @@ export interface DeadlineInfo {
 // Props
 
 export interface SidebarProps {
-    open:    boolean;
-    onClose: () => void;
+    open:             boolean;
+    onClose:          () => void;
+    collapsed:        boolean;
+    onToggleCollapse: () => void;
 }
 
 export interface NotificationRowProps {

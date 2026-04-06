@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Menu } from 'lucide-react';
 import Sidebar from './Sidebar';
 import NotificationBell from './NotificationBell';
@@ -8,6 +8,11 @@ import Logo from '@/components/ui/svg';
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+    useEffect(() => {
+        setSidebarCollapsed(localStorage.getItem('sidebarCollapsed') === 'true');
+    }, []);
 
     return (
         <div className="flex h-dvh bg-zinc-50 overflow-hidden">
@@ -20,7 +25,16 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
                 />
             )}
 
-            <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+            <Sidebar
+                open={sidebarOpen}
+                onClose={() => setSidebarOpen(false)}
+                collapsed={sidebarCollapsed}
+                onToggleCollapse={() => setSidebarCollapsed(v => {
+                    const next = !v;
+                    localStorage.setItem('sidebarCollapsed', String(next));
+                    return next;
+                })}
+            />
 
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
