@@ -54,7 +54,10 @@ export function ProjectTasks({
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
     const [draggingId, setDraggingId]       = useState<string | null>(null);
     const [localSections, setLocalSections] = useState<Section[]>(sections);
-    const [hideCompleted, setHideCompleted] = useState(false);
+    const [hideCompleted, setHideCompleted] = useState(() => {
+        if (typeof window === 'undefined') return false;
+        return localStorage.getItem('hideCompleted') === 'true';
+    });
 
     // Tracks which section the dragged task started in (set once, never updated)
     const dragOriginalSectionRef = useRef<string | null>(null);
@@ -216,7 +219,11 @@ export function ProjectTasks({
         <div className="px-4 md:px-8 py-7 flex flex-col gap-7">
             <div className="flex justify-end -my-3">
                 <button
-                    onClick={() => setHideCompleted(v => !v)}
+                    onClick={() => setHideCompleted(v => {
+                        const next = !v;
+                        localStorage.setItem('hideCompleted', String(next));
+                        return next;
+                    })}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-xs font-medium font-primary text-zinc-500 transition-colors cursor-pointer"
                 >
                     {hideCompleted ? <Eye size={13} /> : <EyeOff size={13} />}
