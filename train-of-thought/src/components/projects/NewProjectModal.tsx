@@ -72,6 +72,8 @@ export default function NewProjectModal({ onClose, onCreate }: NewProjectModalPr
             color:       form.color,
             members:     form.members,
             sections:    [{ id: generateId('s'), title: 'Tasks', tasks: [] }],
+            order:       0,
+            favourite:   false,
         };
         onCreate(project);
         onClose();
