@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
-    ArrowLeft, Pencil, AlertTriangle, Trash2,
+    ArrowLeft, Pencil, AlertTriangle, Trash2, ChevronDown,
 } from 'lucide-react';
 import {
     STATUS_CONFIG, ACCENT_PALETTE, STATUS_OPTIONS,
@@ -63,6 +63,7 @@ export default function ProjectPage() {
     const [collapsed, setCollapsed]               = useState<Record<string, boolean>>({});
     const [activeTab, setActiveTab]               = useState<Tab>('tasks');
     const [editingHeader, setEditingHeader]       = useState(false);
+    const [headerCollapsed, setHeaderCollapsed]   = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [newTaskSec, setNewTaskSec]             = useState<string | null>(null);
     const [newTaskVal, setNewTaskVal]             = useState('');
@@ -166,10 +167,25 @@ export default function ProjectPage() {
                             <Trash2 size={13} />
                             Delete
                         </button>
+                        <button
+                            onClick={() => setHeaderCollapsed(v => !v)}
+                            className="flex items-center justify-center w-7 h-7 rounded-lg bg-black/7 hover:bg-black/12 text-zinc-600 transition-colors cursor-pointer"
+                            aria-label={headerCollapsed ? 'Expand header' : 'Collapse header'}
+                        >
+                            <ChevronDown
+                                size={14}
+                                className="transition-transform duration-300"
+                                style={{ transform: headerCollapsed ? 'rotate(-180deg)' : 'rotate(0deg)' }}
+                            />
+                        </button>
                     </div>
                 </div>
 
                 {/* Identity / edit form */}
+                <div
+                    className="overflow-hidden transition-all duration-300 ease-in-out"
+                    style={{ maxHeight: headerCollapsed ? 0 : 500 }}
+                >
                 <div className="px-4 md:px-8 pt-5">
                     {editingHeader ? (
                         <div className="flex flex-col gap-3 pb-5">
@@ -293,6 +309,7 @@ export default function ProjectPage() {
                             </div>
                         </div>
                     )}
+                </div>
                 </div>
 
                 {/* Tabs */}
