@@ -191,6 +191,8 @@ export const MOCK_PROJECTS: Project[] = [
                 ],
             },
         ],
+        order:       0,
+        favourite:   true,
     },
     {
         id: '2',
@@ -273,6 +275,8 @@ export const MOCK_PROJECTS: Project[] = [
                 ],
             },
         ],
+        order:       0,
+        favourite:   false,
     },
     {
         id: '3',
@@ -359,6 +363,8 @@ export const MOCK_PROJECTS: Project[] = [
                 ],
             },
         ],
+        order:       1,
+        favourite:   false,
     },
 ];
 
