@@ -65,15 +65,18 @@ export default function SignUpPage() {
 
             {/* Right panel */}
             <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
-                <div className="w-full max-w-md mx-auto">
-
+                <div className="w-full max-w-md mx-auto flex flex-col items-center lg:items-start">
                     {/* Mobile logo */}
-                    <div className="lg:hidden flex flex-col items-center mb-8">
-                        <Logo size={48} />
-                        <div className="text-lg font-secondary text-zinc-900 tracking-tight mt-3">
-                            Train of Thought
+                    <div className="lg:hidden flex items-center gap-3 mb-8">
+                        <Logo size={36} />
+                        <div>
+                            <div className="font-secondary text-zinc-900 tracking-tight leading-none">
+                                Train of Thought
+                            </div>
+                            <div className="text-xs text-zinc-400 font-primary mt-0.5">
+                                a thinking space
+                            </div>
                         </div>
-                        <div className="text-xs text-zinc-400 font-primary">a thinking space</div>
                     </div>
 
                     <div className="mb-8 text-center lg:text-left">
@@ -109,9 +112,9 @@ export default function SignUpPage() {
                                     bg-zinc-900 hover:bg-zinc-700 rounded-xl font-primary
                                     font-semibold text-sm h-11 transition-colors
                                 `,
-                                footer:            'bg-transparent',
-                                footerActionLink:  'text-zinc-900 font-semibold font-primary hover:text-zinc-600',
-                                footerActionText:  'text-zinc-500 font-primary text-sm',
+                                footer:           'bg-white rounded-xl',
+                                footerActionLink: 'text-zinc-900 font-semibold font-primary hover:text-zinc-600',
+                                footerActionText: 'text-zinc-500 font-primary text-sm',
                                 identityPreviewText: 'font-primary text-sm',
                                 identityPreviewEditButtonIcon: 'text-zinc-500',
                                 formFieldInputShowPasswordButton: 'text-zinc-400 hover:text-zinc-600',
@@ -119,12 +122,12 @@ export default function SignUpPage() {
                                 formResendCodeLink: 'text-zinc-900 font-primary font-semibold',
                             },
                             variables: {
-                                colorPrimary:         '#18181B',
-                                colorText:            '#18181B',
-                                colorTextSecondary:   '#71717A',
-                                colorBackground:      'transparent',
-                                colorInputBackground: '#FAFAFA',
-                                colorInputText:       '#18181B',
+                                colorPrimary:         'var(--color-zinc-900)',
+                                colorText:            'var(--color-zinc-900)',
+                                colorTextSecondary:   'var(--color-zinc-500)',
+                                colorBackground:      'var(--color-white)',
+                                colorInputBackground: 'var(--color-zinc-50)',
+                                colorInputText:       'var(--color-zinc-800)',
                                 borderRadius:         '12px',
                                 fontFamily:           'var(--font-montserrat), sans-serif',
                                 fontSize:             '14px',
