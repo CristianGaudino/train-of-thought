@@ -253,6 +253,7 @@ export interface TaskPanelProps {
     onClose:      () => void;
     onUpdate?:    (taskId: string, data: Partial<Task>, options?: { silent?: boolean }) => Promise<void>;
     onDelete?:    (taskId: string) => Promise<void>;
+    readOnly?:    boolean;
 }
 
 export interface AvatarProps {

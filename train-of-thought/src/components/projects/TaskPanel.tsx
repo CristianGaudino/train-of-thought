@@ -43,6 +43,7 @@ function SortableSubtask({
         </div>
     );
 }
+import { InfoAlert } from '@/components/ui/alerts';
 import { PRIORITY_CONFIG } from '@/lib/projects/config';
 import { generateId } from '@/lib/projects/utils';
 import { useMembers } from '@/hooks/useMembers';
@@ -61,6 +62,7 @@ export default function TaskPanel({
     onClose,
     onUpdate,
     onDelete,
+    readOnly = false,
 }: TaskPanelProps) {
     const { user }    = useUser();
     const { success, error: toastError } = useToast();
@@ -346,7 +348,7 @@ export default function TaskPanel({
                         <div className="flex-1 min-w-0">
 
                             {/* Title */}
-                            {editingTitle ? (
+                            {!readOnly && editingTitle ? (
                                 <input
                                     autoFocus
                                     value={title}
@@ -358,6 +360,10 @@ export default function TaskPanel({
                                     }}
                                     className="w-full text-xl font-bold font-secondary text-zinc-900 bg-white/70 rounded-lg px-2 py-1 outline-none border border-zinc-300 focus:border-zinc-500"
                                 />
+                            ) : readOnly ? (
+                                <h3 className="text-xl font-bold font-secondary text-zinc-900 leading-snug">
+                                    {title}
+                                </h3>
                             ) : (
                                 <button
                                     onClick={() => setEditingTitle(true)}
@@ -383,7 +389,7 @@ export default function TaskPanel({
                         </div>
 
                         <div className="flex items-center gap-1 flex-shrink-0">
-                            {onDelete && !confirmDelete && (
+                            {!readOnly && onDelete && !confirmDelete && (
                                 <button
                                     onClick={() => setConfirmDelete(true)}
                                     className="p-1.5 rounded-lg text-zinc-300 hover:text-red-400 hover:bg-red-50 transition-colors cursor-pointer"
@@ -401,8 +407,15 @@ export default function TaskPanel({
                         </div>
                     </div>
 
+                    {/* Deleted banner */}
+                    {readOnly && (
+                        <div className="mt-3">
+                            <InfoAlert message="This task has been deleted." dismissable={false} />
+                        </div>
+                    )}
+
                     {/* Delete confirm */}
-                    {confirmDelete && (
+                    {!readOnly && confirmDelete && (
                         <div className="mt-3 flex items-center gap-2 px-3 py-2.5 rounded-xl bg-red-50 border border-red-200">
                             <span className="text-xs text-red-700 font-primary flex-1">
                                 Delete this task permanently?
@@ -429,80 +442,109 @@ export default function TaskPanel({
 
                         {/* Priority */}
                         <div className="relative" ref={priorityRef}>
-                            <button
-                                onClick={() => { closeAllDropdowns(); setShowPriority(v => !v); }}
-                                className="flex items-center gap-1 cursor-pointer"
-                            >
-                                {pr ? (
+                            {readOnly ? (
+                                pr ? (
                                     <Pill bg={pr.bg} color={pr.color}>
                                         <Flag size={10} /> {priority}
                                     </Pill>
                                 ) : (
-                                    <span className="text-xs text-zinc-400 font-primary flex items-center gap-1 hover:text-zinc-600 transition-colors">
-                                        <Flag size={12} /> Priority
+                                    <span className="text-xs text-zinc-400 font-primary flex items-center gap-1">
+                                        <Flag size={12} /> No priority
                                     </span>
-                                )}
-                            </button>
-                            {showPriority && (
-                                <div className="absolute top-full left-0 mt-1 bg-white rounded-xl border border-zinc-200 shadow-lg z-10 overflow-hidden min-w-32">
-                                    {PRIORITIES.map(p => {
-                                        const cfg = PRIORITY_CONFIG[p];
-                                        return (
-                                            <button
-                                                key={p}
-                                                onClick={() => commitPriority(p)}
-                                                className="flex items-center gap-2 w-full px-3 py-2 text-xs font-primary hover:bg-zinc-50 transition-colors cursor-pointer"
-                                                style={{ color: cfg.color }}
-                                            >
-                                                <Flag size={11} />
-                                                {p}
-                                                {priority === p && <Check size={11} className="ml-auto" />}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
+                                )
+                            ) : (
+                                <>
+                                    <button
+                                        onClick={() => { closeAllDropdowns(); setShowPriority(v => !v); }}
+                                        className="flex items-center gap-1 cursor-pointer"
+                                    >
+                                        {pr ? (
+                                            <Pill bg={pr.bg} color={pr.color}>
+                                                <Flag size={10} /> {priority}
+                                            </Pill>
+                                        ) : (
+                                            <span className="text-xs text-zinc-400 font-primary flex items-center gap-1 hover:text-zinc-600 transition-colors">
+                                                <Flag size={12} /> Priority
+                                            </span>
+                                        )}
+                                    </button>
+                                    {showPriority && (
+                                        <div className="absolute top-full left-0 mt-1 bg-white rounded-xl border border-zinc-200 shadow-lg z-10 overflow-hidden min-w-32">
+                                            {PRIORITIES.map(p => {
+                                                const cfg = PRIORITY_CONFIG[p];
+                                                return (
+                                                    <button
+                                                        key={p}
+                                                        onClick={() => commitPriority(p)}
+                                                        className="flex items-center gap-2 w-full px-3 py-2 text-xs font-primary hover:bg-zinc-50 transition-colors cursor-pointer"
+                                                        style={{ color: cfg.color }}
+                                                    >
+                                                        <Flag size={11} />
+                                                        {p}
+                                                        {priority === p && <Check size={11} className="ml-auto" />}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
 
                         {/* Due date */}
                         <div className="relative" ref={dueRef}>
-                            <button
-                                onClick={() => { closeAllDropdowns(); setShowDue(v => !v); }}
-                                className="flex items-center gap-1 cursor-pointer"
-                            >
-                                {due ? (
-                                    <span className="text-xs font-primary text-zinc-600 flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/60 hover:bg-white/80 transition-colors">
+                            {readOnly ? (
+                                due ? (
+                                    <span className="text-xs font-primary text-zinc-600 flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/60">
                                         <Calendar size={11} />
                                         {formatDate(due)}
                                     </span>
                                 ) : (
-                                    <span className="text-xs text-zinc-400 font-primary flex items-center gap-1 hover:text-zinc-600 transition-colors">
-                                        <Calendar size={12} /> Due date
+                                    <span className="text-xs text-zinc-400 font-primary flex items-center gap-1">
+                                        <Calendar size={12} /> No due date
                                     </span>
-                                )}
-                            </button>
-                            {showDue && (
-                                <div className="absolute top-full left-0 mt-1 bg-white rounded-xl border border-zinc-200 shadow-lg z-10 p-3 flex flex-col gap-2">
-                                    <Input
-                                        autoFocus
-                                        type="date"
-                                        value={due}
-                                        onChange={e => commitDue(e.target.value)}
-                                        className="text-xs"
-                                    />
-                                    {due && (
-                                        <button
-                                            onClick={clearDue}
-                                            className="text-xs text-zinc-400 hover:text-zinc-600 font-primary transition-colors cursor-pointer flex items-center gap-1"
-                                        >
-                                            <X size={11} /> Clear date
-                                        </button>
+                                )
+                            ) : (
+                                <>
+                                    <button
+                                        onClick={() => { closeAllDropdowns(); setShowDue(v => !v); }}
+                                        className="flex items-center gap-1 cursor-pointer"
+                                    >
+                                        {due ? (
+                                            <span className="text-xs font-primary text-zinc-600 flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/60 hover:bg-white/80 transition-colors">
+                                                <Calendar size={11} />
+                                                {formatDate(due)}
+                                            </span>
+                                        ) : (
+                                            <span className="text-xs text-zinc-400 font-primary flex items-center gap-1 hover:text-zinc-600 transition-colors">
+                                                <Calendar size={12} /> Due date
+                                            </span>
+                                        )}
+                                    </button>
+                                    {showDue && (
+                                        <div className="absolute top-full left-0 mt-1 bg-white rounded-xl border border-zinc-200 shadow-lg z-10 p-3 flex flex-col gap-2">
+                                            <Input
+                                                autoFocus
+                                                type="date"
+                                                value={due}
+                                                onChange={e => commitDue(e.target.value)}
+                                                className="text-xs"
+                                            />
+                                            {due && (
+                                                <button
+                                                    onClick={clearDue}
+                                                    className="text-xs text-zinc-400 hover:text-zinc-600 font-primary transition-colors cursor-pointer flex items-center gap-1"
+                                                >
+                                                    <X size={11} /> Clear date
+                                                </button>
+                                            )}
+                                        </div>
                                     )}
-                                </div>
+                                </>
                             )}
                         </div>
 
-                        {saving && <span className="text-xs text-zinc-400 font-primary ml-auto">Saving…</span>}
+                        {!readOnly && saving && <span className="text-xs text-zinc-400 font-primary ml-auto">Saving…</span>}
                     </div>
 
                     {/* Assignees */}
@@ -523,40 +565,42 @@ export default function TaskPanel({
                         )}
 
                         {/* Assignee picker */}
-                        <div className="relative" ref={assigneesRef}>
-                            <button
-                                onClick={() => { closeAllDropdowns(); setShowAssignees(v => !v); }}
-                                className={`flex items-center gap-1 text-xs font-primary px-2 py-1 rounded-full transition-colors cursor-pointer ${showAssignees ? 'bg-zinc-200 text-zinc-700' : 'text-zinc-400 hover:text-zinc-600 hover:bg-white/60'}`}
-                            >
-                                <UserPlus size={11} />
-                                {assignees.length === 0 ? 'Assign' : 'Edit'}
-                            </button>
-                            {showAssignees && (
-                                <div className="absolute top-full left-0 mt-1 bg-white rounded-xl border border-zinc-200 shadow-lg z-10 overflow-hidden min-w-44">
-                                    <div className="px-3 py-2 border-b border-zinc-100">
-                                        <span className="text-xs font-semibold uppercase tracking-widest text-zinc-400 font-primary">
-                                            Assignees
-                                        </span>
+                        {!readOnly && (
+                            <div className="relative" ref={assigneesRef}>
+                                <button
+                                    onClick={() => { closeAllDropdowns(); setShowAssignees(v => !v); }}
+                                    className={`flex items-center gap-1 text-xs font-primary px-2 py-1 rounded-full transition-colors cursor-pointer ${showAssignees ? 'bg-zinc-200 text-zinc-700' : 'text-zinc-400 hover:text-zinc-600 hover:bg-white/60'}`}
+                                >
+                                    <UserPlus size={11} />
+                                    {assignees.length === 0 ? 'Assign' : 'Edit'}
+                                </button>
+                                {showAssignees && (
+                                    <div className="absolute top-full left-0 mt-1 bg-white rounded-xl border border-zinc-200 shadow-lg z-10 overflow-hidden min-w-44">
+                                        <div className="px-3 py-2 border-b border-zinc-100">
+                                            <span className="text-xs font-semibold uppercase tracking-widest text-zinc-400 font-primary">
+                                                Assignees
+                                            </span>
+                                        </div>
+                                        {memberIds.map(memberId => {
+                                            const member   = memberMap[memberId];
+                                            if (!member) return null;
+                                            const assigned = assignees.includes(memberId);
+                                            return (
+                                                <button
+                                                    key={memberId}
+                                                    onClick={() => toggleAssignee(memberId)}
+                                                    className="flex items-center gap-2.5 w-full px-3 py-2.5 hover:bg-zinc-50 transition-colors cursor-pointer"
+                                                >
+                                                    <Avatar member={member} size={22} />
+                                                    <span className="text-xs font-primary text-zinc-700 flex-1 text-left">{member.name}</span>
+                                                    {assigned && <Check size={13} className="text-zinc-500 flex-shrink-0" />}
+                                                </button>
+                                            );
+                                        })}
                                     </div>
-                                    {memberIds.map(memberId => {
-                                        const member   = memberMap[memberId];
-                                        if (!member) return null;
-                                        const assigned = assignees.includes(memberId);
-                                        return (
-                                            <button
-                                                key={memberId}
-                                                onClick={() => toggleAssignee(memberId)}
-                                                className="flex items-center gap-2.5 w-full px-3 py-2.5 hover:bg-zinc-50 transition-colors cursor-pointer"
-                                            >
-                                                <Avatar member={member} size={22} />
-                                                <span className="text-xs font-primary text-zinc-700 flex-1 text-left">{member.name}</span>
-                                                {assigned && <Check size={13} className="text-zinc-500 flex-shrink-0" />}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
+                                )}
+                            </div>
+                        )}
 
                         {assignees.length > 0 && (
                             <span className="text-xs text-zinc-500 font-primary">
@@ -572,7 +616,7 @@ export default function TaskPanel({
                     {/* Description */}
                     <div>
                         <SectionLabel>Description</SectionLabel>
-                        {editingDesc ? (
+                        {!readOnly && editingDesc ? (
                             <div className="flex flex-col gap-2">
                                 <Textarea
                                     autoFocus
@@ -600,6 +644,14 @@ export default function TaskPanel({
                                     </Button>
                                 </div>
                             </div>
+                        ) : readOnly ? (
+                            description ? (
+                                <p className="text-sm text-zinc-600 font-primary leading-relaxed">
+                                    {description}
+                                </p>
+                            ) : (
+                                <p className="text-sm text-zinc-300 font-primary italic">No description.</p>
+                            )
                         ) : (
                             <button onClick={() => setEditingDesc(true)} className="group w-full text-left">
                                 {description ? (
@@ -627,68 +679,92 @@ export default function TaskPanel({
                             {subtasks.length === 0 && (
                                 <p className="text-sm text-zinc-300 font-primary m-0">No sub-tasks yet.</p>
                             )}
-                            <DndContext
-                                sensors={useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))}
-                                collisionDetection={closestCenter}
-                                onDragEnd={reorderSubs}
-                            >
-                                <SortableContext items={subtasks.map(s => s.id)} strategy={verticalListSortingStrategy}>
-                                    {subtasks.map(st => (
-                                        <SortableSubtask key={st.id} id={st.id}>
-                                            {handleProps => (
-                                                <div
-                                                    onClick={() => toggleSub(st.id)}
-                                                    className="group flex items-center gap-2.5 p-2.5 rounded-lg border border-zinc-100 cursor-pointer hover:bg-zinc-50 transition-colors"
-                                                >
-                                                    <span
-                                                        {...handleProps}
-                                                        onClick={e => e.stopPropagation()}
-                                                        className="text-zinc-200 hover:text-zinc-400 cursor-grab active:cursor-grabbing transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0"
-                                                    >
-                                                        <GripVertical size={12} />
-                                                    </span>
+                            {readOnly ? (
+                                subtasks.map(st => (
+                                    <div
+                                        key={st.id}
+                                        className="flex items-center gap-2.5 p-2.5 rounded-lg border border-zinc-100"
+                                    >
+                                        <div
+                                            className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0"
+                                            style={{
+                                                border:     `2px solid ${st.done ? accent : '#D1D5DB'}`,
+                                                background: st.done ? accent : 'transparent',
+                                            }}
+                                        >
+                                            {st.done && <span className="text-white text-xs leading-none">✓</span>}
+                                        </div>
+                                        <span className={`text-sm font-primary flex-1 ${st.done ? 'text-muted line-through' : 'text-gray-700'}`}>
+                                            {st.label}
+                                        </span>
+                                    </div>
+                                ))
+                            ) : (
+                                <DndContext
+                                    sensors={useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))}
+                                    collisionDetection={closestCenter}
+                                    onDragEnd={reorderSubs}
+                                >
+                                    <SortableContext items={subtasks.map(s => s.id)} strategy={verticalListSortingStrategy}>
+                                        {subtasks.map(st => (
+                                            <SortableSubtask key={st.id} id={st.id}>
+                                                {handleProps => (
                                                     <div
-                                                        className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all duration-200"
-                                                        style={{
-                                                            border:     `2px solid ${st.done ? accent : '#D1D5DB'}`,
-                                                            background: st.done ? accent : 'transparent',
-                                                        }}
+                                                        onClick={() => toggleSub(st.id)}
+                                                        className="group flex items-center gap-2.5 p-2.5 rounded-lg border border-zinc-100 cursor-pointer hover:bg-zinc-50 transition-colors"
                                                     >
-                                                        {st.done && <span className="text-white text-xs leading-none">✓</span>}
+                                                        <span
+                                                            {...handleProps}
+                                                            onClick={e => e.stopPropagation()}
+                                                            className="text-zinc-200 hover:text-zinc-400 cursor-grab active:cursor-grabbing transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0"
+                                                        >
+                                                            <GripVertical size={12} />
+                                                        </span>
+                                                        <div
+                                                            className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all duration-200"
+                                                            style={{
+                                                                border:     `2px solid ${st.done ? accent : '#D1D5DB'}`,
+                                                                background: st.done ? accent : 'transparent',
+                                                            }}
+                                                        >
+                                                            {st.done && <span className="text-white text-xs leading-none">✓</span>}
+                                                        </div>
+                                                        <span
+                                                            className={`text-sm font-primary transition-colors flex-1 ${st.done ? 'text-muted line-through' : 'text-gray-700'}`}
+                                                        >
+                                                            {st.label}
+                                                        </span>
+                                                        <button
+                                                            onClick={e => { e.stopPropagation(); deleteSub(st.id); }}
+                                                            className="opacity-0 group-hover:opacity-100 text-zinc-300 hover:text-red-400 transition-colors cursor-pointer"
+                                                        >
+                                                            <Trash2 size={13} />
+                                                        </button>
                                                     </div>
-                                                    <span
-                                                        className={`text-sm font-primary transition-colors flex-1 ${st.done ? 'text-muted line-through' : 'text-gray-700'}`}
-                                                    >
-                                                        {st.label}
-                                                    </span>
-                                                    <button
-                                                        onClick={e => { e.stopPropagation(); deleteSub(st.id); }}
-                                                        className="opacity-0 group-hover:opacity-100 text-zinc-300 hover:text-red-400 transition-colors cursor-pointer"
-                                                    >
-                                                        <Trash2 size={13} />
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </SortableSubtask>
-                                    ))}
-                                </SortableContext>
-                            </DndContext>
+                                                )}
+                                            </SortableSubtask>
+                                        ))}
+                                    </SortableContext>
+                                </DndContext>
+                            )}
                         </div>
-                        <div className="flex gap-1.5">
-                            <Input
-                                value={newSub}
-                                onChange={e => setNewSub(e.target.value)}
-                                onKeyDown={e => e.key === 'Enter' && addSub()}
-                                placeholder="Add sub-task…"
-                                className="text-sm py-2"
-                            />
-                            <Button
-                                onClick={addSub}
-                                icon={<Plus size={16} />}
-                                style={{ background: accent }}
-                                className="border-0 flex-shrink-0"
-                            />
-                        </div>
+                        {!readOnly && (
+                            <div className="flex gap-1.5">
+                                <Input
+                                    value={newSub}
+                                    onChange={e => setNewSub(e.target.value)}
+                                    onKeyDown={e => e.key === 'Enter' && addSub()}
+                                    placeholder="Add sub-task…"
+                                    className="text-sm py-2"
+                                />
+                                <Button
+                                    onClick={addSub}
+                                    icon={<Plus size={16} />}
+                                    style={{ background: accent }}
+                                    className="border-0 flex-shrink-0"
+                                />
+                            </div>
+                        )}
                     </div>
 
                     {/* Comments */}
@@ -733,31 +809,33 @@ export default function TaskPanel({
                         </div>
 
                         {/* Comment input */}
-                        <div className="flex gap-2 items-center">
-                            {user?.imageUrl ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img src={user.imageUrl} alt={user.firstName ?? 'You'} className="w-7 h-7 rounded-full object-cover flex-shrink-0 border-2 border-white" />
-                            ) : (
-                                <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-white font-bold text-white font-primary text-xs bg-zinc-400">
-                                    {user?.firstName?.[0] ?? '?'}
-                                </div>
-                            )}
-                            <Input
-                                value={comment}
-                                onChange={e => setComment(e.target.value)}
-                                onKeyDown={e => e.key === 'Enter' && addComment()}
-                                placeholder="Add a comment…"
-                                disabled={submitting}
-                                className="text-sm py-2"
-                            />
-                            <Button
-                                onClick={addComment}
-                                disabled={submitting || !comment.trim()}
-                                icon={<ArrowUp size={16} />}
-                                style={{ background: accent }}
-                                className="border-0 flex-shrink-0"
-                            />
-                        </div>
+                        {!readOnly && (
+                            <div className="flex gap-2 items-center">
+                                {user?.imageUrl ? (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img src={user.imageUrl} alt={user.firstName ?? 'You'} className="w-7 h-7 rounded-full object-cover flex-shrink-0 border-2 border-white" />
+                                ) : (
+                                    <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-white font-bold text-white font-primary text-xs bg-zinc-400">
+                                        {user?.firstName?.[0] ?? '?'}
+                                    </div>
+                                )}
+                                <Input
+                                    value={comment}
+                                    onChange={e => setComment(e.target.value)}
+                                    onKeyDown={e => e.key === 'Enter' && addComment()}
+                                    placeholder="Add a comment…"
+                                    disabled={submitting}
+                                    className="text-sm py-2"
+                                />
+                                <Button
+                                    onClick={addComment}
+                                    disabled={submitting || !comment.trim()}
+                                    icon={<ArrowUp size={16} />}
+                                    style={{ background: accent }}
+                                    className="border-0 flex-shrink-0"
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

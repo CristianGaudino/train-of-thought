@@ -402,6 +402,7 @@ export default function ProjectPage() {
                     onClose={() => setActiveTaskId(null)}
                     onUpdate={updateTask}
                     onDelete={async (taskId) => { await deleteTask(taskId); setActiveTaskId(null); }}
+                    readOnly={!!activeTask.deleted}
                 />
             )}
 
