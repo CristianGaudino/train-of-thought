@@ -1,5 +1,6 @@
-import { INPUT_VARIANTS, InputProps, SELECT_VARIANTS, SelectProps, TextareaProps } from '@/lib/definitions';
-import { forwardRef } from 'react';
+import { INPUT_VARIANTS, InputProps, SelectProps, TextareaProps } from '@/lib/definitions';
+import { forwardRef, useEffect, useRef, useState } from 'react';
+import { ChevronDown, Check } from 'lucide-react';
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(({
     error,
@@ -63,27 +64,51 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
 
 Textarea.displayName = 'Textarea';
 
-export const Select = forwardRef<HTMLSelectElement, SelectProps>(({
-    variant = 'default',
-    className = '',
-    children,
-    ...props
-}, ref) => {
-    return (
-        <select
-            ref={ref}
-            className={`
-                font-primary text-zinc-700 outline-none
-                transition-colors duration-150 cursor-pointer
-                disabled:opacity-50 disabled:cursor-not-allowed
-                ${SELECT_VARIANTS[variant]}
-                ${className}
-            `}
-            {...props}
-        >
-            {children}
-        </select>
-    );
-});
+export function Select({ value, onChange, options, disabled, className = '' }: SelectProps) {
+    const [open, setOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
 
-Select.displayName = 'Select';
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []);
+
+    const selected = options.find(o => o.value === value);
+
+    return (
+        <div ref={ref} className={`relative ${className}`}>
+            <button
+                type="button"
+                disabled={disabled}
+                onClick={() => setOpen(v => !v)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-xs font-primary text-zinc-600 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+                {selected?.icon}
+                <span>{selected?.label ?? value}</span>
+                <ChevronDown size={12} className={`text-zinc-400 flex-shrink-0 transition-transform duration-150 ${open ? 'rotate-180' : ''}`} />
+            </button>
+
+            {open && (
+                <div className="absolute top-full left-0 mt-0 min-w-full bg-white border border-zinc-200 rounded-xl shadow-lg z-[300] overflow-hidden py-1">
+                    {options.map(opt => (
+                        <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => { onChange(opt.value); setOpen(false); }}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-xs font-primary text-left transition-colors hover:bg-zinc-50 cursor-pointer"
+                        >
+                            {opt.icon}
+                            <span className={`flex-1 ${opt.value === value ? 'text-zinc-900 font-medium' : 'text-zinc-600'}`}>
+                                {opt.label}
+                            </span>
+                            {opt.value === value && <Check size={11} className="text-zinc-400 flex-shrink-0" />}
+                        </button>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}

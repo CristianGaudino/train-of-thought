@@ -29,10 +29,6 @@ export const INPUT_VARIANTS: Record<InputVariant, string> = {
     `,
 };
 
-export const SELECT_VARIANTS: Record<SelectVariant, string> = {
-    default: 'px-3.5 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm focus:border-zinc-400 focus:bg-white',
-    pill:    'px-3 py-1.5 rounded-full border border-zinc-200 bg-white text-xs hover:border-zinc-300',
-};
 
 // Types
 export type Mode = 'idle' | 'explore';
@@ -43,7 +39,6 @@ export type InputVariant = 'default' | 'ghost';
 
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
-export type SelectVariant = 'default' | 'pill';
 
 // Interfaces
 
@@ -93,8 +88,12 @@ export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextArea
     error?: string;
 }
 
-export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
-    variant?: SelectVariant;
+export interface SelectProps {
+    value:      string;
+    onChange:   (value: string) => void;
+    options:    { value: string; label: string; icon?: React.ReactNode }[];
+    disabled?:  boolean;
+    className?: string;
 }
 
 export interface SegmentedControlProps<T extends string> {

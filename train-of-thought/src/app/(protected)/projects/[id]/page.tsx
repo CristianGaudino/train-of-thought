@@ -19,7 +19,7 @@ import { AvatarStack } from '@/components/projects/AvatarStack';
 import { PageSkeleton } from '@/components/ui/skeletons';
 import { Button, SubtleButton, ToggleButton } from '@/components/ui/buttons';
 import SectionLabel from '@/components/projects/SectionLabel';
-import { Input } from '@/components/ui/inputs';
+import { Input, Select } from '@/components/ui/inputs';
 import { ProjectTasks } from '@/components/projects/ProjectTasks';
 import { ProjectActivity } from '@/components/projects/ProjectActivity';
 import { ProjectMembers } from '@/components/projects/ProjectMembers';
@@ -188,8 +188,11 @@ export default function ProjectPage() {
 
                 {/* Identity / edit form */}
                 <div
-                    className="overflow-hidden transition-all duration-300 ease-in-out"
-                    style={{ maxHeight: headerCollapsed ? 0 : 500 }}
+                    className="transition-all duration-300 ease-in-out"
+                    style={{
+                        maxHeight: headerCollapsed ? 0 : 500,
+                        overflow:  headerCollapsed ? 'hidden' : 'visible',
+                    }}
                 >
                 <div className="px-4 md:px-8 pt-5">
                     {editingHeader ? (
@@ -213,13 +216,15 @@ export default function ProjectPage() {
                             <div className="flex gap-3 flex-wrap items-end">
                                 <div>
                                     <SectionLabel className="mb-1.5">Status</SectionLabel>
-                                    <select
+                                    <Select
                                         value={header.status}
-                                        onChange={e => setHeader(f => f ? { ...f, status: e.target.value } : f)}
-                                        className="px-3 py-2 rounded-xl border border-zinc-200 bg-white text-sm font-primary text-zinc-800 outline-none focus:border-zinc-400 transition-colors cursor-pointer"
-                                    >
-                                        {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
-                                    </select>
+                                        onChange={v => setHeader(f => f ? { ...f, status: v } : f)}
+                                        options={STATUS_OPTIONS.map(s => ({
+                                            value: s,
+                                            label: s,
+                                            icon: <span className="w-2 h-2 rounded-full flex-shrink-0 inline-block" style={{ background: STATUS_CONFIG[s]?.dot }} />,
+                                        }))}
+                                    />
                                 </div>
                                 <div>
                                     <SectionLabel className="mb-1.5">Deadline</SectionLabel>

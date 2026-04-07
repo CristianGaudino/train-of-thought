@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import {
     Plus, ChevronDown, ChevronRight,
-    Check, SlidersHorizontal,
+    Check, SlidersHorizontal, Flag,
 } from 'lucide-react';
+import { PRIORITY_CONFIG } from '@/lib/projects/config';
 import TaskPanel from '@/components/projects/TaskPanel';
 import { useTasks } from '@/hooks/projects/useTasks';
 import { Button } from '@/components/ui/buttons';
@@ -102,14 +103,18 @@ export default function TasksPage() {
                             </div>
                             <Select
                                 value={quickProject}
-                                onChange={e => setQuickProject(e.target.value)}
+                                onChange={setQuickProject}
                                 className="min-w-36"
-                            >
-                                {uniqueProjects.length === 0 && <option value="">No projects</option>}
-                                {uniqueProjects.map(p => (
-                                    <option key={p.id} value={p.id}>{p.title}</option>
-                                ))}
-                            </Select>
+                                options={
+                                    uniqueProjects.length === 0
+                                        ? [{ value: '', label: 'No projects' }]
+                                        : uniqueProjects.map(p => ({
+                                            value: p.id,
+                                            label: p.title,
+                                            icon: <span className="w-2 h-2 rounded-full flex-shrink-0 inline-block" style={{ background: p.accent }} />,
+                                          }))
+                                }
+                            />
                         </div>
                         <div className="flex gap-2 flex-shrink-0">
                             <Button
@@ -132,26 +137,30 @@ export default function TasksPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 pb-4 border-b border-zinc-100">
                     <div className="flex gap-2.5 flex-wrap">
                         <Select
-                            variant="pill"
                             value={filterProject}
-                            onChange={e => setFilterProject(e.target.value)}
-                        >
-                            <option value="all">All projects</option>
-                            {uniqueProjects.map(p => (
-                                <option key={p.id} value={p.id}>{p.title}</option>
-                            ))}
-                        </Select>
+                            onChange={setFilterProject}
+                            options={[
+                                { value: 'all', label: 'All projects' },
+                                ...uniqueProjects.map(p => ({
+                                    value: p.id,
+                                    label: p.title,
+                                    icon: <span className="w-2 h-2 rounded-full flex-shrink-0 inline-block" style={{ background: p.accent }} />,
+                                })),
+                            ]}
+                        />
 
                         <Select
-                            variant="pill"
                             value={filterPriority}
-                            onChange={e => setFilterPriority(e.target.value)}
-                        >
-                            <option value="all">All priorities</option>
-                            {['Critical', 'High', 'Medium', 'Low'].map(p => (
-                                <option key={p}>{p}</option>
-                            ))}
-                        </Select>
+                            onChange={setFilterPriority}
+                            options={[
+                                { value: 'all', label: 'All priorities' },
+                                ...(['Critical', 'High', 'Medium', 'Low'] as const).map(p => ({
+                                    value: p,
+                                    label: p,
+                                    icon: <Flag size={11} style={{ color: PRIORITY_CONFIG[p].color, flexShrink: 0 }} />,
+                                })),
+                            ]}
+                        />
                     </div>
 
                     <div className="hidden sm:block flex-1" />
