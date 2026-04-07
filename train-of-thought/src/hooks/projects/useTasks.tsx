@@ -77,7 +77,7 @@ export function useTasks(): UseTasksReturn {
     const uniqueProjects = useMemo(() =>
         Array.from(
             new Map(
-                allMyTasks.map(t => [t.projectId, { id: t.projectId, title: t.projectTitle }])
+                allMyTasks.map(t => [t.projectId, { id: t.projectId, title: t.projectTitle, accent: t.projectAccent ?? '' }])
             ).values()
         ),
         [allMyTasks],
