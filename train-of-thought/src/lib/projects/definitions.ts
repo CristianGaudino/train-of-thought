@@ -421,7 +421,7 @@ export interface UseTasksReturn {
     setFilterPriority: (v: string) => void;
     setGroupBy:        (v: GroupBy) => void;
     // Unique project list for filter dropdown
-    uniqueProjects:  { id: string; title: string }[];
+    uniqueProjects:  { id: string; title: string; accent: string }[];
     // Mutations
     markDone:        (taskId: string) => Promise<void>;
     addQuickTask:    (title: string, projectId: string) => Promise<void>;
