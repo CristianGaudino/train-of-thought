@@ -66,5 +66,5 @@
 }
 
 .animate-fadeInSlow {
-        animation: fadeInSlow 0.45s ease-out forwards;
+    animation: fadeInSlow 0.45s ease-out forwards;
 }
