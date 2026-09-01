@@ -1,6 +1,7 @@
-import { eq, and, desc, asc } from 'drizzle-orm'; // ne removed temporarily for testing
+import { eq, or, desc, asc, arrayContains } from 'drizzle-orm'; // ne removed temporarily for testing
 import { db } from './index';
 import { projects, sections, tasks, comments, notifications } from './schema';
+import { getProjectAccess } from './access';
 import type { Project, Section, Task, Comment, Notification, Subtask } from '@/lib/projects/definitions';
 import { timeAgo } from '@/lib/utils';
 
@@ -58,6 +59,7 @@ export function shapeProject(
 
     return {
         id:          projectRow.id,
+        ownerId:     projectRow.userId,
         title:       projectRow.title,
         description: projectRow.description,
         tags:        projectRow.tags ?? [],
@@ -78,7 +80,10 @@ export async function getProjectsByUser(userId: string): Promise<Project[]> {
     const projectRows = await db
         .select()
         .from(projects)
-        .where(eq(projects.userId, userId))
+        .where(or(
+            eq(projects.userId, userId),
+            arrayContains(projects.members, [userId]),
+        ))
         .orderBy(desc(projects.favourite), asc(projects.order), desc(projects.createdAt));
 
     if (projectRows.length === 0) return [];
@@ -123,9 +128,13 @@ export async function getProjectById(id: string, userId: string): Promise<Projec
     const [projectRow] = await db
         .select()
         .from(projects)
-        .where(and(eq(projects.id, id), eq(projects.userId, userId)));
+        .where(eq(projects.id, id));
 
     if (!projectRow) return null;
+
+    // Owner or member only
+    const access = await getProjectAccess(id, userId);
+    if (!access) return null;
 
     const [sectionRows, taskRows] = await Promise.all([
         db.select().from(sections).where(eq(sections.projectId, id)).orderBy(asc(sections.order)),

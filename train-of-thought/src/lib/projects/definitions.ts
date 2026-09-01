@@ -81,6 +81,7 @@ export interface Member {
     initials: string;
     color: string;     // hex — used for avatar background
     imageUrl?: string; // Clerk profile image URL when available
+    email?: string;    // primary email — populated when sharing by email
 }
 
 export interface Subtask {
@@ -123,6 +124,7 @@ export interface Section {
 
 export interface Project {
     id: string;
+    ownerId: string;         // Clerk user id of the project owner
     title: string;
     description: string;
     tags: string[];
@@ -350,10 +352,13 @@ export interface ProjectActivityProps {
 }
 
 export interface ProjectMembersProps {
-    header:           HeaderData;
-    setHeader:        (fn: (f: HeaderData | null) => HeaderData | null) => void;
-    handleSaveHeader: () => Promise<void>;
-    savingHeader:     boolean;
+    members:       string[];
+    accent:        string;
+    ownerId:       string;
+    currentUserId: string;
+    addMember:     (email: string) => Promise<{ ok: boolean; members?: string[]; error?: string }>;
+    removeMember:  (memberId: string) => Promise<string[] | null>;
+    onLeave:       () => void;
 }
 
 export interface SortableSectionProps {
@@ -398,6 +403,10 @@ export interface UseProjectReturn {
     saveHeader:      (data: HeaderData) => Promise<void>;
     savingHeader:    boolean;
     toggleFavourite: () => Promise<void>;
+    // Members / sharing
+    addMember:     (email: string) => Promise<{ ok: boolean; members?: string[]; error?: string }>;
+    removeMember:  (memberId: string) => Promise<string[] | null>;
+    leaveProject:  () => Promise<boolean>;
     // Project deletion
     deleteProject:  () => Promise<boolean>;
     deleting:       boolean;

@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
 import {
-    ArrowLeft, Pencil, AlertTriangle, Trash2, ChevronDown, Star,
+    ArrowLeft, Pencil, AlertTriangle, Trash2, ChevronDown, Star, LogOut,
 } from 'lucide-react';
 import {
     STATUS_CONFIG, ACCENT_PALETTE, STATUS_OPTIONS,
@@ -30,13 +31,18 @@ export default function ProjectPage() {
     const searchParams  = useSearchParams();
     const id            = params.id as string;
 
+    const { user } = useUser();
+
     const {
         project, sections, loading, error,
         toggleTask, updateTask, addTask, deleteTask, addSection, reorderTasks, reorderSections, renameSection, deleteSection,
         saveHeader, savingHeader,
         toggleFavourite,
+        addMember, removeMember, leaveProject,
         deleteProject, deleting,
     } = useProject(id);
+
+    const isOwner = !!project && !!user && project.ownerId === user.id;
 
     useEffect(() => {
         if (project) document.title = `${project.title} | Train of Thought`;
@@ -66,6 +72,7 @@ export default function ProjectPage() {
     const [editingHeader, setEditingHeader]       = useState(false);
     const [headerCollapsed, setHeaderCollapsed]   = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
     const [newTaskSec, setNewTaskSec]             = useState<string | null>(null);
     const [newTaskVal, setNewTaskVal]             = useState('');
     const [newSecMode, setNewSecMode]             = useState(false);
@@ -84,6 +91,13 @@ export default function ProjectPage() {
             members:     [...project.members],
         });
     }
+
+    // Members are managed through their own endpoint — keep the header form's
+    // copy mirroring the live project state so a later header save doesn't
+    // clobber a freshly added or removed member.
+    useEffect(() => {
+        if (project) setHeader(h => h ? { ...h, members: project.members } : h);
+    }, [project?.members]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // ── Loading / error ──
 
@@ -134,6 +148,11 @@ export default function ProjectPage() {
         if (ok) router.push('/projects');
     };
 
+    const handleLeave = async () => {
+        const ok = await leaveProject();
+        if (ok) router.push('/projects');
+    };
+
     const toggleCollapse = (id: string) => setCollapsed(c => ({ ...c, [id]: !c[id] }));
 
     return (
@@ -159,13 +178,23 @@ export default function ProjectPage() {
                                 >
                                     Edit
                                 </SubtleButton>
-                                <SubtleButton
-                                    icon={<Trash2 size={13} />}
-                                    destructive
-                                    onClick={() => setShowDeleteConfirm(true)}
-                                >
-                                    Delete
-                                </SubtleButton>
+                                {isOwner ? (
+                                    <SubtleButton
+                                        icon={<Trash2 size={13} />}
+                                        destructive
+                                        onClick={() => setShowDeleteConfirm(true)}
+                                    >
+                                        Delete
+                                    </SubtleButton>
+                                ) : (
+                                    <SubtleButton
+                                        icon={<LogOut size={13} />}
+                                        destructive
+                                        onClick={() => setShowLeaveConfirm(true)}
+                                    >
+                                        Leave
+                                    </SubtleButton>
+                                )}
                             </>
                         )}
                         <ToggleButton
@@ -388,10 +417,13 @@ export default function ProjectPage() {
 
                 {activeTab === 'members' && (
                     <ProjectMembers
-                        header={header}
-                        setHeader={setHeader}
-                        handleSaveHeader={handleSaveHeader}
-                        savingHeader={savingHeader}
+                        members={project.members}
+                        accent={header.accent}
+                        ownerId={project.ownerId}
+                        currentUserId={user?.id ?? ''}
+                        addMember={addMember}
+                        removeMember={removeMember}
+                        onLeave={() => setShowLeaveConfirm(true)}
                     />
                 )}
             </div>
@@ -421,6 +453,18 @@ export default function ProjectPage() {
                     loading={deleting}
                     onConfirm={handleDelete}
                     onCancel={() => setShowDeleteConfirm(false)}
+                />
+            )}
+
+            {/* Leave project confirmation */}
+            {showLeaveConfirm && (
+                <ConfirmModal
+                    title="Leave project"
+                    message={`Leave "${project.title}"? You'll lose access until someone adds you back.`}
+                    confirmLabel="Leave project"
+                    destructive
+                    onConfirm={handleLeave}
+                    onCancel={() => setShowLeaveConfirm(false)}
                 />
             )}
         </div>

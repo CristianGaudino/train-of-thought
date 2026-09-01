@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { renameSection, deleteSection, createNotification } from '@/lib/db/actions';
+import { getProjectAccessForSection } from '@/lib/db/access';
 import { db } from '@/lib/db';
 import { sections, projects } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
@@ -13,6 +14,9 @@ export async function PATCH(req: Request, { params }: Params) {
 
     const { id } = await params;
     try {
+        const access = await getProjectAccessForSection(id, userId);
+        if (!access) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
         const { title } = await req.json();
         await renameSection(id, title);
         return NextResponse.json({ success: true });
@@ -28,6 +32,9 @@ export async function DELETE(_req: Request, { params }: Params) {
 
     const { id } = await params;
     try {
+        const access = await getProjectAccessForSection(id, userId);
+        if (!access) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
         // Fetch section + project info before deleting for activity log
         let sectionTitle: string | null = null;
         let projectId:    string | null = null;

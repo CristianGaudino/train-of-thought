@@ -86,6 +86,7 @@ export const MOCK_MEMBERS: Member[] = [
 export const MOCK_PROJECTS: Project[] = [
     {
         id: '1',
+        ownerId: '1',
         title: 'Brand Redesign',
         description: 'Refresh the visual identity across all touchpoints — logo, typography, colour system and brand guidelines.',
         tags: ['Design', 'Marketing'],
@@ -214,6 +215,7 @@ export const MOCK_PROJECTS: Project[] = [
     },
     {
         id: '2',
+        ownerId: '1',
         title: 'Learn Ceramics',
         description: 'Work through beginner wheel-throwing techniques and fire first pieces before summer.',
         tags: ['Personal', 'Creative'],
@@ -298,6 +300,7 @@ export const MOCK_PROJECTS: Project[] = [
     },
     {
         id: '3',
+        ownerId: '1',
         title: 'Q2 Product Launch',
         description: 'Coordinate engineering, marketing and support for the v2.0 release.',
         tags: ['Product', 'Engineering'],

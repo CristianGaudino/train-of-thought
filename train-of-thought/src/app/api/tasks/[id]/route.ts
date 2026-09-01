@@ -1,4 +1,5 @@
 import { deleteTask, updateTask, createNotification } from '@/lib/db/actions';
+import { getProjectAccessForTask } from '@/lib/db/access';
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
@@ -16,6 +17,9 @@ export async function PATCH(req: Request, { params }: Params) {
     const { id } = await params;
 
     try {
+        const access = await getProjectAccessForTask(id, userId);
+        if (!access) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
         const body = await req.json();
 
         // Fetch current state before updating so we can detect meaningful changes
@@ -41,7 +45,12 @@ export async function PATCH(req: Request, { params }: Params) {
                 const currentDue      = task.due ? task.due.toISOString().split('T')[0] : null;
                 const dueChanged      = body.due !== undefined && body.due !== currentDue;
 
-                if (doneChanged || priorityChanged || dueChanged) {
+                const previousAssignees = task.assignees ?? [];
+                const newAssignees      = Array.isArray(body.assignees)
+                    ? (body.assignees as string[]).filter(aid => !previousAssignees.includes(aid) && aid !== userId)
+                    : [];
+
+                if (doneChanged || priorityChanged || dueChanged || newAssignees.length > 0) {
                     const [project] = await db
                         .select({ title: projects.title, accent: projects.accent })
                         .from(projects)
@@ -110,6 +119,25 @@ export async function PATCH(req: Request, { params }: Params) {
                                 )
                             );
                         }
+
+                        if (newAssignees.length > 0) {
+                            await Promise.allSettled(
+                                newAssignees.map((recipientId: string) =>
+                                    createNotification({
+                                        userId:        recipientId,
+                                        type:          'assigned',
+                                        actorId:       userId,
+                                        projectId:     task.projectId,
+                                        projectTitle:  project.title,
+                                        projectAccent: project.accent,
+                                        taskId:        id,
+                                        sectionTitle:  section?.title,
+                                        subject:       task.title,
+                                        text:          'ASSIGNED',
+                                    })
+                                )
+                            );
+                        }
                     }
                 }
             } catch (notifErr) {
@@ -131,6 +159,9 @@ export async function DELETE(_req: Request, { params }: Params) {
     const { id } = await params;
 
     try {
+        const access = await getProjectAccessForTask(id, userId);
+        if (!access) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
         // Fetch task + project info before deleting for activity log
         let taskTitle:    string | null = null;
         let projectId:    string | null = null;

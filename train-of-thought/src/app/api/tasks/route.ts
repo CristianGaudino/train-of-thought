@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { projects, sections } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { createNotification, createTask } from '@/lib/db/actions';
+import { getProjectAccess } from '@/lib/db/access';
 
 export async function POST(req: Request) {
     const { userId } = await auth();
@@ -19,6 +20,9 @@ export async function POST(req: Request) {
                 { status: 400 }
             );
         }
+
+        const access = await getProjectAccess(projectId, userId);
+        if (!access) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
         const task = await createTask(
             sectionId,

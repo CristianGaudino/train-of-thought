@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { tasks, projects, sections } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { createComment, createNotification } from '@/lib/db/actions';
+import { getProjectAccessForTask } from '@/lib/db/access';
 
 interface Params {
     params: Promise<{ id: string }>;
@@ -16,6 +17,9 @@ export async function POST(req: Request, { params }: Params) {
     const { id: taskId } = await params;
 
     try {
+        const access = await getProjectAccessForTask(taskId, userId);
+        if (!access) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
         const { text } = await req.json();
         if (!text?.trim()) {
             return NextResponse.json({ error: 'Text is required' }, { status: 400 });

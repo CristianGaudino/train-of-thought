@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { reorderTasks } from '@/lib/db/actions';
+import { hasAccessToAllTaskProjects } from '@/lib/db/access';
 
 export async function POST(req: Request) {
     const { userId } = await auth();
@@ -8,6 +9,10 @@ export async function POST(req: Request) {
 
     try {
         const updates: { id: string; sectionId: string; order: number }[] = await req.json();
+
+        const allowed = await hasAccessToAllTaskProjects(updates.map(u => u.id), userId);
+        if (!allowed) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
         await reorderTasks(updates);
         return NextResponse.json({ success: true });
     } catch (err) {

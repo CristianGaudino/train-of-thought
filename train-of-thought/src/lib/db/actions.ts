@@ -1,4 +1,4 @@
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { db } from './index';
 import {
     projects, sections, tasks, comments, notifications,
@@ -26,6 +26,9 @@ export async function createProject(
     const projectId   = generateId('p');
     const sectionId   = generateId('s');
 
+    // The owner is always a member.
+    const members = [...new Set([userId, ...data.members])];
+
     const projectInsert: ProjectInsert = {
         id:          projectId,
         userId,
@@ -36,7 +39,7 @@ export async function createProject(
         accent:      data.accent,
         color:       data.color,
         tags:        data.tags,
-        members:     data.members,
+        members,
     };
 
     const sectionInsert: SectionInsert = {
@@ -80,7 +83,6 @@ export async function createProject(
 
 export async function updateProject(
     id:     string,
-    userId: string,
     data:   Partial<{
         title:       string;
         description: string;
@@ -103,13 +105,60 @@ export async function updateProject(
                 : undefined,
             updatedAt: new Date(),
         })
-        .where(and(eq(projects.id, id), eq(projects.userId, userId)));
+        .where(eq(projects.id, id));
 }
 
 export async function deleteProject(id: string, userId: string): Promise<void> {
+    // Owner-only — members can never delete a project
     await db
         .delete(projects)
         .where(and(eq(projects.id, id), eq(projects.userId, userId)));
+}
+
+export async function addProjectMember(
+    projectId: string,
+    memberId:  string,
+): Promise<string[]> {
+    const [row] = await db
+        .select({ members: projects.members })
+        .from(projects)
+        .where(eq(projects.id, projectId));
+
+    const current = row?.members ?? [];
+    if (current.includes(memberId)) return current;
+
+    const next = [...current, memberId];
+    await db
+        .update(projects)
+        .set({ members: next, updatedAt: new Date() })
+        .where(eq(projects.id, projectId));
+    return next;
+}
+
+export async function removeProjectMember(
+    projectId: string,
+    memberId:  string,
+): Promise<string[]> {
+    const [row] = await db
+        .select({ members: projects.members })
+        .from(projects)
+        .where(eq(projects.id, projectId));
+
+    const current = row?.members ?? [];
+    const next    = current.filter(id => id !== memberId);
+    await db
+        .update(projects)
+        .set({ members: next, updatedAt: new Date() })
+        .where(eq(projects.id, projectId));
+
+    // Drop any task assignments they held on this project so they don't linger
+    // as an assignee on tasks they can no longer see.
+    await db
+        .update(tasks)
+        .set({ assignees: sql`array_remove(${tasks.assignees}, ${memberId})` })
+        .where(eq(tasks.projectId, projectId));
+
+    return next;
 }
 
 export async function reorderProjects(

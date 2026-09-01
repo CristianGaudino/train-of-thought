@@ -329,6 +329,61 @@ export function useProject(id: string): UseProjectReturn {
         }
     };
 
+    // ── Members ──
+
+    const addMember = async (email: string): Promise<{ ok: boolean; members?: string[]; error?: string }> => {
+        try {
+            const res = await fetch(`/api/projects/${id}/members`, {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ email }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                return { ok: false, error: data.error ?? 'Could not share the project.' };
+            }
+            setProject(p => p ? { ...p, members: data.members } : p);
+            success('Project shared', data.member?.name ? `${data.member.name} can now access this project.` : undefined);
+            return { ok: true, members: data.members };
+        } catch {
+            return { ok: false, error: 'Could not share the project.' };
+        }
+    };
+
+    const removeMember = async (memberId: string): Promise<string[] | null> => {
+        const snapshot = project?.members ?? [];
+        setProject(p => p ? { ...p, members: p.members.filter(m => m !== memberId) } : p);
+        try {
+            const res = await fetch(`/api/projects/${id}/members?userId=${encodeURIComponent(memberId)}`, {
+                method: 'DELETE',
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error ?? 'Failed');
+            setProject(p => p ? { ...p, members: data.members } : p);
+            success('Member removed');
+            return data.members as string[];
+        } catch (err) {
+            toastError('Failed to remove member', err instanceof Error ? err.message : undefined);
+            setProject(p => p ? { ...p, members: snapshot } : p);
+            return null;
+        }
+    };
+
+    const leaveProject = async (): Promise<boolean> => {
+        if (!userId) return false;
+        try {
+            const res = await fetch(`/api/projects/${id}/members?userId=${encodeURIComponent(userId)}`, {
+                method: 'DELETE',
+            });
+            if (!res.ok) throw new Error('Failed');
+            success('You left the project');
+            return true;
+        } catch {
+            toastError('Failed to leave project', 'Please try again.');
+            return false;
+        }
+    };
+
     // ── Delete project ──
 
     const deleteProject = async (): Promise<boolean> => {
@@ -363,6 +418,9 @@ export function useProject(id: string): UseProjectReturn {
         saveHeader,
         savingHeader,
         toggleFavourite,
+        addMember,
+        removeMember,
+        leaveProject,
         deleteProject,
         deleting,
     };

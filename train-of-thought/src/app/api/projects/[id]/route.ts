@@ -1,10 +1,11 @@
 import { deleteProject, updateProject, createNotification } from '@/lib/db/actions';
 import { getProjectById } from '@/lib/db/data';
+import { getProjectAccess } from '@/lib/db/access';
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { projects } from '@/lib/db/schema';
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 interface Params {
     params: Promise<{ id: string }>;
@@ -35,6 +36,10 @@ export async function PATCH(req: Request, { params }: Params) {
     try {
         const body = await req.json();
 
+        // Owner or member may edit everything about the project (not delete it)
+        const access = await getProjectAccess(id, userId);
+        if (!access) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
         // Fetch current state before updating so we can detect meaningful changes
         const [current] = await db
             .select({
@@ -45,11 +50,16 @@ export async function PATCH(req: Request, { params }: Params) {
                 members:  projects.members,
             })
             .from(projects)
-            .where(and(eq(projects.id, id), eq(projects.userId, userId)));
+            .where(eq(projects.id, id));
 
         if (!current) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-        await updateProject(id, userId, body);
+        // The owner is implicit and can never be removed from the members list
+        if (body.members !== undefined && Array.isArray(body.members)) {
+            body.members = [...new Set([...body.members, access.ownerId])];
+        }
+
+        await updateProject(id, body);
 
         try {
             const { title: projectTitle, accent: projectAccent, members } = current;
@@ -148,6 +158,15 @@ export async function DELETE(_req: Request, { params }: Params) {
     const { id } = await params;
 
     try {
+        const access = await getProjectAccess(id, userId);
+        if (!access) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+        if (access.role !== 'owner') {
+            return NextResponse.json(
+                { error: 'Only the project owner can delete this project.' },
+                { status: 403 },
+            );
+        }
+
         await deleteProject(id, userId);
         return NextResponse.json({ success: true });
     } catch (err) {

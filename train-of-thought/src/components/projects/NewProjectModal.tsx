@@ -63,6 +63,7 @@ export default function NewProjectModal({ onClose, onCreate }: NewProjectModalPr
         if (!validate()) return;
         const project: Project = {
             id:          generateId('p'),
+            ownerId:     user?.id ?? '',
             title:       form.title.trim(),
             description: form.description.trim(),
             tags,
