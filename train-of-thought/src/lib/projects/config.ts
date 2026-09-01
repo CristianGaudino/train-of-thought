@@ -6,6 +6,8 @@ import type {
     Member,
     Project,
     Notification,
+    ProjectStatus,
+    Priority,
 } from './definitions';
 
 // ─── Config maps ──────────────────────────────────────────────────────────────
@@ -66,6 +68,44 @@ export const ACCENT_PALETTE: AccentPair[] = [
 export const STATUS_OPTIONS = Object.keys(STATUS_CONFIG) as string[];
 
 export const PRIORITY_OPTIONS = Object.keys(PRIORITY_CONFIG) as string[];
+
+// ─── Project import ───────────────────────────────────────────────────────────
+// A plain-text outline format for jump-starting a project. Writable by hand, or
+// produced by handing PROJECT_IMPORT_GUIDE to an AI. Parsed by parseProjectOutline.
+
+export const DEFAULT_PROJECT_STATUS: ProjectStatus = 'Planning';
+export const DEFAULT_TASK_PRIORITY:  Priority      = 'Medium';
+
+export const PROJECT_IMPORT_TEMPLATE = `# Project name
+
+One or two sentences describing what this project is and why it matters.
+
+Status: ${DEFAULT_PROJECT_STATUS}
+Tags: tag one, tag two
+
+## First section
+- [High] A specific, actionable task
+  Optional extra detail about the task, indented under it.
+- [Medium] Another task
+- A task with no marker (defaults to ${DEFAULT_TASK_PRIORITY})
+
+## Second section
+- [Critical] Something urgent
+- [Low] A nice-to-have
+`;
+
+export const PROJECT_IMPORT_GUIDE = `Create a project outline in this exact format:
+
+${PROJECT_IMPORT_TEMPLATE}
+Rules:
+- The first "# " line is the project name.
+- Plain text before the first "## " heading is the description.
+- "Status:" (optional) — one of: ${STATUS_OPTIONS.join(', ')}. Defaults to ${DEFAULT_PROJECT_STATUS}.
+- "Tags:" (optional) — a comma-separated list.
+- Every "## " line starts a new section.
+- Every "- " line is a task. Prefix it with [Critical], [High], [Medium] or [Low] to set priority (optional). Defaults to ${DEFAULT_TASK_PRIORITY}.
+- Indent a line beneath a task to attach notes to it.
+`;
 
 // ─── Mock members ─────────────────────────────────────────────────────────────
 // In production these will be real Clerk users fetched from your DB.

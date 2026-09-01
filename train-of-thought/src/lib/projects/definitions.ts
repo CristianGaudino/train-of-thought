@@ -216,6 +216,13 @@ export interface PreviewTask {
     notes?:   string;
 }
 
+// Result of parsing a text outline in the project-import format.
+// `generated` is null when parsing fails; `error` then explains why.
+export interface ProjectImportResult {
+    generated: GeneratedProject | null;
+    error:     string | null;
+}
+
 export interface HeaderData {
     title:       string;
     description: string;

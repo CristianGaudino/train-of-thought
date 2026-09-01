@@ -1,5 +1,8 @@
-import type { Project, FlatTask, Member, TaskGroup, PreviewSection, Priority, DeadlineInfo, Notification } from './definitions';
-import { MOCK_MEMBERS, ME_ID, ACTION_VERB } from './config';
+import type { Project, FlatTask, Member, TaskGroup, PreviewSection, Priority, ProjectStatus, DeadlineInfo, Notification, ProjectImportResult } from './definitions';
+import {
+    MOCK_MEMBERS, ME_ID, ACTION_VERB,
+    STATUS_OPTIONS, PRIORITY_OPTIONS, DEFAULT_PROJECT_STATUS, DEFAULT_TASK_PRIORITY,
+} from './config';
 import { formatDate } from '../utils';
 import { GeneratedProject } from '@/app/api/generate-project/route';
 
@@ -157,4 +160,150 @@ export function groupByDate(items: Notification[]): { label: string; items: Noti
         groups.get(label)!.push(item);
     }
     return [...groups.entries()].map(([label, items]) => ({ label, items }));
+}
+
+// ─── Project import ───────────────────────────────────────────────────────────
+// Parse a text outline (see PROJECT_IMPORT_TEMPLATE) into the same shape as an
+// AI-generated project so it flows through the normal preview → create path.
+
+const IMPORT_HEADING_RE    = /^(#{1,6})\s+(.*)$/;
+const IMPORT_BULLET_RE     = /^(?:[-*+]|\d+[.)])\s+(.*)$/;
+const IMPORT_FIELD_RE      = /^([A-Za-z][A-Za-z ]*):\s*(.*)$/;
+const IMPORT_CHECKBOX_RE   = /^\[[ xX]?\]\s*/;
+const IMPORT_LEAD_PRIO_RE  = /^[[(]\s*(critical|high|medium|low)\s*[\])][\s:.\-–]*/i;
+const IMPORT_TRAIL_PRIO_RE = /[\s\-–—]*[[(]\s*(critical|high|medium|low)\s*[\])]\s*$/i;
+
+function matchImportStatus(raw: string): ProjectStatus {
+    const found = STATUS_OPTIONS.find(s => s.toLowerCase() === raw.trim().toLowerCase());
+    return (found as ProjectStatus | undefined) ?? DEFAULT_PROJECT_STATUS;
+}
+
+function matchImportPriority(raw: string): Priority {
+    const found = PRIORITY_OPTIONS.find(p => p.toLowerCase() === raw.trim().toLowerCase());
+    return (found as Priority | undefined) ?? DEFAULT_TASK_PRIORITY;
+}
+
+// Strip markdown emphasis / code ticks an AI might add around plain text.
+function stripInlineMarkdown(text: string): string {
+    return text.replace(/\*\*/g, '').replace(/`/g, '').trim();
+}
+
+export function parseProjectOutline(raw: string): ProjectImportResult {
+    const lines = raw.replace(/\r\n/g, '\n').split('\n');
+
+    let title    = '';
+    let status: ProjectStatus = DEFAULT_PROJECT_STATUS;
+    let sawTitle = false;
+    const descriptionParts: string[] = [];
+    const tags: string[] = [];
+
+    const sections: GeneratedProject['sections'] = [];
+    let currentSection: GeneratedProject['sections'][number] | null = null;
+    let currentTask: GeneratedProject['sections'][number]['tasks'][number] | null = null;
+
+    for (const rawLine of lines) {
+        const trimmed  = rawLine.trim();
+        const indented = /^(\s{2,}|\t)/.test(rawLine);
+
+        // Indented, non-structural text → notes for the task above it
+        if (indented && trimmed && currentTask
+            && !IMPORT_HEADING_RE.test(trimmed) && !IMPORT_BULLET_RE.test(trimmed)) {
+            const note = stripInlineMarkdown(trimmed.replace(/^>\s?/, ''));
+            currentTask.notes = currentTask.notes ? `${currentTask.notes} ${note}` : note;
+            continue;
+        }
+
+        if (!trimmed) continue;
+
+        const heading = trimmed.match(IMPORT_HEADING_RE);
+        if (heading) {
+            const text = stripInlineMarkdown(heading[2]).replace(/:$/, '');
+            if (!sawTitle) {
+                title = text;
+                sawTitle = true;
+            } else {
+                currentSection = { title: text || 'Section', tasks: [] };
+                sections.push(currentSection);
+                currentTask = null;
+            }
+            continue;
+        }
+
+        const bullet = trimmed.match(IMPORT_BULLET_RE);
+        if (bullet) {
+            let body = bullet[1].trim().replace(IMPORT_CHECKBOX_RE, '');
+
+            let priority: Priority = DEFAULT_TASK_PRIORITY;
+            const lead = body.match(IMPORT_LEAD_PRIO_RE);
+            if (lead) {
+                priority = matchImportPriority(lead[1]);
+                body = body.slice(lead[0].length);
+            } else {
+                const trail = body.match(IMPORT_TRAIL_PRIO_RE);
+                if (trail) {
+                    priority = matchImportPriority(trail[1]);
+                    body = body.slice(0, trail.index).trim();
+                }
+            }
+
+            body = stripInlineMarkdown(body);
+            if (!body) continue;
+
+            if (!currentSection) {
+                currentSection = { title: 'Tasks', tasks: [] };
+                sections.push(currentSection);
+            }
+            currentTask = { title: body, priority };
+            currentSection.tasks.push(currentTask);
+            continue;
+        }
+
+        // Metadata fields + description live above the first section
+        if (!currentSection) {
+            const field = trimmed.match(IMPORT_FIELD_RE);
+            if (field) {
+                const key = field[1].trim().toLowerCase();
+                const val = field[2].trim();
+                if (key === 'status') { status = matchImportStatus(val); continue; }
+                if (key === 'tags' || key === 'labels') {
+                    tags.push(...val.split(',').map(stripInlineMarkdown).filter(Boolean));
+                    continue;
+                }
+                if (key === 'deadline' || key === 'due') continue; // reserved
+            }
+            if (sawTitle) {
+                descriptionParts.push(stripInlineMarkdown(trimmed.replace(/^>\s?/, '')));
+            }
+            continue;
+        }
+
+        // A loose line inside a section → treat as notes for the current task
+        if (currentTask) {
+            const note = stripInlineMarkdown(trimmed);
+            currentTask.notes = currentTask.notes ? `${currentTask.notes} ${note}` : note;
+        }
+    }
+
+    if (!title) {
+        return { generated: null, error: 'Start the outline with the project name on a "# " line.' };
+    }
+
+    const cleanedSections = sections.filter(s => s.tasks.length > 0);
+    if (cleanedSections.length === 0) {
+        return {
+            generated: null,
+            error: 'Add at least one task — use "## Section name" followed by "- Task" lines.',
+        };
+    }
+
+    return {
+        generated: {
+            title,
+            description: descriptionParts.join(' ').replace(/\s+/g, ' ').trim(),
+            status,
+            tags,
+            sections: cleanedSections,
+        },
+        error: null,
+    };
 }

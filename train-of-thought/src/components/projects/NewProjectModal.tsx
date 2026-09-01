@@ -4,9 +4,11 @@ import { useState, useRef, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { X, Plus, ChevronRight, Copy, Check } from 'lucide-react';
 import { EMPTY_FORM, STEPS, type FormState, type NewProjectModalProps, type Project, type ProjectStatus } from '@/lib/projects/definitions';
-import { ACCENT_PALETTE, STATUS_CONFIG, STATUS_OPTIONS } from '@/lib/projects/config';
-import { generateId } from '@/lib/projects/utils';
-import { parseProjectOutline, PROJECT_IMPORT_TEMPLATE, PROJECT_IMPORT_GUIDE } from '@/lib/projects/import';
+import {
+    ACCENT_PALETTE, STATUS_CONFIG, STATUS_OPTIONS,
+    PROJECT_IMPORT_TEMPLATE, PROJECT_IMPORT_GUIDE,
+} from '@/lib/projects/config';
+import { generateId, parseProjectOutline } from '@/lib/projects/utils';
 import Pill from '../ui/Pill';
 import SegmentedControl from '../SegmentedControl';
 import { formatDate } from '@/lib/utils';
