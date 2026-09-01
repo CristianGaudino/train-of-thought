@@ -204,10 +204,12 @@ export async function createTask(
     sectionId: string,
     projectId: string,
     data: {
-        title:    string;
-        priority: string;
-        due:      string | null;
-        assignees: string[];
+        title:       string;
+        priority:    string;
+        due:         string | null;
+        assignees:   string[];
+        description?: string;
+        subtasks?:   Subtask[];
     },
     order: number,
 ): Promise<Task> {
@@ -217,11 +219,15 @@ export async function createTask(
         sectionId,
         projectId,
         title:       data.title,
-        description: '',
+        description: data.description ?? '',
         priority:    data.priority,
         due:         data.due ? new Date(data.due) : null,
         assignees:   data.assignees,
-        subtasks:    [],
+        subtasks:    (data.subtasks ?? []).map(st => ({
+            id:    st.id || generateId('st'),
+            label: st.label,
+            done:  !!st.done,
+        })),
         order,
     };
     await db.insert(tasks).values(insert);

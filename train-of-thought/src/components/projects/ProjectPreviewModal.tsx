@@ -3,11 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
-import { X, Plus, Trash2, Sparkles, FileText, ChevronDown, ChevronRight } from 'lucide-react';
+import { X, Plus, Trash2, Sparkles, FileText, Check, ChevronDown, ChevronRight } from 'lucide-react';
 import { ACCENT_PALETTE, PRIORITY_CONFIG } from '@/lib/projects/config';
 import { generateId, toPreviewSections } from '@/lib/projects/utils';
 import { useToast } from '@/components/ui/Toast';
-import type { PreviewSection, PreviewTask, Priority, ProjectPreviewModalProps } from '@/lib/projects/definitions';
+import type { PreviewSection, PreviewTask, Priority, Subtask, ProjectPreviewModalProps } from '@/lib/projects/definitions';
 import Button from '../ui/buttons';
 import { Input, Textarea } from '../ui/inputs';
 
@@ -53,8 +53,26 @@ export default function ProjectPreviewModal({ generated, onClose, onCreated, sou
 
     const addTask = (secId: string) =>
         setSections(ss => ss.map(s => s.id === secId ? {
-            ...s, tasks: [...s.tasks, { id: generateId('t'), title: 'New task', priority: 'Medium' as Priority }],
+            ...s, tasks: [...s.tasks, { id: generateId('t'), title: 'New task', priority: 'Medium' as Priority, subtasks: [] }],
         } : s));
+
+    // ── Subtask mutations ──
+    const mutateSubtasks = (secId: string, taskId: string, fn: (list: Subtask[]) => Subtask[]) =>
+        setSections(ss => ss.map(s => s.id === secId ? {
+            ...s, tasks: s.tasks.map(t => t.id === taskId ? { ...t, subtasks: fn(t.subtasks ?? []) } : t),
+        } : s));
+
+    const toggleSubtask = (secId: string, taskId: string, subId: string) =>
+        mutateSubtasks(secId, taskId, list => list.map(st => st.id === subId ? { ...st, done: !st.done } : st));
+
+    const updateSubtask = (secId: string, taskId: string, subId: string, label: string) =>
+        mutateSubtasks(secId, taskId, list => list.map(st => st.id === subId ? { ...st, label } : st));
+
+    const removeSubtask = (secId: string, taskId: string, subId: string) =>
+        mutateSubtasks(secId, taskId, list => list.filter(st => st.id !== subId));
+
+    const addSubtask = (secId: string, taskId: string) =>
+        mutateSubtasks(secId, taskId, list => [...list, { id: generateId('st'), label: '', done: false }]);
 
     // ── Tags ──
     const addTag = () => {
@@ -97,7 +115,16 @@ export default function ProjectPreviewModal({ generated, onClose, onCreated, sou
                     fetch('/api/tasks', {
                         method:  'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body:    JSON.stringify({ sectionId, projectId: project.id, title: task.title, priority: task.priority, assignees: [], order: j }),
+                        body:    JSON.stringify({
+                            sectionId,
+                            projectId:   project.id,
+                            title:       task.title,
+                            priority:    task.priority,
+                            assignees:   [],
+                            order:       j,
+                            description: task.notes ?? '',
+                            subtasks:    task.subtasks ?? [],
+                        }),
                     })
                 ));
             }
@@ -270,42 +297,101 @@ export default function ProjectPreviewModal({ generated, onClose, onCreated, sou
                                         <div className="flex flex-col gap-1.5 pl-5">
                                             {section.tasks.map(task => {
                                                 const pr = PRIORITY_CONFIG[task.priority];
+                                                const subtasks = task.subtasks ?? [];
                                                 return (
                                                     <div
                                                         key={task.id}
-                                                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-zinc-50 border border-zinc-100 group hover:border-zinc-200 transition-colors"
+                                                        className="rounded-xl bg-zinc-50 border border-zinc-100 group hover:border-zinc-200 transition-colors"
                                                     >
-                                                        {/* Priority dot — click opens native select */}
-                                                        <div className="flex-shrink-0 relative">
-                                                            <div className="w-2.5 h-2.5 rounded-full" style={{ background: pr?.color ?? '#888' }} />
-                                                            <select
-                                                                value={task.priority}
-                                                                onChange={e => updateTask(section.id, task.id, { priority: e.target.value as Priority })}
-                                                                className="absolute inset-0 opacity-0 cursor-pointer w-full"
-                                                                title="Change priority"
+                                                        <div className="flex items-center gap-2.5 px-3 py-2">
+                                                            {/* Priority dot — click opens native select */}
+                                                            <div className="flex-shrink-0 relative">
+                                                                <div className="w-2.5 h-2.5 rounded-full" style={{ background: pr?.color ?? '#888' }} />
+                                                                <select
+                                                                    value={task.priority}
+                                                                    onChange={e => updateTask(section.id, task.id, { priority: e.target.value as Priority })}
+                                                                    className="absolute inset-0 opacity-0 cursor-pointer w-full"
+                                                                    title="Change priority"
+                                                                >
+                                                                    {(['Critical', 'High', 'Medium', 'Low'] as Priority[]).map(p => (
+                                                                        <option key={p} value={p}>{p}</option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+                                                            <input
+                                                                value={task.title}
+                                                                onChange={e => updateTask(section.id, task.id, { title: e.target.value })}
+                                                                className="flex-1 text-sm font-primary text-zinc-800 bg-transparent outline-none"
+                                                            />
+                                                            <span
+                                                                className="text-xs font-medium font-primary flex-shrink-0 px-2 py-0.5 rounded-full"
+                                                                style={{ color: pr?.color, background: pr?.bg }}
                                                             >
-                                                                {(['Critical', 'High', 'Medium', 'Low'] as Priority[]).map(p => (
-                                                                    <option key={p} value={p}>{p}</option>
-                                                                ))}
-                                                            </select>
+                                                                {task.priority}
+                                                            </span>
+                                                            <button
+                                                                onClick={() => removeTask(section.id, task.id)}
+                                                                className="text-zinc-200 hover:text-red-400 transition-colors cursor-pointer flex-shrink-0 opacity-0 group-hover:opacity-100"
+                                                            >
+                                                                <X size={13} />
+                                                            </button>
                                                         </div>
-                                                        <input
-                                                            value={task.title}
-                                                            onChange={e => updateTask(section.id, task.id, { title: e.target.value })}
-                                                            className="flex-1 text-sm font-primary text-zinc-800 bg-transparent outline-none"
-                                                        />
-                                                        <span
-                                                            className="text-xs font-medium font-primary flex-shrink-0 px-2 py-0.5 rounded-full"
-                                                            style={{ color: pr?.color, background: pr?.bg }}
-                                                        >
-                                                            {task.priority}
-                                                        </span>
-                                                        <button
-                                                            onClick={() => removeTask(section.id, task.id)}
-                                                            className="text-zinc-200 hover:text-red-400 transition-colors cursor-pointer flex-shrink-0 opacity-0 group-hover:opacity-100"
-                                                        >
-                                                            <X size={13} />
-                                                        </button>
+
+                                                        {(subtasks.length > 0 || task.notes !== undefined) && (
+                                                            <div className="px-3 pb-2 pl-8 flex flex-col gap-1">
+                                                                {task.notes !== undefined && (
+                                                                    <input
+                                                                        value={task.notes}
+                                                                        onChange={e => updateTask(section.id, task.id, { notes: e.target.value })}
+                                                                        placeholder="Notes…"
+                                                                        className="text-xs font-primary text-zinc-500 bg-transparent outline-none w-full"
+                                                                    />
+                                                                )}
+                                                                {subtasks.map(st => (
+                                                                    <div key={st.id} className="flex items-center gap-2 group/st">
+                                                                        <button
+                                                                            onClick={() => toggleSubtask(section.id, task.id, st.id)}
+                                                                            className="w-3.5 h-3.5 rounded border flex items-center justify-center flex-shrink-0 cursor-pointer transition-colors"
+                                                                            style={{
+                                                                                background:  st.done ? accent : '#fff',
+                                                                                borderColor: st.done ? accent : '#D4D4D8',
+                                                                            }}
+                                                                        >
+                                                                            {st.done && <Check size={9} className="text-white" />}
+                                                                        </button>
+                                                                        <input
+                                                                            value={st.label}
+                                                                            onChange={e => updateSubtask(section.id, task.id, st.id, e.target.value)}
+                                                                            placeholder="Subtask…"
+                                                                            className={`flex-1 text-xs font-primary bg-transparent outline-none ${st.done ? 'text-zinc-400 line-through' : 'text-zinc-600'}`}
+                                                                        />
+                                                                        <button
+                                                                            onClick={() => removeSubtask(section.id, task.id, st.id)}
+                                                                            className="text-zinc-200 hover:text-red-400 transition-colors cursor-pointer flex-shrink-0 opacity-0 group-hover/st:opacity-100"
+                                                                        >
+                                                                            <X size={11} />
+                                                                        </button>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+
+                                                        <div className="px-3 pb-1.5 pl-8 hidden group-hover:flex gap-3">
+                                                            <button
+                                                                onClick={() => addSubtask(section.id, task.id)}
+                                                                className="flex items-center gap-1 text-[11px] text-zinc-300 hover:text-zinc-500 font-primary transition-colors cursor-pointer"
+                                                            >
+                                                                <Plus size={10} /> Subtask
+                                                            </button>
+                                                            {task.notes === undefined && (
+                                                                <button
+                                                                    onClick={() => updateTask(section.id, task.id, { notes: '' })}
+                                                                    className="flex items-center gap-1 text-[11px] text-zinc-300 hover:text-zinc-500 font-primary transition-colors cursor-pointer"
+                                                                >
+                                                                    <Plus size={10} /> Note
+                                                                </button>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 );
                                             })}

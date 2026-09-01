@@ -142,6 +142,11 @@ export function toPreviewSections(generated: GeneratedProject): PreviewSection[]
             title:    t.title,
             priority: t.priority as Priority,
             notes:    t.notes,
+            subtasks: (t.subtasks ?? []).map(st => ({
+                id:    generateId('st'),
+                label: st.label,
+                done:  st.done,
+            })),
         })),
     }));
 }
@@ -166,12 +171,13 @@ export function groupByDate(items: Notification[]): { label: string; items: Noti
 // Parse a text outline (see PROJECT_IMPORT_TEMPLATE) into the same shape as an
 // AI-generated project so it flows through the normal preview → create path.
 
-const IMPORT_HEADING_RE    = /^(#{1,6})\s+(.*)$/;
-const IMPORT_BULLET_RE     = /^(?:[-*+]|\d+[.)])\s+(.*)$/;
-const IMPORT_FIELD_RE      = /^([A-Za-z][A-Za-z ]*):\s*(.*)$/;
-const IMPORT_CHECKBOX_RE   = /^\[[ xX]?\]\s*/;
-const IMPORT_LEAD_PRIO_RE  = /^[[(]\s*(critical|high|medium|low)\s*[\])][\s:.\-–]*/i;
-const IMPORT_TRAIL_PRIO_RE = /[\s\-–—]*[[(]\s*(critical|high|medium|low)\s*[\])]\s*$/i;
+const IMPORT_HEADING_RE       = /^(#{1,6})\s+(.*)$/;
+const IMPORT_BULLET_RE        = /^(?:[-*+]|\d+[.)])\s+(.*)$/;
+const IMPORT_FIELD_RE         = /^([A-Za-z][A-Za-z ]*):\s*(.*)$/;
+const IMPORT_CHECKBOX_RE      = /^\[[ xX]?\]\s*/;
+const IMPORT_CHECKBOX_DONE_RE = /^\[[xX]\]/;
+const IMPORT_LEAD_PRIO_RE     = /^[[(]\s*(critical|high|medium|low)\s*[\])][\s:.\-–]*/i;
+const IMPORT_TRAIL_PRIO_RE    = /[\s\-–—]*[[(]\s*(critical|high|medium|low)\s*[\])]\s*$/i;
 
 function matchImportStatus(raw: string): ProjectStatus {
     const found = STATUS_OPTIONS.find(s => s.toLowerCase() === raw.trim().toLowerCase());
@@ -205,15 +211,25 @@ export function parseProjectOutline(raw: string): ProjectImportResult {
         const trimmed  = rawLine.trim();
         const indented = /^(\s{2,}|\t)/.test(rawLine);
 
-        // Indented, non-structural text → notes for the task above it
-        if (indented && trimmed && currentTask
-            && !IMPORT_HEADING_RE.test(trimmed) && !IMPORT_BULLET_RE.test(trimmed)) {
+        if (!trimmed) continue;
+
+        const bullet = trimmed.match(IMPORT_BULLET_RE);
+
+        // Indented bullet under a task → subtask (supports "- [ ]" / "- [x]")
+        if (indented && currentTask && bullet) {
+            let label = bullet[1].trim();
+            const done = IMPORT_CHECKBOX_DONE_RE.test(label);
+            label = stripInlineMarkdown(label.replace(IMPORT_CHECKBOX_RE, ''));
+            if (label) currentTask.subtasks.push({ label, done });
+            continue;
+        }
+
+        // Indented, non-bullet text → notes for the task above it
+        if (indented && currentTask && !IMPORT_HEADING_RE.test(trimmed)) {
             const note = stripInlineMarkdown(trimmed.replace(/^>\s?/, ''));
             currentTask.notes = currentTask.notes ? `${currentTask.notes} ${note}` : note;
             continue;
         }
-
-        if (!trimmed) continue;
 
         const heading = trimmed.match(IMPORT_HEADING_RE);
         if (heading) {
@@ -229,7 +245,6 @@ export function parseProjectOutline(raw: string): ProjectImportResult {
             continue;
         }
 
-        const bullet = trimmed.match(IMPORT_BULLET_RE);
         if (bullet) {
             let body = bullet[1].trim().replace(IMPORT_CHECKBOX_RE, '');
 
@@ -253,7 +268,7 @@ export function parseProjectOutline(raw: string): ProjectImportResult {
                 currentSection = { title: 'Tasks', tasks: [] };
                 sections.push(currentSection);
             }
-            currentTask = { title: body, priority };
+            currentTask = { title: body, priority, subtasks: [] };
             currentSection.tasks.push(currentTask);
             continue;
         }

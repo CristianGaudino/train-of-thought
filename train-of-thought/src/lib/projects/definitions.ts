@@ -210,10 +210,11 @@ export interface PreviewSection {
 }
 
 export interface PreviewTask {
-    id:       string;
-    title:    string;
-    priority: Priority;
-    notes?:   string;
+    id:        string;
+    title:     string;
+    priority:  Priority;
+    notes?:    string;
+    subtasks?: Subtask[];
 }
 
 // Result of parsing a text outline in the project-import format.

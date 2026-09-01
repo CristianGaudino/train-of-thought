@@ -19,6 +19,12 @@ const projectSchema = z.object({
                     title:    z.string(),
                     priority: z.enum(["Critical", "High", "Medium", "Low"]).default("Medium"),
                     notes:    z.string().optional(),
+                    subtasks: z.array(
+                        z.object({
+                            label: z.string(),
+                            done:  z.boolean().default(false),
+                        })
+                    ).default([]),
                 })
             ),
         })
@@ -101,6 +107,8 @@ Rules:
 - Status should be "Planning" unless the brief clearly indicates work has already started
 - Description: 1–2 sentences, plain language, captures what the project is and why it matters
 - Do not include placeholder tasks like "Define goals" — be specific to the actual idea
+- notes: optional one-line clarification on a task, only when it genuinely adds detail
+- subtasks: optional 2–4 concrete checklist steps for tasks that clearly break down; omit for simple tasks
             `.trim(),
         });
 

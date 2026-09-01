@@ -12,7 +12,7 @@ export async function POST(req: Request) {
 
     try {
         const body = await req.json();
-        const { sectionId, projectId, title, priority, due, assignees, order } = body;
+        const { sectionId, projectId, title, priority, due, assignees, order, description, subtasks } = body;
 
         if (!sectionId || !projectId || !title?.trim()) {
             return NextResponse.json(
@@ -28,10 +28,12 @@ export async function POST(req: Request) {
             sectionId,
             projectId,
             {
-                title:     title.trim(),
-                priority:  priority  ?? 'Medium',
-                due:       due       ?? null,
-                assignees: assignees ?? [userId],
+                title:       title.trim(),
+                priority:    priority  ?? 'Medium',
+                due:         due       ?? null,
+                assignees:   assignees ?? [userId],
+                description: typeof description === 'string' ? description : undefined,
+                subtasks:    Array.isArray(subtasks) ? subtasks : undefined,
             },
             order ?? 0,
         );

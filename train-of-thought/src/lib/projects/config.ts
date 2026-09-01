@@ -86,6 +86,8 @@ Tags: tag one, tag two
 ## First section
 - [High] A specific, actionable task
   Optional extra detail about the task, indented under it.
+  - [ ] A subtask
+  - [x] A subtask that is already done
 - [Medium] Another task
 - A task with no marker (defaults to ${DEFAULT_TASK_PRIORITY})
 
@@ -104,7 +106,7 @@ Rules:
 - "Tags:" (optional) — a comma-separated list.
 - Every "## " line starts a new section.
 - Every "- " line is a task. Prefix it with [Critical], [High], [Medium] or [Low] to set priority (optional). Defaults to ${DEFAULT_TASK_PRIORITY}.
-- Indent a line beneath a task to attach notes to it.
+- Indent a plain line beneath a task for notes; indent a "- " line (optionally "- [ ]" / "- [x]") for a subtask.
 `;
 
 // ─── Mock members ─────────────────────────────────────────────────────────────
