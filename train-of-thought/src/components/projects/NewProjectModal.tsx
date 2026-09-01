@@ -2,21 +2,30 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
-import { X, Plus, ChevronRight } from 'lucide-react';
+import { X, Plus, ChevronRight, Copy, Check } from 'lucide-react';
 import { EMPTY_FORM, STEPS, type FormState, type NewProjectModalProps, type Project, type ProjectStatus } from '@/lib/projects/definitions';
 import { ACCENT_PALETTE, STATUS_CONFIG, STATUS_OPTIONS } from '@/lib/projects/config';
 import { generateId } from '@/lib/projects/utils';
+import { parseProjectOutline, PROJECT_IMPORT_TEMPLATE, PROJECT_IMPORT_GUIDE } from '@/lib/projects/import';
 import Pill from '../ui/Pill';
+import SegmentedControl from '../SegmentedControl';
 import { formatDate } from '@/lib/utils';
 import { Input, Textarea } from '../ui/inputs';
 import Button from '../ui/buttons';
 
-export default function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
+const MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+type Mode = 'build' | 'import';
+
+export default function NewProjectModal({ onClose, onCreate, onImport }: NewProjectModalProps) {
+    const [mode, setMode]         = useState<Mode>('build');
     const [form, setForm]         = useState<FormState>(EMPTY_FORM);
     const [step, setStep]         = useState(1);
     const [tags, setTags]         = useState<string[]>([]);
     const [tagInput, setTagInput] = useState('');
     const [errors, setErrors]     = useState<Partial<Record<keyof FormState, string>>>({});
+    const [importText, setImportText]   = useState('');
+    const [importError, setImportError] = useState<string | null>(null);
+    const [copied, setCopied]           = useState(false);
     const titleRef = useRef<HTMLInputElement>(null);
     const { user } = useUser();
 
@@ -59,6 +68,24 @@ export default function NewProjectModal({ onClose, onCreate }: NewProjectModalPr
         setStep(s => s + 1);
     };
 
+    const copyGuide = async () => {
+        try {
+            await navigator.clipboard.writeText(PROJECT_IMPORT_GUIDE);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch { /* clipboard unavailable — no-op */ }
+    };
+
+    const handleImport = () => {
+        const { generated, error } = parseProjectOutline(importText);
+        if (error || !generated) {
+            setImportError(error ?? 'Could not read that outline.');
+            return;
+        }
+        onImport(generated);
+        onClose();
+    };
+
     const handleCreate = () => {
         if (!validate()) return;
         const project: Project = {
@@ -94,7 +121,7 @@ export default function NewProjectModal({ onClose, onCreate }: NewProjectModalPr
                                 className="text-xs font-semibold tracking-widest uppercase font-primary mb-1.5"
                                 style={{ color: form.accent }}
                             >
-                                New Project
+                                {mode === 'import' ? 'Import Project' : 'New Project'}
                             </div>
                             <h2 className="text-2xl font-secondary text-zinc-900 tracking-tight m-0 min-h-8">
                                 {form.title || <span className="text-zinc-300">Untitled project</span>}
@@ -134,6 +161,84 @@ export default function NewProjectModal({ onClose, onCreate }: NewProjectModalPr
                     </div>
                 </div>
 
+                {/* Mode toggle */}
+                <div className="px-8 pt-4 flex-shrink-0">
+                    <SegmentedControl<Mode>
+                        segments={[
+                            { value: 'build',  label: 'Build manually' },
+                            { value: 'import', label: 'Import outline'  },
+                        ]}
+                        value={mode}
+                        onChange={setMode}
+                        className="w-fit"
+                    />
+                </div>
+
+                {mode === 'import' ? (
+                    <>
+                        {/* Import content */}
+                        <div className="flex-1 overflow-y-auto px-8 py-5 flex flex-col gap-4">
+                            <div>
+                                <div className="flex items-center justify-between mb-1.5">
+                                    <label className="text-xs font-semibold text-zinc-600 font-primary">
+                                        Project outline
+                                    </label>
+                                    <button
+                                        onClick={copyGuide}
+                                        className="flex items-center gap-1.5 text-xs font-primary text-zinc-500 hover:text-zinc-800 transition-colors cursor-pointer"
+                                    >
+                                        {copied ? <Check size={12} /> : <Copy size={12} />}
+                                        {copied ? 'Copied' : 'Copy format for AI'}
+                                    </button>
+                                </div>
+                                <Textarea
+                                    value={importText}
+                                    onChange={e => { setImportText(e.target.value); setImportError(null); }}
+                                    placeholder={PROJECT_IMPORT_TEMPLATE}
+                                    rows={12}
+                                    style={{ fontFamily: MONO }}
+                                    className="text-xs leading-relaxed"
+                                />
+                                {importError && (
+                                    <p className="text-xs text-red-400 font-primary mt-1.5">{importError}</p>
+                                )}
+                            </div>
+
+                            <details className="bg-zinc-50 rounded-xl px-4 py-3 group">
+                                <summary className="text-sm font-semibold text-zinc-700 font-primary cursor-pointer list-none flex items-center gap-1.5">
+                                    <ChevronRight size={13} className="transition-transform group-open:rotate-90" />
+                                    Format guide
+                                </summary>
+                                <pre
+                                    className="text-xs text-zinc-500 whitespace-pre-wrap mt-2.5 m-0"
+                                    style={{ fontFamily: MONO }}
+                                >{PROJECT_IMPORT_GUIDE}</pre>
+                            </details>
+
+                            <p className="text-sm text-zinc-400 font-primary m-0 leading-relaxed">
+                                Write an outline in this format, or copy it and ask any AI to
+                                &ldquo;create a project outline in this format for &lt;your idea&gt;&rdquo;,
+                                then paste the result here. You&apos;ll get a preview to review and edit before
+                                anything is created.
+                            </p>
+                        </div>
+
+                        {/* Footer (import) */}
+                        <div className="flex items-center justify-between px-8 py-4 border-t border-zinc-100 flex-shrink-0">
+                            <Button variant="secondary" onClick={onClose}>Cancel</Button>
+                            <Button
+                                onClick={handleImport}
+                                disabled={!importText.trim()}
+                                iconRight={<ChevronRight size={15} />}
+                                style={{ background: form.accent }}
+                                className="border-0"
+                            >
+                                Preview import
+                            </Button>
+                        </div>
+                    </>
+                ) : (
+                <>
                 {/* Step indicators */}
                 <div className="flex items-center px-8 py-4 border-b border-zinc-100 flex-shrink-0">
                     {STEPS.map((s, i) => {
@@ -323,7 +428,7 @@ export default function NewProjectModal({ onClose, onCreate }: NewProjectModalPr
                                     Starting with one section
                                 </p>
                                 <p className="text-sm text-zinc-400 font-primary m-0 leading-relaxed">
-                                    Your project starts with a single "Tasks" section. Once created, you can add more sections in the full view.
+                                    Your project starts with a single &ldquo;Tasks&rdquo; section. Once created, you can add more sections in the full view.
                                 </p>
                             </div>
                         </div>
@@ -333,7 +438,7 @@ export default function NewProjectModal({ onClose, onCreate }: NewProjectModalPr
                     {step === 3 && (
                         <div className="flex flex-col gap-4">
                             <p className="text-sm text-zinc-400 font-primary m-0 leading-relaxed">
-                                You're included as owner by default.
+                                You&apos;re included as owner by default.
                             </p>
                             {user && (
                                 <div
@@ -414,6 +519,8 @@ export default function NewProjectModal({ onClose, onCreate }: NewProjectModalPr
                         )}
                     </div>
                 </div>
+                </>
+                )}
             </div>
         </div>
     );

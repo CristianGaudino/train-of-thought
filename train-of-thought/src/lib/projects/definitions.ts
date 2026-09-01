@@ -273,6 +273,7 @@ export interface AvatarStackProps {
 export interface NewProjectModalProps {
     onClose: () => void;
     onCreate: (project: Project) => void;
+    onImport: (generated: GeneratedProject) => void;
 }
 
 export interface PillProps {
@@ -299,6 +300,7 @@ export interface ProjectPreviewModalProps {
     generated:   GeneratedProject;
     onClose:     () => void;
     onCreated?:  (projectId: string) => void;
+    source?:     'ai' | 'import';
 }
 
 export interface OnboardingEmptyStateProps {

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
-import { X, Plus, Trash2, Sparkles, ChevronDown, ChevronRight } from 'lucide-react';
+import { X, Plus, Trash2, Sparkles, FileText, ChevronDown, ChevronRight } from 'lucide-react';
 import { ACCENT_PALETTE, PRIORITY_CONFIG } from '@/lib/projects/config';
 import { generateId, toPreviewSections } from '@/lib/projects/utils';
 import { useToast } from '@/components/ui/Toast';
@@ -11,7 +11,7 @@ import type { PreviewSection, PreviewTask, Priority, ProjectPreviewModalProps } 
 import Button from '../ui/buttons';
 import { Input, Textarea } from '../ui/inputs';
 
-export default function ProjectPreviewModal({ generated, onClose, onCreated }: ProjectPreviewModalProps) {
+export default function ProjectPreviewModal({ generated, onClose, onCreated, source = 'ai' }: ProjectPreviewModalProps) {
     const router = useRouter();
     const { userId } = useAuth();
     const { success, error: toastError } = useToast();
@@ -150,9 +150,12 @@ export default function ProjectPreviewModal({ generated, onClose, onCreated }: P
                 <div className="w-72 flex-shrink-0 flex flex-col border-r border-zinc-100">
                     <div className="px-6 py-5 flex-shrink-0 border-b border-black/7" style={{ background: color }}>
                         <div className="flex items-center gap-2 mb-3">
-                            <Sparkles size={14} style={{ color: accent }} />
+                            {source === 'import'
+                                ? <FileText size={14} style={{ color: accent }} />
+                                : <Sparkles size={14} style={{ color: accent }} />
+                            }
                             <span className="text-xs font-semibold uppercase tracking-widest font-primary" style={{ color: accent }}>
-                                AI Generated
+                                {source === 'import' ? 'Imported Outline' : 'AI Generated'}
                             </span>
                         </div>
                         <p className="text-xs text-zinc-500 font-primary leading-relaxed">

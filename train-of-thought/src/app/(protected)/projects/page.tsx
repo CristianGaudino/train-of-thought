@@ -17,9 +17,11 @@ import {
     rectSortingStrategy,
 } from '@dnd-kit/sortable';
 import { STATUS_FILTERS, type Project, type ProjectStatus } from '@/lib/projects/definitions';
+import type { GeneratedProject } from '@/app/api/generate-project/route';
 import { STATUS_CONFIG } from '@/lib/projects/config';
 import ProjectCard from '@/components/projects/ProjectCard';
 import NewProjectModal from '@/components/projects/NewProjectModal';
+import ProjectPreviewModal from '@/components/projects/ProjectPreviewModal';
 import OnboardingEmptyState from '@/components/projects/OnboardingState';
 import { useProjects } from '@/hooks/projects/useProjects';
 import { Input } from '@/components/ui/inputs';
@@ -54,6 +56,7 @@ export default function ProjectsPage() {
     const [filter, setFilter]         = useState<ProjectStatus | 'All'>('All');
     const [search, setSearch]         = useState('');
     const [showModal, setShowModal]   = useState(false);
+    const [importPreview, setImportPreview] = useState<GeneratedProject | null>(null);
     const [activeId, setActiveId]     = useState<string | null>(null);
 
     const dragEnabled = filter === 'All' && !search;
@@ -340,6 +343,16 @@ export default function ProjectsPage() {
                 <NewProjectModal
                     onClose={() => setShowModal(false)}
                     onCreate={handleCreate}
+                    onImport={(generated) => { setShowModal(false); setImportPreview(generated); }}
+                />
+            )}
+
+            {importPreview && (
+                <ProjectPreviewModal
+                    generated={importPreview}
+                    source="import"
+                    onClose={() => setImportPreview(null)}
+                    onCreated={() => setImportPreview(null)}
                 />
             )}
         </div>
